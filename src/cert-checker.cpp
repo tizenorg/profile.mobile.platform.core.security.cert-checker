@@ -22,8 +22,8 @@
 
 #include <glib.h>
 
-#include <log.h>
-#include <logic.h>
+#include <cchecker/log.h>
+#include <cchecker/logic.h>
 
 using namespace CCHECKER;
 

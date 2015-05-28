@@ -33,7 +33,7 @@
 #include <iconv.h>
 #include <unicode/ustring.h>
 
-#include <log.h>
+#include <cchecker/log.h>
 
 // TODO: Completely move to ICU
 namespace CCHECKER {

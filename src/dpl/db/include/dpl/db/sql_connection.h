@@ -33,7 +33,7 @@
 #include <memory>
 #include <stdint.h>
 
-#include <log.h>
+#include <cchecker/log.h>
 
 namespace CCHECKER {
 namespace DB {
@@ -486,6 +486,12 @@ class SqlConnection
      * @return Row ID
      */
     RowID GetLastInsertRowID() const;
+
+    void BeginTransaction();
+
+    void RollbackTransaction();
+
+    void CommitTransaction();
 };
 } // namespace DB
 } // namespace CCHECKER

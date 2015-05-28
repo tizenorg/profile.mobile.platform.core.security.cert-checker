@@ -19,9 +19,14 @@
  * @version     1.0
  * @brief       This file is the implementation of SQL queries
  */
+#include <stdexcept>
+#include <tzplatform_config.h>
 
-#include <logic.h>
-#include <log.h>
+#include <cchecker/logic.h>
+#include <cchecker/log.h>
+#include <cchecker/sql_query.h>
+
+using namespace std;
 
 namespace {
 
@@ -51,21 +56,50 @@ const char * eventStateStr(package_manager_event_state_e type) {
 
 namespace CCHECKER {
 
+const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
+
 Logic::~Logic(void)
 {
     LogDebug("Cert-checker cleaning.");
     if (m_proxy)
         g_object_unref(m_proxy);
     package_manager_destroy(m_request);
+    delete m_sqlquery;
 }
 
 Logic::Logic(void) :
+        m_sqlquery(NULL),
         m_is_online(false),
         m_proxy(NULL)
 {}
 
-int Logic::setup()
+error_t Logic::setup_db()
 {
+    // TODO: If database doesn't exist -should we create a new one?
+    Try {
+        m_sqlquery = new DB::SqlQuery(DB_PATH);
+    } Catch (runtime_error) {
+        LogError("Error while creating SqlQuery object");
+        return DATABASE_ERROR;
+    }
+
+    if(!m_sqlquery) {
+        LogError("Cannot open database");
+        return DATABASE_ERROR;
+    }
+
+    return NO_ERROR;
+}
+
+error_t  Logic::setup()
+{
+    // Check if DB exists and create a new one if it doesn't
+    error_t err = setup_db();
+    if (err != NO_ERROR) {
+        LogError("Database error");
+        return err;
+    }
+
     // Add package manager callback
     int ret = package_manager_create(&m_request);
     if (ret != PACKAGE_MANAGER_ERROR_NONE) {
@@ -89,7 +123,9 @@ int Logic::setup()
     }
     LogDebug("register connman event callback success");
 
-    return load_database_to_buffer();
+    load_database_to_buffer();
+
+    return NO_ERROR;
 }
 
 error_t Logic::register_connman_signal_handler(void)
@@ -161,14 +197,14 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
                              GVariant   *parameters,
                              void *logic_ptr)
 {
-    std::string signal_name_str = std::string(signal_name);
+    string signal_name_str = string(signal_name);
     if (signal_name_str != "PropertyChanged") {
         // Invalid param. Nothing to do here.
         return;
     }
 
     gchar *parameters_g = g_variant_print(parameters, TRUE);
-    std::string params_str = std::string(parameters_g);
+    string params_str = string(parameters_g);
     g_free (parameters_g);
 
     Logic *logic = static_cast<Logic*> (logic_ptr);
@@ -188,10 +224,9 @@ void Logic::check_ocsp(app_t &app)
     (void)app;
 }
 
-void Logic::add_ocsp_url(const std::string &issuer, const std::string &url)
+void Logic::add_ocsp_url(const string &issuer, const string &url, int64_t date)
 {
-    (void)issuer;
-    (void)url;
+    m_sqlquery->set_url(issuer, url, date);
 }
 
 void Logic::pkgmanager_uninstall(const app_t &app)
@@ -199,15 +234,16 @@ void Logic::pkgmanager_uninstall(const app_t &app)
     (void)app;
 }
 
-void Logic::get_certs_from_signature(const std::string &signature, std::vector<std::string> &cert)
+void Logic::get_certs_from_signature(const string &signature, vector<string> &cert)
 {
     (void)signature;
     (void)cert;
 }
 
-error_t Logic::load_database_to_buffer()
+void Logic::load_database_to_buffer()
 {
-    return error_t::NO_ERROR;
+    LogDebug("Loading database to the buffer");
+    m_sqlquery->get_app_list(m_buffer);
 }
 
 } //CCHECKER

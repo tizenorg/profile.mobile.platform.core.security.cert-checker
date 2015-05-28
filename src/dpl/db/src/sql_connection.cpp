@@ -846,5 +846,21 @@ SqlConnection::AllocDefaultSynchronizationObject()
 {
     return new NaiveSynchronizationObject();
 }
+
+void SqlConnection::BeginTransaction()
+{
+    ExecCommand("BEGIN;");
+}
+
+void SqlConnection::RollbackTransaction()
+{
+    ExecCommand("ROLLBACK;");
+}
+
+void SqlConnection::CommitTransaction()
+{
+    ExecCommand("COMMIT;");
+}
+
 } // namespace DB
 } // namespace CCHECKER
