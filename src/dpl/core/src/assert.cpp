@@ -24,7 +24,7 @@
 #include <cstdlib>
 #include <dpl/exception.h>
 
-#include <log.h>
+#include <cchecker/log.h>
 
 namespace CCHECKER {
 void AssertProc(const char *condition,

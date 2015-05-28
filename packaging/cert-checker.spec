@@ -5,6 +5,7 @@ Release:    1
 Group:      System/Security
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1:    %{name}.manifest
 BuildRequires: cmake
 BuildRequires: zip
 BuildRequires: pkgconfig(db-util)
@@ -15,11 +16,21 @@ BuildRequires: pkgconfig(notification)
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(libsystemd-journal)
+BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: pkgconfig(sqlite3)
-
+BuildRequires: boost-devel
 
 %description
 Cert-checker
+
+%package -n cert-checker-tests
+Summary:    Internal test for cert-checker
+Group:      Development
+Requires:   boost-test
+Requires:   cert-checker = %{version}-%{release}
+
+%description -n cert-checker-tests
+Internal test for cert-checker implementation.
 
 %prep
 %setup -q
@@ -31,6 +42,7 @@ export FFLAGS="$FFLAGS"
 export LDFLAGS+="-Wl,--rpath=%{_libdir} "
 
 %cmake . -DVERSION=%{version} \
+        -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
         -DCMAKE_BUILD_TYPE=%{?build_type:%build_type}%{!?build_type:RELEASE} \
         -DCMAKE_VERBOSE_MAKEFILE=ON
 
@@ -41,10 +53,18 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/license
 cp LICENSE %{buildroot}/usr/share/license/%{name}
 %make_install
+cp -a %{SOURCE1} %{buildroot}%{_datadir}/
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %{_bindir}/cert-checker
+%manifest %{_datadir}/%{name}.manifest
 %{_datadir}/license/%{name}
+%config(noreplace) %attr(0600,root,root) %{TZ_SYS_DB}/.cert-checker.db
+
+%files -n cert-checker-tests
+%defattr(-,root,root,-)
+%{_bindir}/cert-checker-tests
+%{TZ_SYS_DB}/.cert-checker-test.db
