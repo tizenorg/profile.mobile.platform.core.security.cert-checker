@@ -20,8 +20,10 @@
  * @brief       This file is the implementation of SQL queries
  */
 
-#include <logic.h>
-#include <log.h>
+#include <cchecker/logic.h>
+#include <cchecker/log.h>
+
+using namespace std;
 
 namespace {
 
@@ -57,15 +59,42 @@ Logic::~Logic(void)
     if (m_proxy)
         g_object_unref(m_proxy);
     package_manager_destroy(m_request);
+    delete m_sqlquery;
 }
 
 Logic::Logic(void) :
+        m_sqlquery(NULL),
         m_is_online(false),
         m_proxy(NULL)
 {}
 
-int Logic::setup()
+error_t Logic::setup_db()
 {
+    // TODO: If database doesn't exist -should we create a new one?
+    Try {
+        m_sqlquery = new DB::SqlQuery(DB_PATH);
+    } Catch (std::runtime_error) {
+        LogError("Error while creating SqlQuery object");
+        return DATABASE_ERROR;
+    }
+
+    if(!m_sqlquery) {
+        LogError("Cannot open database");
+        return DATABASE_ERROR;
+    }
+
+    return NO_ERROR;
+}
+
+error_t  Logic::setup()
+{
+    // Check if DB exists and create a new one if it doesn't
+    error_t err = setup_db();
+    if (err != NO_ERROR) {
+        LogError("Database error");
+        return err;
+    }
+
     // Add package manager callback
     int ret = package_manager_create(&m_request);
     if (ret != PACKAGE_MANAGER_ERROR_NONE) {
@@ -89,7 +118,9 @@ int Logic::setup()
     }
     LogDebug("register connman event callback success");
 
-    return load_database_to_buffer();
+    load_database_to_buffer();
+
+    return NO_ERROR;
 }
 
 error_t Logic::register_connman_signal_handler(void)
@@ -188,10 +219,9 @@ void Logic::check_ocsp(app_t &app)
     (void)app;
 }
 
-void Logic::add_ocsp_url(const std::string &issuer, const std::string &url)
+void Logic::add_ocsp_url(const std::string &issuer, const std::string &url, int64_t date)
 {
-    (void)issuer;
-    (void)url;
+    m_sqlquery->set_url(issuer, url, date);
 }
 
 void Logic::pkgmanager_uninstall(const app_t &app)
@@ -205,9 +235,10 @@ void Logic::get_certs_from_signature(const std::string &signature, std::vector<s
     (void)cert;
 }
 
-error_t Logic::load_database_to_buffer()
+void Logic::load_database_to_buffer()
 {
-    return error_t::NO_ERROR;
+    LogDebug("Loading database to the buffer");
+    m_sqlquery->get_app_list(m_buffer);
 }
 
 } //CCHECKER
