@@ -29,7 +29,7 @@
 namespace CCHECKER {
 
 struct app_t {
-    enum class verified_t : int {
+    enum class verified_t : int32_t {
         NO      = 0,
         YES     = 1,
         UNKNOWN = 2
@@ -43,6 +43,10 @@ struct app_t {
     verified_t               verified;
 
     app_t(void);
+    app_t(const std::string &app_id,
+          const std::string &pkg_id,
+          uid_t uid,
+          const std::vector<std::string> &certificates);
     std::string str(void) const;
 };
 

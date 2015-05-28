@@ -30,24 +30,37 @@
 namespace CCHECKER {
 
 app_t::app_t(void):
-        check_id(-1),   // -1 as invalid check_id - assume that in database
-                        // all check_ids will be positive
-        uid((uid_t)-1), // (uid_t)-1 (0xFF) is defined to be invalid uid. According
-                        // to chown manual page, you cannot change file group of owner
-                        // to (uid_t)-1, so we'll use it as initial, invalid value.
-        verified(verified_t::UNKNOWN)
+    check_id(-1),   // -1 as invalid check_id - assume that in database
+                    // all check_ids will be positive
+    uid((uid_t)-1), // (uid_t)-1 (0xFF) is defined to be invalid uid. According
+                    // to chown manual page, you cannot change file group of owner
+                    // to (uid_t)-1, so we'll use it as initial, invalid value.
+    verified(verified_t::UNKNOWN)
+{}
+
+app_t::app_t(const std::string &app_id,
+        const std::string &pkg_id,
+        uid_t uid,
+        const std::vector<std::string> &certificates):
+    check_id(-1),
+    app_id(app_id),
+    pkg_id(pkg_id),
+    uid(uid),
+    certificates(certificates),
+    verified(verified_t::UNKNOWN)
 {}
 
 std::ostream & operator<< (std::ostream &out, const app_t &app)
 {
-    out << "app: " << app.app_id << ", pkg: " << app.pkg_id << ", uid: " << app.uid;
+    out << "app: " << app.app_id << ", pkg: " << app.pkg_id << ", uid: " << app.uid <<
+            ", check_id: " << app.check_id;
     return out;
 }
 
 std::string app_t::str() const
 {
     std::stringstream ss;
-    ss << this;
+    ss << *this;
     return ss.str();
 }
 
