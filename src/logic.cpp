@@ -23,6 +23,8 @@
 #include <logic.h>
 #include <log.h>
 
+using namespace std;
+
 namespace {
 
 const char * eventTypeStr(package_manager_event_type_e type) {
@@ -57,15 +59,34 @@ Logic::~Logic(void)
     if (m_proxy)
         g_object_unref(m_proxy);
     package_manager_destroy(m_request);
+    if (m_sqlquery)
+        delete m_sqlquery;
 }
 
 Logic::Logic(void) :
+        m_sqlquery(NULL),
         m_is_online(false),
         m_proxy(NULL)
 {}
 
-int Logic::setup()
+error_t Logic::setup_db()
 {
+    // TODO: If database doesn't exist -should we create a new one?
+    m_sqlquery = new DB::SqlQuery(DB_PATH);
+
+    if(!m_sqlquery) {
+        LogError("Cannot open database");
+        return DATABASE_ERROR;
+    }
+
+    return NO_ERROR;
+}
+
+error_t  Logic::setup()
+{
+    // Check if DB exists and create a new one if it doesn't
+    setup_db();
+
     // Add package manager callback
     int ret = package_manager_create(&m_request);
     if (ret != PACKAGE_MANAGER_ERROR_NONE) {
