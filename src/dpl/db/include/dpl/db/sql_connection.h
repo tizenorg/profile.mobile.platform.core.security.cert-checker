@@ -33,7 +33,7 @@
 #include <memory>
 #include <stdint.h>
 
-#include <log.h>
+#include <cchecker/log.h>
 
 namespace CCHECKER {
 namespace DB {

@@ -27,8 +27,10 @@
 #include <package_manager.h>
 #include <string>
 #include <vector>
+#include <list>
 
-#include <app.h>
+#include <cchecker/app.h>
+#include <cchecker/sql_query.h>
 
 namespace CCHECKER {
 
@@ -36,14 +38,15 @@ enum error_t {
     NO_ERROR,
     REGISTER_CALLBACK_ERROR,
     DBUS_ERROR,
-    PACKAGE_MANAGER_ERROR
+    PACKAGE_MANAGER_ERROR,
+    DATABASE_ERROR
 };
 
 class Logic {
     public:
         Logic(void);
         virtual ~Logic(void);
-        int setup();
+        error_t  setup();
         static void pkg_manager_callback(
                 const char *type,
                 const char *package,
@@ -61,14 +64,16 @@ class Logic {
     private:
         //TODO: implement missing members
 
+        error_t setup_db();
         void check_ocsp(app_t &app);
-        void add_ocsp_url(const std::string &issuer, const std::string &url);
+        void add_ocsp_url(const std::string &issuer, const std::string &url, int64_t date);
         void pkgmanager_uninstall(const app_t &app);
         void get_certs_from_signature(const std::string &signature, std::vector<std::string> &cert);
-        error_t load_database_to_buffer();
+        void load_database_to_buffer();
+        error_t register_connman_signal_handler(void);
 
-        error_t register_connman_signal_handler ();
-
+        std::list<app_t> m_buffer;
+        DB::SqlQuery *m_sqlquery;
         bool m_is_online;
         package_manager_h m_request;
         GDBusProxy *m_proxy;
