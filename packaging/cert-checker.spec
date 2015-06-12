@@ -11,7 +11,6 @@ BuildRequires: zip
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(icu-i18n)
 BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(capi-appfw-package-manager)
 BuildRequires: pkgconfig(notification)
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)
