@@ -28,32 +28,6 @@
 
 using namespace std;
 
-namespace {
-
-const char * eventTypeStr(package_manager_event_type_e type) {
-    if (type == PACKAGE_MANAGER_EVENT_TYPE_INSTALL)
-        return "PACKAGE_MANAGER_EVENT_TYPE_INSTALL";
-    if (type == PACKAGE_MANAGER_EVENT_TYPE_UNINSTALL)
-        return "PACKAGE_MANAGER_EVENT_TYPE_UNINSTALL";
-    if (type == PACKAGE_MANAGER_EVENT_TYPE_UPDATE)
-        return "PACKAGE_MANAGER_EVENT_TYPE_UPDATE";
-    return "UNKNOWN";
-}
-
-const char * eventStateStr(package_manager_event_state_e type) {
-    if (type == PACKAGE_MANAGER_EVENT_STATE_STARTED)
-        return "PACKAGE_MANAGER_EVENT_STATE_STARTED";
-    if (type == PACKAGE_MANAGER_EVENT_STATE_PROCESSING)
-        return "PACKAGE_MANAGER_EVENT_STATE_PROCESSING";
-    if (type == PACKAGE_MANAGER_EVENT_STATE_COMPLETED)
-        return "PACKAGE_MANAGER_EVENT_STATE_COMPLETED";
-    if (type == PACKAGE_MANAGER_EVENT_STATE_FAILED)
-        return "PACKAGE_MANAGER_EVENT_STATE_FAILED";
-    return "UNKNOWN";
-}
-} //anonymus
-
-
 namespace CCHECKER {
 
 const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
@@ -61,16 +35,21 @@ const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
 Logic::~Logic(void)
 {
     LogDebug("Cert-checker cleaning.");
-    if (m_proxy)
-        g_object_unref(m_proxy);
-    package_manager_destroy(m_request);
+    if (m_proxy_connman)
+        g_object_unref(m_proxy_connman);
+    if (m_proxy_pkgmgr_install)
+        g_object_unref(m_proxy_pkgmgr_install);
+    if (m_proxy_pkgmgr_uninstall)
+        g_object_unref(m_proxy_pkgmgr_uninstall);
     delete m_sqlquery;
 }
 
 Logic::Logic(void) :
         m_sqlquery(NULL),
         m_is_online(false),
-        m_proxy(NULL)
+        m_proxy_connman(NULL),
+        m_proxy_pkgmgr_install(NULL),
+        m_proxy_pkgmgr_uninstall(NULL)
 {}
 
 error_t Logic::setup_db()
@@ -100,20 +79,24 @@ error_t  Logic::setup()
         return err;
     }
 
-    // Add package manager callback
-    int ret = package_manager_create(&m_request);
-    if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-        LogError("package_manager_create error: " << ret);
-        return PACKAGE_MANAGER_ERROR;
-    }
+    // FIXME: pkgmanager API signal handling was temporarily replaced
+    //        by dbus API
 
-    LogDebug("register installedApp event callback start");
-    ret = package_manager_set_event_cb(m_request, Logic::pkg_manager_callback, this);
-    if (PACKAGE_MANAGER_ERROR_NONE != ret) {
-        LogError("Error in package_manager_set_event_cb: " << ret);
+    // Add pkgmgr install callback
+    LogDebug("register pkgmgr install event callback start");
+    if (register_pkgmgr_install_signal_handler() != NO_ERROR) {
+        LogError("Error in register_pkgmgr_install_signal_handler");
         return REGISTER_CALLBACK_ERROR;
     }
-    LogDebug("register installedApp event callback success");
+    LogDebug("register pkgmgr install event callback success");
+
+    // Add pkgmgr uninstall callback
+    LogDebug("register pkgmgr uninstall event callback start");
+    if (register_pkgmgr_uninstall_signal_handler() != NO_ERROR) {
+        LogError("Error in register_pkgmgr_uninstall_signal_handler");
+        return REGISTER_CALLBACK_ERROR;
+    }
+    LogDebug("register pkgmgr uninstall event callback success");
 
     // Add connman callback
     LogDebug("register connman event callback start");
@@ -128,22 +111,22 @@ error_t  Logic::setup()
     return NO_ERROR;
 }
 
-error_t Logic::register_connman_signal_handler(void)
+error_t Logic::register_pkgmgr_install_signal_handler(void)
 {
     GError *error = NULL;
     GDBusProxyFlags flags = G_DBUS_PROXY_FLAGS_NONE;
 
     // Obtain a connection to the System Bus
-    m_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+    m_proxy_pkgmgr_install = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
             flags,
             NULL, /* GDBusInterfaceInfo */
-            "net.connman",
-            "/",
-            "net.connman.Manager",
+            "org.tizen.slp.pkgmgr_status",
+            "/org/tizen/slp/pkgmgr/install",
+            "org.tizen.slp.pkgmgr.install",
             NULL, /* GCancellable */
             &error);
 
-    if (m_proxy == NULL) {
+    if (m_proxy_pkgmgr_install == NULL) {
         if (error) {
             LogError("Error creating D-Bus proxy: " << error->message);
             g_error_free (error);
@@ -155,7 +138,77 @@ error_t Logic::register_connman_signal_handler(void)
     }
 
     // Connect to g-signal to receive signals from proxy
-    if (g_signal_connect (m_proxy, "g-signal", G_CALLBACK (Logic::connman_callback), this) < 1) {
+    if (g_signal_connect (m_proxy_pkgmgr_install, "g-signal", G_CALLBACK (Logic::pkgmgr_install_callback), this) < 1) {
+        LogError("g_signal_connect error while connecting pkgmgr install signal");
+        return REGISTER_CALLBACK_ERROR;
+    }
+
+    return NO_ERROR;
+}
+
+error_t Logic::register_pkgmgr_uninstall_signal_handler(void)
+{
+    GError *error = NULL;
+    GDBusProxyFlags flags = G_DBUS_PROXY_FLAGS_NONE;
+
+    // Obtain a connection to the System Bus
+    m_proxy_pkgmgr_uninstall = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+            flags,
+            NULL, /* GDBusInterfaceInfo */
+            "org.tizen.slp.pkgmgr_status",
+            "/org/tizen/slp/pkgmgr/uninstall",
+            "org.tizen.slp.pkgmgr.uninstall",
+            NULL, /* GCancellable */
+            &error);
+
+    if (m_proxy_pkgmgr_install == NULL) {
+        if (error) {
+            LogError("Error creating D-Bus proxy: " << error->message);
+            g_error_free (error);
+        }
+        else {
+            LogError("Error creating D-Bus proxy. Unknown error");
+        }
+        return DBUS_ERROR;
+    }
+
+    // Connect to g-signal to receive signals from proxy
+    if (g_signal_connect (m_proxy_pkgmgr_uninstall, "g-signal", G_CALLBACK (Logic::pkgmgr_uninstall_callback), this) < 1) {
+        LogError("g_signal_connect error while connecting pkgmgr uninstall signal");
+        return REGISTER_CALLBACK_ERROR;
+    }
+
+    return NO_ERROR;
+}
+
+error_t Logic::register_connman_signal_handler(void)
+{
+    GError *error = NULL;
+    GDBusProxyFlags flags = G_DBUS_PROXY_FLAGS_NONE;
+
+    // Obtain a connection to the System Bus
+    m_proxy_connman = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+            flags,
+            NULL, /* GDBusInterfaceInfo */
+            "net.connman",
+            "/",
+            "net.connman.Manager",
+            NULL, /* GCancellable */
+            &error);
+
+    if (m_proxy_connman == NULL) {
+        if (error) {
+            LogError("Error creating D-Bus proxy: " << error->message);
+            g_error_free (error);
+        }
+        else {
+            LogError("Error creating D-Bus proxy. Unknown error");
+        }
+        return DBUS_ERROR;
+    }
+
+    // Connect to g-signal to receive signals from proxy
+    if (g_signal_connect (m_proxy_connman, "g-signal", G_CALLBACK (Logic::connman_callback), this) < 1) {
         LogError("g_signal_connect error while connecting connman signal");
         return REGISTER_CALLBACK_ERROR;
     }
@@ -163,32 +216,85 @@ error_t Logic::register_connman_signal_handler(void)
     return NO_ERROR;
 }
 
-void Logic::pkg_manager_callback(
-        const char *type,
-        const char *package,
-        package_manager_event_type_e eventType,
-        package_manager_event_state_e eventState,
-        int progress,
-        package_manager_error_e error,
-        void *logic_ptr)
+// FIXME: pkgmgr callback doesn't receive signals with successful installation/uninstallation.
+//        For now it will be replaced by low-level signal handling from DBUS.
+void Logic::pkgmgr_install_callback(GDBusProxy */*proxy*/,
+                                    gchar      */*sender_name*/,
+                                    gchar      */*signal_name*/,
+                                    GVariant   *parameters,
+                                    void       *logic_ptr)
 {
-    LogDebug("---- packageInstalledEventCallback ----\n");
-    LogDebug("Type: " << type << ", package: " << package << ", Event type: " <<
-            eventTypeStr(eventType) << ", Event state: " << eventStateStr(eventState) <<
-            ", progress: " << progress <<", error: " << error);
-    Logic *logic = static_cast<Logic*>(logic_ptr);
+    LogDebug("----------------- pkgmgr_install_callback -----------------\n");
 
-    if (eventType != PACKAGE_MANAGER_EVENT_TYPE_INSTALL||
-    eventState != PACKAGE_MANAGER_EVENT_STATE_COMPLETED ||
-    error != PACKAGE_MANAGER_ERROR_NONE ||
-    package == NULL) {
-        LogDebug("PackageInstalled Callback error or Invalid Param");
-    } else {
-        LogDebug("PackageInstalled Callback. Instalation of: " << package <<
-                ", error: " << error << ", progress: " << progress);
-        // TODO: Add event to queue here
-        (void) logic;
+    Logic *logic = static_cast<Logic*> (logic_ptr);
+    (void) logic;
+
+    logic->pkgmgr_callback_internal(parameters, EVENT_INSTALL);
+}
+
+void Logic::pkgmgr_uninstall_callback(GDBusProxy */*proxy*/,
+                                      gchar      */*sender_name*/,
+                                      gchar      */*signal_name*/,
+                                      GVariant   *parameters,
+                                      void       *logic_ptr)
+{
+    LogDebug("----------------- pkgmgr_uninstall_callback -----------------\n");
+
+    Logic *logic = static_cast<Logic*> (logic_ptr);
+    (void) logic;
+
+    logic->pkgmgr_callback_internal(parameters, EVENT_UNINSTALL);
+}
+
+void Logic::pkgmgr_callback_internal(GVariant       *parameters,
+                                     pkgmgr_event_t event)
+{
+    gchar *parameters_g = g_variant_print(parameters, TRUE);
+    std::string params_str = std::string(parameters_g);
+    LogDebug("params: " << params_str);
+    g_free (parameters_g);
+
+    //Check if numbers of children fits - should be 6
+    int num = g_variant_n_children(parameters);
+    if (num != 6) {
+        LogError("Wrong number of children in g_variant: " << num << ", but should be 6.");
+        return;
     }
+
+    /* Message format:
+     * uint32 5001
+     * string "/usr/share/widget_demo/mancala.wgt_-427832739"
+     * string "wgt"
+     * string "yKrWwxz1KX"
+     * string "end"
+     * string "ok"
+     */
+    guint32 uid;
+    gchar *pkgid = NULL;
+    gchar *state = NULL;
+    gchar *status = NULL;
+
+    uid = g_variant_get_uint32(g_variant_get_child_value(parameters, 0));
+    pkgid = g_variant_dup_string(g_variant_get_child_value(parameters, 3), NULL);
+    state = g_variant_dup_string(g_variant_get_child_value(parameters, 4), NULL);
+    status = g_variant_dup_string(g_variant_get_child_value(parameters, 5), NULL);
+
+    if (std::string(state) == "end" && std::string(status) == "ok") {
+        if (event == EVENT_INSTALL) {
+            LogDebug("Install: uid : " << uid << ", pkgid: " << pkgid <<
+                    ", state: " << state << ", status: " << status);
+        }
+        else if (event == EVENT_UNINSTALL) {
+            LogDebug("Uninstall: uid : " << uid << ", pkgid: " << pkgid <<
+                    ", state: " << state << ", status: " << status);
+        }
+    }
+    else
+        LogError("Wrong state (" << std::string(state) << ") or status (" << std::string(status) << ")");
+
+    g_free(pkgid);
+    g_free(state);
+    g_free(status);
 }
 
 void Logic::connman_callback(GDBusProxy */*proxy*/,
