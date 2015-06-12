@@ -24,7 +24,6 @@
 #define CCHECKER_LOGIC_H
 
 #include <gio/gio.h>
-#include <package_manager.h>
 #include <string>
 #include <vector>
 #include <list>
@@ -45,18 +44,25 @@ enum error_t {
     DATABASE_ERROR
 };
 
+enum pkgmgr_event_t {
+    EVENT_INSTALL,
+    EVENT_UNINSTALL
+};
+
 class Logic {
     public:
         Logic(void);
         virtual ~Logic(void);
         error_t  setup();
-        static void pkg_manager_callback(
-                const char *type,
-                const char *package,
-                package_manager_event_type_e eventType,
-                package_manager_event_state_e eventState,
-                int progress,
-                package_manager_error_e error,
+        static void pkgmgr_install_callback(GDBusProxy *proxy,
+                gchar      *sender_name,
+                gchar      *signal_name,
+                GVariant   *parameters,
+                void *logic_ptr);
+        static void pkgmgr_uninstall_callback(GDBusProxy *proxy,
+                gchar      *sender_name,
+                gchar      *signal_name,
+                GVariant   *parameters,
                 void *logic_ptr);
         static void connman_callback(GDBusProxy *proxy,
                 gchar      *sender_name,
@@ -73,14 +79,27 @@ class Logic {
         void pkgmanager_uninstall(const app_t &app);
         void get_certs_from_signature(const std::string &signature, std::vector<std::string> &cert);
         void load_database_to_buffer();
-        error_t register_connman_signal_handler(void);
+        void pkgmgr_callback_internal(GVariant *parameters, pkgmgr_event_t event);
+        error_t register_dbus_signal_handler(GDBusProxy *proxy,
+                const char *name,
+                const char *object_path,
+                const char *interface_name,
+                void (*callback) (GDBusProxy *proxy,
+                        gchar      *sender_name,
+                        gchar      *signal_name,
+                        GVariant   *parameters,
+                        void *logic_ptr)
+                );
+        //error_t register_pkgmgr_install_signal_handler(void);
+        //error_t register_pkgmgr_uninstall_signal_handler(void);
+        //error_t register_connman_signal_handler(void);
 
         std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
         bool m_is_online;
-        package_manager_h m_request;
-        GDBusProxy *m_proxy;
-
+        GDBusProxy *m_proxy_connman;
+        GDBusProxy *m_proxy_pkgmgr_install;
+        GDBusProxy *m_proxy_pkgmgr_uninstall;
 };
 
 } // CCHECKER

@@ -6,7 +6,6 @@ PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
     glib-2.0
     gio-2.0
     icu-i18n
-    capi-appfw-package-manager
     notification
     libsystemd-journal
     libtzplatform-config
