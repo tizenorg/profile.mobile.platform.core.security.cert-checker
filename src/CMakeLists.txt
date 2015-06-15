@@ -18,6 +18,7 @@ SET(CERT_CHECKER_SOURCES
     ${CERT_CHECKER_SRC_PATH}/cert-checker.cpp
     ${CERT_CHECKER_SRC_PATH}/app.cpp
     ${CERT_CHECKER_SRC_PATH}/logic.cpp
+    ${CERT_CHECKER_SRC_PATH}/queue.cpp
     # logs
     ${CERT_CHECKER_SRC_PATH}/log/log.cpp
     # dpl
