@@ -29,6 +29,7 @@
 #include <list>
 
 #include <cchecker/app.h>
+#include <cchecker/queue.h>
 
 namespace CCHECKER {
 
@@ -91,6 +92,7 @@ class Logic {
                         void *logic_ptr)
                 );
 
+        Queue m_queue;
         std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
         bool m_is_online;
