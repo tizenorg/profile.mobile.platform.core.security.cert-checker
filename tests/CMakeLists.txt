@@ -24,8 +24,11 @@ SET(CERT_CHECKER_TESTS_SOURCES
     ${CERT_CHECKER_TESTS_SRC_PATH}/dbfixture.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/colour_log_formatter.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/test_db.cpp
+    ${CERT_CHECKER_TESTS_SRC_PATH}/test_queue.cpp
+    ${CERT_CHECKER_TESTS_SRC_PATH}/queue_test_thread.cpp
     # cert-checker
     ${CERT_CHECKER_SRC_PATH}/app.cpp
+    ${CERT_CHECKER_SRC_PATH}/queue.cpp
     # logs
     ${CERT_CHECKER_SRC_PATH}/log/log.cpp
     # dpl

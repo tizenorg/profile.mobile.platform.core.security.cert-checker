@@ -30,7 +30,10 @@ using namespace std;
 
 namespace CCHECKER {
 
+namespace {
 const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
+const char *const TEPM_APP_ID = "temp#app_id";
+}
 
 Logic::~Logic(void)
 {
@@ -226,14 +229,19 @@ void Logic::pkgmgr_callback_internal(GVariant       *parameters,
     state = g_variant_dup_string(g_variant_get_child_value(parameters, 4), NULL);
     status = g_variant_dup_string(g_variant_get_child_value(parameters, 5), NULL);
 
+    // FIXME: No information about app_id in the signal. Use stub.
+    app_t app(TEPM_APP_ID, pkgid, uid, {});
+
     if (std::string(state) == "end" && std::string(status) == "ok") {
         if (event == EVENT_INSTALL) {
             LogDebug("Install: uid : " << uid << ", pkgid: " << pkgid <<
                     ", state: " << state << ", status: " << status);
+            m_queue.push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
         }
         else if (event == EVENT_UNINSTALL) {
             LogDebug("Uninstall: uid : " << uid << ", pkgid: " << pkgid <<
                     ", state: " << state << ", status: " << status);
+            m_queue.push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
         }
     }
     else
