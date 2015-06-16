@@ -9,6 +9,9 @@ using namespace CCHECKER;
 
 BOOST_FIXTURE_TEST_SUITE(QUEUE_TEST, Queue)
 
+// TODO:
+// Check it class Queue is thread-safe
+
 BOOST_AUTO_TEST_CASE(Queue) {
 
     app_t app1("app_id1", "pkg_id1", 1, {});
