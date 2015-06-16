@@ -38,6 +38,18 @@ const char *const TEPM_APP_ID = "temp#app_id";
 Logic::~Logic(void)
 {
     LogDebug("Cert-checker cleaning.");
+
+    // wait and join processing thread
+    if (m_thread.joinable()) {
+        LogDebug("Waiting for join processing thread");
+        set_should_exit();
+        m_to_process.notify_one();
+        m_thread.join();
+        LogDebug("Processing thread joined");
+    }
+    else
+        LogDebug("No thread to join");
+
     if (m_proxy_connman)
         g_object_unref(m_proxy_connman);
     if (m_proxy_pkgmgr_install)
@@ -49,11 +61,23 @@ Logic::~Logic(void)
 
 Logic::Logic(void) :
         m_sqlquery(NULL),
-        m_is_online(false),
+        m_was_setup_called(false),
+        m_is_online(true),
+        m_should_exit(false),
         m_proxy_connman(NULL),
         m_proxy_pkgmgr_install(NULL),
         m_proxy_pkgmgr_uninstall(NULL)
 {}
+
+bool Logic::get_online() const
+{
+    return m_is_online;
+}
+
+void Logic::set_online(bool online)
+{
+    m_is_online = online;
+}
 
 error_t Logic::setup_db()
 {
@@ -75,12 +99,24 @@ error_t Logic::setup_db()
 
 error_t  Logic::setup()
 {
+    // Check if setup was called
+    if (m_was_setup_called) {
+        LogError("You can call setup only once");
+        return INTERNAL_ERROR;
+    }
+    m_was_setup_called = true;
+
     // Check if DB exists and create a new one if it doesn't
     error_t err = setup_db();
     if (err != NO_ERROR) {
         LogError("Database error");
         return err;
     }
+
+    load_database_to_buffer();
+
+    // run process thread - thread will be waiting on condition variable
+    m_thread = std::thread(&Logic::process_all, this);
 
     // FIXME: pkgmanager API signal handling was temporarily replaced
     //        by dbus API
@@ -120,8 +156,6 @@ error_t  Logic::setup()
         return REGISTER_CALLBACK_ERROR;
     }
     LogDebug("register connman event callback success");
-
-    load_database_to_buffer();
 
     return NO_ERROR;
 }
@@ -243,6 +277,8 @@ void Logic::pkgmgr_callback_internal(GVariant       *parameters,
                     ", state: " << state << ", status: " << status);
             m_queue.push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
         }
+
+        m_to_process.notify_one();
     }
     else
         LogDebug("Wrong state (" << std::string(state) << ") or status (" << std::string(status) << ")");
@@ -272,11 +308,13 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
 
     if (params_str == "('State', <'online'>)") {
         LogDebug("Device online");
-        logic->m_is_online = true;
+        logic->set_online(true);
+
+        logic->m_to_process.notify_one();
     }
     else if (params_str == "('State', <'offline'>)") {
         LogDebug("Device offline");
-        logic->m_is_online = false;
+        logic->set_online(false);
     }
 }
 
@@ -305,6 +343,105 @@ void Logic::load_database_to_buffer()
 {
     LogDebug("Loading database to the buffer");
     m_sqlquery->get_app_list(m_buffer);
+}
+
+/**
+ * This function should move all event from queue to the buffer
+ **/
+void Logic::process_queue(void)
+{
+    event_t event;
+    while(m_queue.pop_event(event)) {
+        process_event(event);
+    }
+}
+
+error_t Logic::process_buffer(void)
+{
+    // TODO: Implement
+    return NO_ERROR;
+}
+
+void Logic::process_all()
+{
+    //Check if should't exit
+    while (!get_should_exit()) {
+        std::unique_lock<std::mutex> lock(m_mutex_cv);
+
+        if (m_queue.empty()) {
+            LogDebug("Processing thread: waiting on condition");
+            m_to_process.wait(lock);
+        }
+        else
+            LogDebug("Processing thread: More events in queue - processing again");
+
+        LogDebug("Processing thread: running");
+
+        process_queue();
+        if (get_online())
+            process_buffer();
+        else
+            LogDebug("No network. Buffer won't be processed");
+
+        LogDebug("Processing done");
+    }
+
+    // should process queue just before exit
+    process_queue();
+}
+
+void Logic::process_event(const event_t &event)
+{
+    if (event.event_type == event_t::event_type_t::APP_INSTALL) {
+        // TODO: implement geting app signature, then getting certificates from app signature.
+        // TODO: implement add app to buffer and database
+        add_app_to_buffer(event.app);
+    }
+    else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
+        remove_app_from_buffer(event.app);
+    }
+    else
+        LogError("Unknown event type");
+}
+
+void Logic::add_app_to_buffer(const app_t &app)
+{
+    // First add app to DB
+    if(!m_sqlquery->add_app_to_check_list(app)) {
+        LogError("Failed to add " << app.str() << "to database");
+        // We can do nothing about it. We can only log the error.
+    }
+
+    // Then add app to buffer
+    m_buffer.push_back(app);
+}
+
+void Logic::remove_app_from_buffer(const app_t &app)
+{
+    // First remove app from DB
+    m_sqlquery->remove_app_from_check_list(app);
+
+    // Then remove app from buffer
+    for (auto iter = m_buffer.begin(); iter != m_buffer.end(); ++iter) {
+        if (iter->app_id == app.app_id &&
+                iter->pkg_id == app.pkg_id &&
+                iter->uid == app.uid) {
+            LogDebug(iter->str() << " found in buffer - will be removed");
+            m_buffer.erase(iter);
+            break;
+        }
+    }
+}
+
+bool Logic::get_should_exit(void) const
+{
+    return m_should_exit;
+}
+
+void Logic::set_should_exit(void)
+{
+    m_should_exit = true;
+
 }
 
 } //CCHECKER
