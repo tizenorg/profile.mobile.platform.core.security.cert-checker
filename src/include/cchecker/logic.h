@@ -23,10 +23,12 @@
 #ifndef CCHECKER_LOGIC_H
 #define CCHECKER_LOGIC_H
 
+#include <condition_variable>
 #include <gio/gio.h>
 #include <string>
 #include <vector>
 #include <list>
+#include <thread>
 
 #include <cchecker/app.h>
 #include <cchecker/queue.h>
@@ -71,15 +73,19 @@ class Logic {
                 GVariant   *parameters,
                 void *logic_ptr);
 
-    private:
-        //TODO: implement missing members
 
+    private:
         error_t setup_db();
+        void load_database_to_buffer();
+
         void check_ocsp(app_t &app);
         void add_ocsp_url(const std::string &issuer, const std::string &url, int64_t date);
         void pkgmanager_uninstall(const app_t &app);
         void get_certs_from_signature(const std::string &signature, std::vector<std::string> &cert);
-        void load_database_to_buffer();
+
+        void add_app_to_buffer(const app_t &app);
+        void remove_app_from_buffer(const app_t &app);
+
         void pkgmgr_callback_internal(GVariant *parameters, pkgmgr_event_t event);
         error_t register_dbus_signal_handler(GDBusProxy *proxy,
                 const char *name,
@@ -92,10 +98,31 @@ class Logic {
                         void *logic_ptr)
                 );
 
+        static void process_all_static(Logic *logic);
+        void process_all(void);
+        error_t process_queue(void);
+        error_t process_event(const event_t &event);
+        error_t process_buffer(void);
+
+        bool get_online(void);
+        void set_online(bool online);
+
+        bool get_should_exit(void);
+        void set_should_exit(void);
+
         Queue m_queue;
         std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
+
         bool m_is_online;
+        std::mutex m_mutex_online;
+
+        std::condition_variable m_to_process;
+        std::mutex m_mutex_cv;
+        std::thread m_process;
+        bool m_should_exit;
+        std::mutex m_should_exit_m;
+
         GDBusProxy *m_proxy_connman;
         GDBusProxy *m_proxy_pkgmgr_install;
         GDBusProxy *m_proxy_pkgmgr_uninstall;
