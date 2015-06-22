@@ -1,0 +1,14 @@
+msgid "SID_TITLE_OCSP_VERIFICATION_FAILED"
+msgstr "Veryfikacja OCSP nie powiodła się"
+
+msgid "SID_CONTENT_OCSP_VERIFICATION_FAILED"
+msgstr "Certifikat aplikacji %s (%s) został odwołany."
+
+msgid "SID_CONTENT_OCSP_PACKAGE VERIFICATION_FAILED"
+msgstr "Certyfikat jednej z aplikacji w pakiecie %s został odwołany."
+
+msgid "SID_BTN_OCSP_KEEP_APP"
+msgstr "Zachowaj"
+
+msgid "SID_BTN_OCSP_UNINSTALL_APP"
+msgstr "Usuń"
