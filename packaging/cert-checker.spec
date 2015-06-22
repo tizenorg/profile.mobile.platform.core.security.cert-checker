@@ -8,6 +8,7 @@ Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.manifest
 BuildRequires: cmake
 BuildRequires: zip
+BuildRequires: gettext-tools
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(icu-i18n)
 BuildRequires: pkgconfig(glib-2.0)
@@ -56,6 +57,7 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/license
 cp LICENSE %{buildroot}/usr/share/license/%{name}
 %make_install
+%find_lang %{name}
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/
 
 %make_install
@@ -91,7 +93,7 @@ if [ $1 = 0 ]; then
 fi
 
 
-%files
+%files -f %{name}.lang
 %{_bindir}/cert-checker
 %manifest %{_datadir}/%{name}.manifest
 %{_datadir}/license/%{name}
@@ -102,5 +104,6 @@ fi
 %files -n cert-checker-tests
 %defattr(-,root,root,-)
 %{_bindir}/cert-checker-tests
+%{_bindir}/cert-checker-popup-test
 %{TZ_SYS_DB}/.cert-checker-test.db
 /root/cert-checker-test/*/*.xml

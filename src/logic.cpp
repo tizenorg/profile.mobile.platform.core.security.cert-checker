@@ -21,12 +21,17 @@
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
+#include <app_control_internal.h>
 
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
 #include <cchecker/sql_query.h>
+#include <cchecker/UIBackend.h>
 
 using namespace std;
+
+// FIXME: Popup temporary disabled
+#define POPUP 0
 
 namespace CCHECKER {
 
@@ -376,12 +381,31 @@ void Logic::process_queue(void)
     }
 }
 
-error_t Logic::process_buffer(void)
+void Logic::process_buffer(void)
 {
+    UI::UIBackend ui;
+
     for (auto iter = m_buffer.begin(); iter != m_buffer.end();) {
-        // If OCSP checking fails we should remove application from buffer and database
+
+        // Check if app hasn't already been verified.
+        // If yes then just try to display popup once again, and go the next app.
+#if POPUP
+        if (iter->verified == app_t::verified_t::NO) {
+            app_t app_cpy = *iter;
+            LogDebug(app_cpy.str() << " has been verified before. Popup should be shown.");
+            iter++;
+            if (ui.call_popup(*iter)) { // If calling popup or app_controll service will fail,
+                                        // do not remove application, and ask about it once again later
+                remove_app_from_buffer_and_database(app_cpy);
+            }
+            continue;
+        }
+#endif
+
         Certs::ocsp_response_t ret;
         ret = m_certs.check_ocsp(*iter);
+
+        // If OCSP checking fails we should remove application from buffer and database
         if (ret == Certs::ocsp_response_t::OCSP_APP_OK ||
                 ret == Certs::ocsp_response_t::OCSP_CERT_ERROR) {
             LogDebug(iter->str() << " OCSP verified (or not available for app's chains)");
@@ -393,10 +417,21 @@ error_t Logic::process_buffer(void)
             LogDebug(iter->str() << " certificate has been revoked. Popup should be shown");
             app_t app_cpy = *iter;
             iter++;
-            // TODO: Do not remove app here - just waits for user answer from popup
-            //       Temporary solution because popup doesn't work
-            remove_app_from_buffer_and_database(app_cpy);
+            iter->verified = app_t::verified_t::NO;
+#if POPUP
+// Do not remove app here - just waits for user answer from popup
+// Temporary solution because notification framework doesn't work
 
+            if (ui.call_popup(app_cpy)) { // If calling popup or app_controll service will fail,
+                                          // do not remove application, and ask about it once again later
+                remove_app_from_buffer_and_database(app_cpy);
+                LogDebug("Popup shown correctly. Application will be removed from DB and buffer");
+            }
+            else
+                LogDebug("Popup error. Application will be marked to show popup later.");
+#else
+            remove_app_from_buffer_and_database(app_cpy);
+#endif
         }
         else {
             LogDebug(iter->str() << " should be checked again later");
@@ -405,7 +440,6 @@ error_t Logic::process_buffer(void)
             iter++;
         }
     }
-    return NO_ERROR;
 }
 
 void Logic::process_all()

@@ -100,7 +100,7 @@ class Logic {
         void process_all(void);
         void process_queue(void);
         void process_event(const event_t &event);
-        error_t process_buffer(void);
+        void process_buffer(void);
 
         bool get_online(void) const;
         void set_online(bool online);
