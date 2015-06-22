@@ -21,12 +21,13 @@
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
-
+#include <app_control_internal.h>
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
 #include <cchecker/sql_query.h>
 
 using namespace std;
+using namespace CCHECKER::UI;
 
 namespace CCHECKER {
 
@@ -357,6 +358,7 @@ void Logic::process_queue(void)
 
 error_t Logic::process_buffer(void)
 {
+
     for (auto iter = m_buffer.begin(); iter != m_buffer.end(); iter++) {
         // If OCSP checking fails we should remove application from buffer and database
         Certs::ocsp_response_t ret;
@@ -369,11 +371,40 @@ error_t Logic::process_buffer(void)
         }
         else if (ret == Certs::ocsp_response_t::OCSP_APP_REVOKED) {
             LogDebug("Popup should be shown");
+            app_t app_cpy = *iter;
+            iter++;
+            remove_app_from_buffer_and_database(app_cpy);
+            call_popup(app_cpy);
         }
         // If check_ocsp returns Certs::ocsp_response_t::OCSP_CHECK_AGAIN
         // app should be checked again later
+
     }
     return NO_ERROR;
+}
+
+// FIXME: notification framework is corrupted and it doesn't work as it should
+bool Logic::call_popup(const app_t &app)
+{
+    UI::response_e resp;
+    m_ui.createUI(app.app_id, app.pkg_id);
+    m_ui.run(resp);
+    LogDebug(app.str() << " response: " << resp);
+    if (resp == UNINSTALL) {
+        app_control_h service = NULL;
+        int result = 0;
+        result = app_control_create(&service);
+        if (!service || result != APP_CONTROL_ERROR_NONE) {
+            return false;
+        }
+        app_control_set_operation(service, APP_CONTROL_OPERATION_DEFAULT);
+        app_control_set_app_id(service, "setting-manage-applications-efl");
+        app_control_add_extra_data(service, "viewtype", "application-info");
+        app_control_add_extra_data(service, "pkgname", app.pkg_id.c_str());
+        app_control_send_launch_request(service, NULL, NULL);
+        app_control_destroy(service);
+    }
+    return true;
 }
 
 void Logic::process_all()
