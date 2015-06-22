@@ -14,16 +14,14 @@
  *  limitations under the License
  */
 /*
- * @file        cert-checker.cpp
+ * @file        popup_test.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
- * @brief       Cert-checker daemon main loop.
+ * @brief       Cert-checker popup test
  */
 
-#include <glib.h>
-
+#include <cchecker/UIBackend.h>
 #include <cchecker/log.h>
-#include <cchecker/logic.h>
 
 using namespace CCHECKER;
 
@@ -32,16 +30,15 @@ int main(void)
     LogDebug("Cert-checker start!");
 
     setlocale(LC_ALL, "");
-    GMainLoop *main_loop = g_main_loop_new(NULL, FALSE);
 
-    Logic logic;
-    if (logic.setup() != NO_ERROR) {
-        LogError("Cannot setup logic. Exit cert-checker!");
-        return -1;
-    }
+    UI::UIBackend ui;
 
-    LogDebug("Running the main loop");
-    g_main_loop_run(main_loop);
+    app_t app(std::string("test_APP_ID"),
+            std::string("test PKG ID"),
+            5005,
+            {});
+
+    ui.call_popup(app);
 
     LogDebug("Cert-checker exit!");
     return 0;
