@@ -33,6 +33,7 @@
 #include <cchecker/app.h>
 #include <cchecker/certs.h>
 #include <cchecker/queue.h>
+#include <cchecker/UIBackend.h>
 
 namespace CCHECKER {
 
