@@ -1,0 +1,11 @@
+msgid "SID_TITLE_OCSP_VERIFICATION_FAILED"
+msgstr "OCSP verification failed"
+
+msgid "SID_CONTENT_OCSP_VERIFICATION_FAILED"
+msgstr "Application %s (%s) OCSP verification failed."
+
+msgid "SID_BTN_OCSP_KEEP_APP"
+msgstr "Keep"
+
+msgid "SID_BTN_OCSP_UNINSTALL_APP"
+msgstr "Uninstall"

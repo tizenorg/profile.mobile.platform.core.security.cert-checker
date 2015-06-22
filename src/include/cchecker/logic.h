@@ -33,6 +33,7 @@
 #include <cchecker/app.h>
 #include <cchecker/certs.h>
 #include <cchecker/queue.h>
+#include <cchecker/UIBackend.h>
 
 namespace CCHECKER {
 
@@ -101,6 +102,7 @@ class Logic {
         void process_queue(void);
         void process_event(const event_t &event);
         error_t process_buffer(void);
+        bool call_popup(const app_t &app);
 
         bool get_online(void) const;
         void set_online(bool online);
@@ -112,6 +114,7 @@ class Logic {
         Certs m_certs;
         std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
+        UI::UIBackend m_ui;
         bool m_was_setup_called;
 
         bool m_is_online;
