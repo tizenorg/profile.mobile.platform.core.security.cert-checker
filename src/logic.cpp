@@ -21,12 +21,13 @@
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
-
+#include <app_control_internal.h>
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
 #include <cchecker/sql_query.h>
 
 using namespace std;
+using namespace CCHECKER::UI;
 
 namespace CCHECKER {
 
@@ -360,6 +361,29 @@ error_t Logic::process_queue(void)
 error_t Logic::process_buffer(void)
 {
     // TODO: Implement
+
+    // Example of ui:
+    for (auto iter = m_buffer.begin(); iter != m_buffer.end(); ++iter) {
+        UI::response_e resp;
+        ui.createUI((*iter).app_id, (*iter).pkg_id);
+        ui.run(resp);
+        LogDebug((*iter).str() << " response: " << resp);
+        if(resp == UNINSTALL)
+        {
+            app_control_h service = NULL;
+            int result = 0;
+            result = app_control_create(&service);
+            if(!service || result!=APP_CONTROL_ERROR_NONE) {
+                return PACKAGE_MANAGER_ERROR;
+            }
+            app_control_set_operation(service, APP_CONTROL_OPERATION_DEFAULT);
+            app_control_set_app_id(service, "setting-manage-applications-efl");
+            app_control_add_extra_data(service, "viewtype", "application-info");
+            app_control_add_extra_data(service, "pkgname", (*iter).pkg_id.c_str());
+            app_control_send_launch_request(service, NULL, NULL);
+            app_control_destroy(service);
+        }
+    }
     return NO_ERROR;
 }
 
