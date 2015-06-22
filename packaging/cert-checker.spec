@@ -8,6 +8,7 @@ Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.manifest
 BuildRequires: cmake
 BuildRequires: zip
+BuildRequires: gettext-tools
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(icu-i18n)
 BuildRequires: pkgconfig(glib-2.0)
@@ -54,12 +55,13 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/license
 cp LICENSE %{buildroot}/usr/share/license/%{name}
 %make_install
+%find_lang %{name}
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/
 
 %clean
 rm -rf %{buildroot}
 
-%files
+%files -f %{name}.lang
 %{_bindir}/cert-checker
 %manifest %{_datadir}/%{name}.manifest
 %{_datadir}/license/%{name}
