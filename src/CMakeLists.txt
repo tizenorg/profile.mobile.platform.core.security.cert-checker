@@ -33,6 +33,8 @@ SET(CERT_CHECKER_SOURCES
     ${CERT_CHECKER_SRC_PATH}/dpl/db/src/naive_synchronization_object.cpp
     # DB
     ${CERT_CHECKER_SRC_PATH}/db/sql_query.cpp
+    # UI
+    ${CERT_CHECKER_SRC_PATH}/ui/UIBackend.cpp
     )
 
 INCLUDE_DIRECTORIES(SYSTEM

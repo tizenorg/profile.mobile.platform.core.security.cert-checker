@@ -32,6 +32,7 @@
 
 #include <cchecker/app.h>
 #include <cchecker/queue.h>
+#include <cchecker/UIBackend.h>
 
 namespace CCHECKER {
 
@@ -115,6 +116,7 @@ class Logic {
         Queue m_queue;
         std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
+        UI::UIBackend ui;
 
         bool m_is_online;
         std::mutex m_mutex_online;

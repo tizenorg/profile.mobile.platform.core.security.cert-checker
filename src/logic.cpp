@@ -27,6 +27,7 @@
 #include <cchecker/sql_query.h>
 
 using namespace std;
+using namespace CCHECKER::UI;
 
 namespace CCHECKER {
 
@@ -360,6 +361,14 @@ error_t Logic::process_queue(void)
 error_t Logic::process_buffer(void)
 {
     // TODO: Implement
+
+    // Example of ui:
+    for (auto iter = m_buffer.begin(); iter != m_buffer.end(); ++iter) {
+        UI::response_e resp;
+        ui.createUI((*iter).app_id, (*iter).pkg_id);
+        ui.run(resp);
+        LogDebug((*iter).str() << " response: " << resp);
+    }
     return NO_ERROR;
 }
 
