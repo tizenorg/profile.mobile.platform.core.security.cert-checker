@@ -21,12 +21,16 @@
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
-
+#include <app_control_internal.h>
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
 #include <cchecker/sql_query.h>
 
 using namespace std;
+using namespace CCHECKER::UI;
+
+// FIXME: Popup temporary disabled
+#define POPUP 0
 
 namespace CCHECKER {
 
@@ -379,9 +383,21 @@ void Logic::process_queue(void)
 error_t Logic::process_buffer(void)
 {
     for (auto iter = m_buffer.begin(); iter != m_buffer.end();) {
-        // If OCSP checking fails we should remove application from buffer and database
         Certs::ocsp_response_t ret;
         ret = m_certs.check_ocsp(*iter);
+        // Check if app wasn't verified already.
+#if POPUP
+        if (iter->verified == app_t::verified_t::NO) {
+            app_t app_cpy = *iter;
+            LogDebug(app_cpy.str() << " has been verified before. Popup should be shown.");
+            iter++;
+            if (call_popup(*iter)) { // If calling popup or app_controll service will fail,
+                                     // do not remove application, and ask about it once again later
+                remove_app_from_buffer_and_database(app_cpy);
+            }
+        } else
+#endif
+        // If OCSP checking fails we should remove application from buffer and database
         if (ret == Certs::ocsp_response_t::OCSP_APP_OK ||
                 ret == Certs::ocsp_response_t::OCSP_CERT_ERROR) {
             LogDebug(iter->str() << " OCSP verified (or not available for app's chains)");
@@ -393,10 +409,24 @@ error_t Logic::process_buffer(void)
             LogDebug(iter->str() << " certificate has been revoked. Popup should be shown");
             app_t app_cpy = *iter;
             iter++;
-            // TODO: Do not remove app here - just waits for user answer from popup
-            //       Temporary solution because popup doesn't work
-            remove_app_from_buffer_and_database(app_cpy);
 
+#if POPUP
+// TODO: Do not remove app here - just waits for user answer from popup
+//       Temporary solution because notification framework doesn't work
+
+            if (call_popup(app_cpy)) { // If calling popup or app_controll service will fail,
+                                       // do not remove application, and ask about it once again later
+                remove_app_from_buffer_and_database(app_cpy);
+
+                LogDebug("Popup shown correctly. Application will be removed from DB and buffer");
+            }
+            else {
+                LogDebug("Popup error. Application will be marked to show popup later.");
+                iter->verified = app_t::verified_t::NO;
+            }
+#else
+            remove_app_from_buffer_and_database(app_cpy);
+#endif
         }
         else {
             LogDebug(iter->str() << " should be checked again later");
@@ -406,6 +436,33 @@ error_t Logic::process_buffer(void)
         }
     }
     return NO_ERROR;
+}
+
+// FIXME: notification framework is corrupted and it doesn't work as it should
+bool Logic::call_popup(const app_t &app)
+{
+    UI::response_e resp;
+    m_ui.createUI(app.app_id, app.pkg_id);
+    m_ui.run(resp);
+    LogDebug(app.str() << " response: " << resp);
+    if (resp == ERROR) {
+        return false;
+    }
+    else if (resp == UNINSTALL) {
+        app_control_h service = NULL;
+        int result = 0;
+        result = app_control_create(&service);
+        if (!service || result != APP_CONTROL_ERROR_NONE) {
+            return false;
+        }
+        app_control_set_operation(service, APP_CONTROL_OPERATION_DEFAULT);
+        app_control_set_app_id(service, "setting-manage-applications-efl");
+        app_control_add_extra_data(service, "viewtype", "application-info");
+        app_control_add_extra_data(service, "pkgname", app.pkg_id.c_str());
+        app_control_send_launch_request(service, NULL, NULL);
+        app_control_destroy(service);
+    }
+    return true;
 }
 
 void Logic::process_all()
