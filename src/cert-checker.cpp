@@ -31,6 +31,7 @@ int main(void)
 {
     LogDebug("Cert-checker start!");
 
+    setlocale(LC_ALL, "");
     GMainLoop *main_loop = g_main_loop_new(NULL, FALSE);
 
     Logic logic;
