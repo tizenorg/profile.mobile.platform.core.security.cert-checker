@@ -23,7 +23,7 @@
 #ifndef CCHECKER_NAIVE_SYNCHRONIZATION_OBJECT_H
 #define CCHECKER_NAIVE_SYNCHRONIZATION_OBJECT_H
 
-#include <dpl/db/sql_connection.h>
+#include <cchecker/dpl/db/sql_connection.h>
 
 namespace CCHECKER {
 namespace DB {

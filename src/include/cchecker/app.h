@@ -28,6 +28,10 @@
 
 namespace CCHECKER {
 
+// Used as app_id when no information about app id in signal
+// Currently in signals from pkgmgr only information about pkg_id is included
+const char *const TEPM_APP_ID = "temp#app_id";
+
 struct app_t {
     enum class verified_t : int32_t {
         NO      = 0,
@@ -48,6 +52,20 @@ struct app_t {
           uid_t uid,
           const std::vector<std::string> &certificates);
     std::string str(void) const;
+};
+
+struct url_t {
+    std::string issuer;
+    std::string url;
+    int64_t     date;
+
+    url_t(const std::string &_issuer,
+          const std::string &_url,
+          int64_t _date):
+              issuer(_issuer),
+              url(_url),
+              date(_date)
+    {};
 };
 
 } //CCHECKER

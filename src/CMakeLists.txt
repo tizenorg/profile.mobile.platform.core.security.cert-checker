@@ -1,5 +1,6 @@
 PKG_CHECK_MODULES(CERT_CHECKER_DEP
     REQUIRED
+    cert-svc-vcore
     dbus-1
     dbus-glib-1
     db-util
@@ -19,6 +20,7 @@ SET(CERT_CHECKER_SOURCES
     ${CERT_CHECKER_SRC_PATH}/app.cpp
     ${CERT_CHECKER_SRC_PATH}/logic.cpp
     ${CERT_CHECKER_SRC_PATH}/queue.cpp
+    ${CERT_CHECKER_SRC_PATH}/certs.cpp
     # logs
     ${CERT_CHECKER_SRC_PATH}/log/log.cpp
     # dpl

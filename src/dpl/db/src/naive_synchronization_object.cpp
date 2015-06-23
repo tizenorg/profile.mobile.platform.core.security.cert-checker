@@ -21,9 +21,10 @@
  * synchronization object
  */
 #include <stddef.h>
-#include <dpl/db/naive_synchronization_object.h>
 #include <chrono>
 #include <thread>
+
+#include <cchecker/dpl/db/naive_synchronization_object.h>
 
 namespace {
     unsigned int seed = time(NULL);
