@@ -24,9 +24,14 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include <sys/types.h>
 
 namespace CCHECKER {
+
+// Used as app_id when no information about app id in signal
+// Currently in signals from pkgmgr only information about pkg_id is included
+const char *const TEMP_APP_ID = "temp#app_id";
 
 struct app_t {
     enum class verified_t : int32_t {
@@ -49,6 +54,22 @@ struct app_t {
           const std::vector<std::string> &certificates);
     std::string str(void) const;
 };
+
+struct url_t {
+    std::string issuer;
+    std::string url;
+    int64_t     date;
+
+    url_t(const std::string &_issuer,
+          const std::string &_url,
+          int64_t _date):
+              issuer(_issuer),
+              url(_url),
+              date(_date)
+    {};
+};
+
+typedef std::list<url_t> ocsp_urls_t;
 
 } //CCHECKER
 

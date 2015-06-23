@@ -20,9 +20,9 @@
  * @brief       This file is the implementation of exception system
  */
 #include <stddef.h>
-#include <dpl/exception.h>
 #include <cstdio>
 
+#include <cchecker/dpl/exception.h>
 #include <cchecker/log.h>
 
 namespace CCHECKER {

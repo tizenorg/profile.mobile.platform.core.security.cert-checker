@@ -31,6 +31,7 @@
 #include <thread>
 
 #include <cchecker/app.h>
+#include <cchecker/certs.h>
 #include <cchecker/queue.h>
 
 namespace CCHECKER {
@@ -84,7 +85,7 @@ class Logic {
         void pkgmanager_uninstall(const app_t &app);
         void get_certs_from_signature(const std::string &signature, std::vector<std::string> &cert);
 
-        void add_app_to_buffer(const app_t &app);
+        void add_app_to_buffer_and_database(const app_t &app);
         void remove_app_from_buffer(const app_t &app);
 
         void pkgmgr_callback_internal(GVariant *parameters, pkgmgr_event_t event);
@@ -111,6 +112,7 @@ class Logic {
         void set_should_exit(void);
 
         Queue m_queue;
+        Certs m_certs;
         std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
         bool m_was_setup_called;

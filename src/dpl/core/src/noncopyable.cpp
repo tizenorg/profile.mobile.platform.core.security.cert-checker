@@ -20,7 +20,8 @@
  * @brief       This file is the implementation file of noncopyable
  */
 #include <stddef.h>
-#include <dpl/noncopyable.h>
+
+#include <cchecker/dpl/noncopyable.h>
 
 namespace CCHECKER {
 Noncopyable::Noncopyable()

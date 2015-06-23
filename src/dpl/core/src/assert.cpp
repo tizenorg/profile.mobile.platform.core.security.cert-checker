@@ -20,10 +20,10 @@
  * @brief       This file is the implementation file of assert
  */
 #include <stddef.h>
-#include <dpl/assert.h>
 #include <cstdlib>
-#include <dpl/exception.h>
 
+#include <cchecker/dpl/assert.h>
+#include <cchecker/dpl/exception.h>
 #include <cchecker/log.h>
 
 namespace CCHECKER {

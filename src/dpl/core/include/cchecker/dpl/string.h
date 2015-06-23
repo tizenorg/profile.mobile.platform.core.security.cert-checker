@@ -21,11 +21,12 @@
 #ifndef CCHECKER_STRING
 #define CCHECKER_STRING
 
-#include <dpl/exception.h>
-#include <dpl/char_traits.h>
 #include <string>
 #include <ostream>
 #include <numeric>
+
+#include <cchecker/dpl/exception.h>
+#include <cchecker/dpl/char_traits.h>
 
 namespace CCHECKER {
 // @brief CCHECKER string

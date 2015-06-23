@@ -21,7 +21,8 @@
  *              and html output
  */
 #include <stddef.h>
-#include <dpl/colors.h>
+
+#include <cchecker/dpl/colors.h>
 
 namespace CCHECKER {
 namespace Colors {

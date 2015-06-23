@@ -14,22 +14,26 @@
  *    limitations under the License.
  */
 /*
- * @file        errno_string.h
- * @author      Przemyslaw Dobrowolski (p.dobrowolsk@samsung.com)
+ * @file        char_traits.h
+ * @author      Piotr Marcinkiewicz (p.marcinkiew@samsung.com)
  * @version     1.0
- * @brief       This file is the implementation file of errno string
+ * @brief       Char traits are used to create basic_string extended with
+ * additional features
+ *              Current char traits could be extended in feature to boost
+ * performance
  */
-#ifndef CCHECKER_ERRNO_STRING_H
-#define CCHECKER_ERRNO_STRING_H
+#ifndef CCHECKER_CHAR_TRAITS
+#define CCHECKER_CHAR_TRAITS
 
-#include <dpl/exception.h>
+#include <cstring>
 #include <string>
-#include <cerrno>
+#include <ostream>
+#include <algorithm>
+
+#include <cchecker/dpl/exception.h>
 
 namespace CCHECKER {
-DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, InvalidErrnoValue)
-
-std::string GetErrnoString(int error = errno);
+typedef std::char_traits<wchar_t> CharTraits;
 } // namespace CCHECKER
 
-#endif // CCHECKER_ERRNO_STRING_H
+#endif // CCHECKER_CHAR_TRAITS
