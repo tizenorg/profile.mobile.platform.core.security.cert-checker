@@ -22,17 +22,17 @@
 #ifndef CCHECKER_SQL_CONNECTION_H
 #define CCHECKER_SQL_CONNECTION_H
 
-#include <dpl/noncopyable.h>
-#include <dpl/exception.h>
-#include <dpl/optional.h>
 #include <memory>
-#include <dpl/string.h>
 #include <sqlite3.h>
 #include <string>
-#include <dpl/assert.h>
 #include <memory>
 #include <stdint.h>
 
+#include <cchecker/dpl/string.h>
+#include <cchecker/dpl/assert.h>
+#include <cchecker/dpl/noncopyable.h>
+#include <cchecker/dpl/exception.h>
+#include <cchecker/dpl/optional.h>
 #include <cchecker/log.h>
 
 namespace CCHECKER {

@@ -14,23 +14,22 @@
  *    limitations under the License.
  */
 /*!
- * @file        scoped_free.h
+ * @file        scoped_ptr.h
  * @author      Przemyslaw Dobrowolski (p.dobrowolsk@samsung.com)
  * @version     1.0
- * @brief       This file is the implementation file of scoped free RAII
+ * @brief       This file is the implementation file of scoped array RAII
  */
+#ifndef CCHECKER_SCOPED_ARRAY_H
+#define CCHECKER_SCOPED_ARRAY_H
 
-#ifndef CCHECKER_SCOPED_FREE_H
-#define CCHECKER_SCOPED_FREE_H
-
-#include <malloc.h>
 #include <cstddef>
 
-#include <dpl/scoped_resource.h>
+#include <cchecker/dpl/assert.h>
+#include <cchecker/dpl/scoped_resource.h>
 
 namespace CCHECKER {
 template<typename Class>
-struct ScopedFreePolicy
+struct ScopedArrayPolicy
 {
     typedef Class* Type;
     static Type NullValue()
@@ -39,19 +38,28 @@ struct ScopedFreePolicy
     }
     static void Destroy(Type ptr)
     {
-        free(ptr);
+        delete[] ptr;
     }
 };
 
-template<typename Memory>
-class ScopedFree : public ScopedResource<ScopedFreePolicy<Memory> >
+template<typename Class>
+class ScopedArray : public ScopedResource<ScopedArrayPolicy<Class> >
 {
-    typedef ScopedFreePolicy<Memory> Policy;
+    typedef ScopedArrayPolicy<Class> Policy;
     typedef ScopedResource<Policy> BaseType;
 
   public:
-    explicit ScopedFree(Memory *ptr = Policy::NullValue()) : BaseType(ptr) { }
+    explicit ScopedArray(Class *ptr = Policy::NullValue()) : BaseType(ptr) { }
+
+    Class &operator [](std::ptrdiff_t k) const
+    {
+        Assert(this->m_value != Policy::NullValue() &&
+               "Dereference of scoped NULL array!");
+        Assert(k >= 0 && "Negative array index");
+
+        return this->m_value[k];
+    }
 };
 } // namespace CCHECKER
 
-#endif // CCHECKER_SCOPED_FREE_H
+#endif // CCHECKER_SCOPED_PTR_H

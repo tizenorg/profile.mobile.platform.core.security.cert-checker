@@ -20,7 +20,7 @@
  * @brief       This file is the implementation of SQL queries
  */
 
-#include <dpl/db/sql_connection.h>
+#include <cchecker/dpl/db/sql_connection.h>
 #include <cchecker/sql_query.h>
 #include <cchecker/log.h>
 

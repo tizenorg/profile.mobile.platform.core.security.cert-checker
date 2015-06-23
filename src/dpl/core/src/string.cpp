@@ -20,11 +20,6 @@
  * @version     1.0
  */
 #include <stddef.h>
-#include <dpl/string.h>
-#include <dpl/char_traits.h>
-#include <dpl/errno_string.h>
-#include <dpl/exception.h>
-#include <dpl/scoped_array.h>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -33,6 +28,11 @@
 #include <iconv.h>
 #include <unicode/ustring.h>
 
+#include <cchecker/dpl/string.h>
+#include <cchecker/dpl/char_traits.h>
+#include <cchecker/dpl/errno_string.h>
+#include <cchecker/dpl/exception.h>
+#include <cchecker/dpl/scoped_array.h>
 #include <cchecker/log.h>
 
 // TODO: Completely move to ICU

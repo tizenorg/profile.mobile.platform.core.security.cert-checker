@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 
-#include <dpl/colors.h>
+#include <cchecker/dpl/colors.h>
 
 // ************************************************************************** //
 // **************            colour_log_formatter            ************** //
