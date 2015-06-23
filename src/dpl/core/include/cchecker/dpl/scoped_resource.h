@@ -22,7 +22,7 @@
 #ifndef CCHECKER_SCOPED_RESOURCE_H
 #define CCHECKER_SCOPED_RESOURCE_H
 
-#include <dpl/noncopyable.h>
+#include <cchecker/dpl/noncopyable.h>
 
 namespace CCHECKER {
 template<typename ClassPolicy>

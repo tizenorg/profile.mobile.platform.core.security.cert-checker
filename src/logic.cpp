@@ -32,7 +32,6 @@ namespace CCHECKER {
 
 namespace {
 const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
-const char *const TEPM_APP_ID = "temp#app_id";
 }
 
 Logic::~Logic(void)
@@ -264,7 +263,7 @@ void Logic::pkgmgr_callback_internal(GVariant       *parameters,
     status = g_variant_dup_string(g_variant_get_child_value(parameters, 5), NULL);
 
     // FIXME: No information about app_id in the signal. Use stub.
-    app_t app(TEPM_APP_ID, pkgid, uid, {});
+    app_t app(TEMP_APP_ID, pkgid, uid, {});
 
     if (std::string(state) == "end" && std::string(status) == "ok") {
         if (event == EVENT_INSTALL) {
@@ -358,7 +357,9 @@ void Logic::process_queue(void)
 
 error_t Logic::process_buffer(void)
 {
-    // TODO: Implement
+    for(auto iter = m_buffer.begin(); iter != m_buffer.end(); iter++) {
+        // TODO: Implement checking OCSP
+    }
     return NO_ERROR;
 }
 
@@ -393,18 +394,29 @@ void Logic::process_all()
 void Logic::process_event(const event_t &event)
 {
     if (event.event_type == event_t::event_type_t::APP_INSTALL) {
-        // TODO: implement geting app signature, then getting certificates from app signature.
-        // TODO: implement add app to buffer and database
-        add_app_to_buffer(event.app);
+        // pulling out certificates from signatures
+        app_t app = event.app;
+        ocsp_urls_t ocsp_urls;
+        m_certs.get_certificates(app, ocsp_urls);
+        add_app_to_buffer_and_database(app);
+
+        // Adding OCSP URLs - if found any
+        if (!ocsp_urls.empty()){
+            LogDebug("Some OCSP url has been found. Adding to database");
+            for (auto iter = ocsp_urls.begin(); iter != ocsp_urls.end(); iter++){
+                m_sqlquery->set_url(iter->issuer, iter->url, iter->date);
+            }
+        }
     }
     else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
         remove_app_from_buffer(event.app);
+        m_sqlquery->remove_app_from_check_list(event.app);
     }
     else
         LogError("Unknown event type");
 }
 
-void Logic::add_app_to_buffer(const app_t &app)
+void Logic::add_app_to_buffer_and_database(const app_t &app)
 {
     // First add app to DB
     if(!m_sqlquery->add_app_to_check_list(app)) {

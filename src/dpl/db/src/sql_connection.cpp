@@ -20,15 +20,16 @@
  * @brief       This file is the implementation file of SQL connection
  */
 #include <stddef.h>
-#include <dpl/db/sql_connection.h>
-#include <dpl/db/naive_synchronization_object.h>
-#include <dpl/scoped_free.h>
-#include <dpl/noncopyable.h>
-#include <dpl/assert.h>
 #include <db-util.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdarg>
+
+#include <cchecker/dpl/scoped_free.h>
+#include <cchecker/dpl/noncopyable.h>
+#include <cchecker/dpl/assert.h>
+#include <cchecker/dpl/db/sql_connection.h>
+#include <cchecker/dpl/db/naive_synchronization_object.h>
 
 namespace CCHECKER {
 namespace DB {

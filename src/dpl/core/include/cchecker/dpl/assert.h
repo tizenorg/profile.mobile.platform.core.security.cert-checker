@@ -22,7 +22,7 @@
 #ifndef CCHECKER_ASSERT_H
 #define CCHECKER_ASSERT_H
 
-#include <dpl/noreturn.h>
+#include <cchecker/dpl/noreturn.h>
 
 namespace CCHECKER {
 // Assertion handler procedure

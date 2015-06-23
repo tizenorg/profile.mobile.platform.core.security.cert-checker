@@ -22,7 +22,7 @@
 #ifndef CCHECKER_OPTIONAL_H
 #define CCHECKER_OPTIONAL_H
 
-#include <dpl/exception.h>
+#include <cchecker/dpl/exception.h>
 
 namespace CCHECKER {
 template <typename Type>

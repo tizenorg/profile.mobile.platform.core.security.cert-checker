@@ -23,7 +23,7 @@
 #include <list>
 #include <string>
 
-#include <dpl/db/sql_connection.h>
+#include <cchecker/dpl/db/sql_connection.h>
 #include <cchecker/app.h>
 
 namespace CCHECKER {

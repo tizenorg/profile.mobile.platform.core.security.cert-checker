@@ -23,7 +23,8 @@
  * performance
  */
 #include <stddef.h>
-#include <dpl/char_traits.h>
+
+#include <cchecker/dpl/char_traits.h>
 
 //
 // Note:

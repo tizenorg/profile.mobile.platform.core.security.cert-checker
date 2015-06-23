@@ -20,17 +20,18 @@
  * @brief       This file is the implementation file of errno string
  */
 #include <stddef.h>
-#include <dpl/errno_string.h>
-#include <dpl/assert.h>
-#include <dpl/exception.h>
-#include <dpl/assert.h>
-#include <dpl/scoped_free.h>
 #include <string>
 #include <cstddef>
 #include <cstring>
 #include <malloc.h>
 #include <cerrno>
 #include <stdexcept>
+
+#include <cchecker/dpl/errno_string.h>
+#include <cchecker/dpl/assert.h>
+#include <cchecker/dpl/exception.h>
+#include <cchecker/dpl/assert.h>
+#include <cchecker/dpl/scoped_free.h>
 
 namespace CCHECKER {
 namespace // anonymous
