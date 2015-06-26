@@ -23,7 +23,6 @@
 #define CCHECKER_APP_H
 
 #include <string>
-#include <vector>
 #include <list>
 #include <sys/types.h>
 
@@ -33,6 +32,9 @@ namespace CCHECKER {
 // Currently in signals from pkgmgr only information about pkg_id is included
 const char *const TEMP_APP_ID = "temp#app_id";
 
+typedef std::list<std::string> chain_t;
+typedef std::list<chain_t> signatures_t;
+
 struct app_t {
     enum class verified_t : int32_t {
         NO      = 0,
@@ -40,19 +42,19 @@ struct app_t {
         UNKNOWN = 2
     };
 
-    int32_t                  check_id;
-    std::string              app_id;
-    std::string              pkg_id;
-    uid_t                    uid;
-    std::vector<std::string> certificates; //TODO: add typedef
-    verified_t               verified;
+    std::string    app_id;
+    std::string    pkg_id;
+    uid_t          uid;
+    signatures_t   signatures;
+    verified_t     verified;
 
     app_t(void);
     app_t(const std::string &app_id,
           const std::string &pkg_id,
           uid_t uid,
-          const std::vector<std::string> &certificates);
+          const signatures_t &signatures);
     std::string str(void) const;
+    std::string str_certs(void) const;
 };
 
 struct url_t {

@@ -119,7 +119,8 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
     LogDebug("Number of signature files: " << signature_files.size());
 
     LogDebug("Searching for certificates");
-    for (auto iter = signature_files.begin(); iter != signature_files.end(); iter++){
+    for (auto iter = signature_files.begin(); iter != signature_files.end(); iter++) {
+        chain_t chain;
         LogDebug("Checking signature");
         ValidationCore::SignatureData data(app_path + std::string("/") + (*iter).getFileName(),
                 (*iter).getFileNumber());
@@ -131,7 +132,7 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
             ValidationCore::CertificateList certs = data.getCertList();
             for (auto cert_iter = certs.begin(); cert_iter != certs.end(); cert_iter++ ){
                 std::string app_cert = (*cert_iter)->getBase64();
-                app.certificates.push_back(app_cert);
+                chain.push_back(app_cert);
                 LogDebug("Certificate: " << app_cert << " has been added");
 
                 // check OCSP URL
@@ -149,6 +150,10 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
         } catch (const ValidationCore::ParserSchemaException::Base& exception) {
             // Needs to catch parser exceptions
             LogError("Error occured in ParserSchema: " << exception.DumpToString());
+        }
+        if (!chain.empty()) {
+            app.signatures.push_back(chain);
+            LogDebug("Certificates chain added to the app");
         }
     }
 }

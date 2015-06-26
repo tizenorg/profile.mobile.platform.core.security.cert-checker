@@ -22,16 +22,14 @@
 
 #include <sstream>
 #include <string>
-#include <vector>
 #include <sys/types.h>
 
 #include <cchecker/app.h>
+#include <cchecker/log.h>
 
 namespace CCHECKER {
 
 app_t::app_t(void):
-    check_id(-1),   // -1 as invalid check_id - assume that in database
-                    // all check_ids will be positive
     uid((uid_t)-1), // (uid_t)-1 (0xFF) is defined to be invalid uid. According
                     // to chown manual page, you cannot change file group of owner
                     // to (uid_t)-1, so we'll use it as initial, invalid value.
@@ -41,19 +39,17 @@ app_t::app_t(void):
 app_t::app_t(const std::string &app_id,
         const std::string &pkg_id,
         uid_t uid,
-        const std::vector<std::string> &certificates):
-    check_id(-1),
+        const signatures_t &signatures):
     app_id(app_id),
     pkg_id(pkg_id),
     uid(uid),
-    certificates(certificates),
+    signatures(signatures),
     verified(verified_t::UNKNOWN)
 {}
 
 std::ostream & operator<< (std::ostream &out, const app_t &app)
 {
-    out << "app: " << app.app_id << ", pkg: " << app.pkg_id << ", uid: " << app.uid <<
-            ", check_id: " << app.check_id;
+    out << "app: " << app.app_id << ", pkg: " << app.pkg_id << ", uid: " << app.uid;
     return out;
 }
 
@@ -61,6 +57,18 @@ std::string app_t::str() const
 {
     std::stringstream ss;
     ss << *this;
+    return ss.str();
+}
+
+std::string app_t::str_certs(void) const
+{
+    std::stringstream ss;
+
+    for (const auto &iter : signatures) {
+        for (const auto iter_cert : iter) {
+            ss << "\"" << iter_cert << "\", ";
+        }
+    }
     return ss.str();
 }
 

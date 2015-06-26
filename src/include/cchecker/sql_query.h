@@ -69,6 +69,7 @@ class SqlQuery {
         void get_apps(std::list<app_t> &apps_buffer);
         bool check_if_app_exists(const app_t &app);
         bool get_check_id(const app_t &app, int32_t &check_id);
+        bool add_chain_id(const int32_t check_id, int32_t &chain_id);
         int verified_enum_to_int(const app_t::verified_t &verified);
         app_t::verified_t verified_int_to_enum(const int &verified);
 };
