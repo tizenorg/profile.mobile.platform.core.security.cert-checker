@@ -22,12 +22,47 @@
 
 #include <sstream>
 #include <string>
-#include <vector>
 #include <sys/types.h>
 
 #include <cchecker/app.h>
+#include <cchecker/log.h>
 
 namespace CCHECKER {
+
+void certificates_chain::sort(void)
+{
+    certificates.sort();
+}
+
+bool certificates_chain::operator ==(const certificates_chain &chain) const
+{
+    return certificates == chain.certificates;
+}
+
+bool certificates_chain::operator !=(const certificates_chain &chain) const
+{
+    return certificates != chain.certificates;
+}
+
+bool certificates_chain::operator <(const certificates_chain &chain) const
+{
+    return certificates < chain.certificates;
+}
+
+bool certificates_chain::operator <=(const certificates_chain &chain) const
+{
+    return certificates <= chain.certificates;
+}
+
+bool certificates_chain::operator >(const certificates_chain &chain) const
+{
+    return certificates > chain.certificates;
+}
+
+bool certificates_chain::operator >=(const certificates_chain &chain) const
+{
+    return certificates >= chain.certificates;
+}
 
 app_t::app_t(void):
     check_id(-1),   // -1 as invalid check_id - assume that in database
@@ -41,7 +76,7 @@ app_t::app_t(void):
 app_t::app_t(const std::string &app_id,
         const std::string &pkg_id,
         uid_t uid,
-        const std::vector<std::string> &certificates):
+        const certificates_t &certificates):
     check_id(-1),
     app_id(app_id),
     pkg_id(pkg_id),
@@ -62,6 +97,52 @@ std::string app_t::str() const
     std::stringstream ss;
     ss << *this;
     return ss.str();
+}
+
+std::string app_t::str_certs(void) const
+{
+    std::stringstream ss;
+
+    for (const auto &iter : certificates) {
+        ss << "<Chain " << iter.chain_id << ">: ";
+        for (const auto iter_cert : iter.certificates) {
+            ss << "\"" << iter_cert << "\", ";
+        }
+    }
+    return ss.str();
+}
+
+void app_t::sort(void)
+{
+    for(auto &iter : certificates) {
+        iter.certificates.sort();
+    }
+    certificates.sort();
+}
+
+bool app_t::compare (const app_t &app) const
+{
+    if (app_id != app.app_id || // do not compare check_id - it is for database internal use only
+            pkg_id != app.pkg_id ||
+            uid != app.uid ||
+            certificates.size() != app.certificates.size() ||
+            verified != app.verified) {
+        LogDebug("app_t compare error: " << str() << " is different than: " << app.str());
+        return false;
+    }
+    return true;
+}
+
+bool app_t::operator ==(const app_t &app) const
+{
+    if (!compare(app))
+        return false;
+    return certificates == app.certificates;
+}
+
+bool app_t::operator !=(const app_t &app) const
+{
+    return !(*this == app);
 }
 
 } //CCHECKER
