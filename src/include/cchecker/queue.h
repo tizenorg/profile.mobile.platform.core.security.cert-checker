@@ -42,6 +42,9 @@ struct event_t {
 
     event_t();
     event_t(const app_t &app, event_type_t type);
+
+    bool operator ==(const event_t &event) const;
+    bool operator !=(const event_t &event) const;
 };
 
 class Queue {

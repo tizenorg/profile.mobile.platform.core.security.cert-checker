@@ -37,6 +37,22 @@ event_t::event_t(const app_t &app, event_type_t type):
         app(app)
 {}
 
+bool event_t::operator ==(const event_t &event) const
+{
+    if (event_type != event.event_type)
+        return false;
+
+    if (app != event.app)
+        return false;
+
+    return true;
+}
+
+bool event_t::operator !=(const event_t &event) const
+{
+    return !(*this == event);
+}
+
 void Queue::push_event(const event_t &event)
 {
     std::lock_guard<std::mutex> lock(m_mutex);

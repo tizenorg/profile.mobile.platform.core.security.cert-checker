@@ -23,7 +23,6 @@
 #define CCHECKER_APP_H
 
 #include <string>
-#include <vector>
 #include <list>
 #include <sys/types.h>
 
@@ -33,6 +32,25 @@ namespace CCHECKER {
 // Currently in signals from pkgmgr only information about pkg_id is included
 const char *const TEMP_APP_ID = "temp#app_id";
 
+struct certificates_chain {
+    int32_t chain_id;
+    std::list<std::string> certificates;
+
+    // Needed for tests only
+    // Before using any of operators make sure that certificates were sorted
+    // You should notice that chain_id field is ignored while comparison
+    void sort(void);
+    bool operator ==(const certificates_chain &chain) const;
+    bool operator !=(const certificates_chain &chain) const;
+    bool operator <(const certificates_chain &chain) const;
+    bool operator <=(const certificates_chain &chain) const;
+    bool operator >(const certificates_chain &chain) const;
+    bool operator >=(const certificates_chain &chain) const;
+
+};
+
+typedef std::list<certificates_chain> certificates_t;
+
 struct app_t {
     enum class verified_t : int32_t {
         NO      = 0,
@@ -40,19 +58,26 @@ struct app_t {
         UNKNOWN = 2
     };
 
-    int32_t                  check_id;
-    std::string              app_id;
-    std::string              pkg_id;
-    uid_t                    uid;
-    std::vector<std::string> certificates; //TODO: add typedef
-    verified_t               verified;
+    int32_t        check_id;
+    std::string    app_id;
+    std::string    pkg_id;
+    uid_t          uid;
+    certificates_t certificates;
+    verified_t     verified;
 
     app_t(void);
     app_t(const std::string &app_id,
           const std::string &pkg_id,
           uid_t uid,
-          const std::vector<std::string> &certificates);
+          const certificates_t &certificates);
     std::string str(void) const;
+    std::string str_certs(void) const;
+
+    // Needed for tests only
+    void sort(void);
+    bool compare (const app_t &app) const;
+    bool operator ==(const app_t &app) const;
+    bool operator !=(const app_t &app) const;
 };
 
 struct url_t {

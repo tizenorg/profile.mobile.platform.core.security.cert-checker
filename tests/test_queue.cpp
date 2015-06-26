@@ -34,6 +34,20 @@ using namespace CCHECKER;
 
 BOOST_FIXTURE_TEST_SUITE(QUEUE_TEST, Queue)
 
+BOOST_AUTO_TEST_CASE(Queue_operators) {
+    app_t app1("app_id1", "pkg_id1", 1, {});
+    app_t app2("app_id2", "pkg_id2", 2, {});
+    app_t app3("app_id@", "###",     3, {});
+
+    event_t ev1(app1, event_t::event_type_t::APP_INSTALL);
+    event_t ev2(app1, event_t::event_type_t::APP_UNINSTALL);
+
+    BOOST_REQUIRE(ev1 == ev1);
+    BOOST_REQUIRE(ev1 != ev2);
+    BOOST_REQUIRE(ev2 != ev1);
+    BOOST_REQUIRE(ev2 == ev2);
+}
+
 BOOST_AUTO_TEST_CASE(Queue) {
 
     app_t app1("app_id1", "pkg_id1", 1, {});
@@ -55,12 +69,8 @@ BOOST_AUTO_TEST_CASE(Queue) {
     BOOST_REQUIRE(empty() == false);
 
     BOOST_REQUIRE(pop_event(ev) == true);
-    BOOST_REQUIRE(ev1.app.app_id == ev.app.app_id);
-    BOOST_REQUIRE(ev1.app.pkg_id == ev.app.pkg_id);
-    BOOST_REQUIRE(ev1.app.uid == ev.app.uid);
-    // Certs and verified flag aren't used in queue, but can be tested
-    BOOST_REQUIRE(ev1.app.certificates == ev.app.certificates);
-    BOOST_REQUIRE(ev1.app.verified == ev.app.verified);
+    BOOST_REQUIRE(ev1 == ev);
+
     BOOST_REQUIRE(empty() == true);
 
     push_event(ev2);
@@ -68,21 +78,11 @@ BOOST_AUTO_TEST_CASE(Queue) {
     BOOST_REQUIRE(empty() == false);
 
     BOOST_REQUIRE(pop_event(ev) == true);
-    BOOST_REQUIRE(ev2.app.app_id == ev.app.app_id);
-    BOOST_REQUIRE(ev2.app.pkg_id == ev.app.pkg_id);
-    BOOST_REQUIRE(ev2.app.uid == ev.app.uid);
-    // Certs and verified flag aren't used in queue, but can be tested
-    BOOST_REQUIRE(ev2.app.certificates == ev.app.certificates);
-    BOOST_REQUIRE(ev2.app.verified == ev.app.verified);
-
+    BOOST_REQUIRE(ev2 == ev);
 
     BOOST_REQUIRE(pop_event(ev) == true);
-    BOOST_REQUIRE(ev3.app.app_id == ev.app.app_id);
-    BOOST_REQUIRE(ev3.app.pkg_id == ev.app.pkg_id);
-    BOOST_REQUIRE(ev3.app.uid == ev.app.uid);
-    // Certs and verified flag aren't used in queue, but can be tested
-    BOOST_REQUIRE(ev3.app.certificates == ev.app.certificates);
-    BOOST_REQUIRE(ev3.app.verified == ev.app.verified);
+    BOOST_REQUIRE(ev3 == ev);
+
 
     BOOST_REQUIRE(empty() == true);
     BOOST_REQUIRE(pop_event(ev) == false);
@@ -96,12 +96,8 @@ BOOST_AUTO_TEST_CASE(Queue) {
     push_event(ev4);
 
     BOOST_REQUIRE(pop_event(ev) == true);
-    BOOST_REQUIRE(ev4.app.app_id == ev.app.app_id);
-    BOOST_REQUIRE(ev4.app.pkg_id == ev.app.pkg_id);
-    BOOST_REQUIRE(ev4.app.uid == ev.app.uid);
-    // Certs and verified flag aren't used in queue, but can be tested
-    BOOST_REQUIRE(ev4.app.certificates == ev.app.certificates);
-    BOOST_REQUIRE(ev4.app.verified == ev.app.verified);
+    BOOST_REQUIRE(ev4 == ev);
+
 
     BOOST_REQUIRE(pop_event(ev) == false);
     BOOST_REQUIRE(empty() == true);
