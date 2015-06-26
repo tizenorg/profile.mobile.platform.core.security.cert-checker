@@ -23,6 +23,8 @@ SET(CERT_CHECKER_TESTS_SOURCES
     ${CERT_CHECKER_TESTS_SRC_PATH}/main.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/dbfixture.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/colour_log_formatter.cpp
+    ${CERT_CHECKER_TESTS_SRC_PATH}/app_event_operators.cpp
+    ${CERT_CHECKER_TESTS_SRC_PATH}/test_app.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/test_db.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/test_queue.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/queue_test_thread.cpp

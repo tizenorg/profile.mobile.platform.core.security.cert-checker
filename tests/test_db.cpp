@@ -24,9 +24,9 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include <cchecker/app.h>
 #include <cchecker/log.h>
 #include <dbfixture.h>
+#include <app_event_operators.h>
 
 BOOST_FIXTURE_TEST_SUITE(DB_TEST, DBFixture)
 
@@ -96,15 +96,27 @@ BOOST_AUTO_TEST_CASE(DB_url) {
     BOOST_REQUIRE(url==url_org2);
 }
 
-BOOST_AUTO_TEST_CASE(DB_app) {
+BOOST_AUTO_TEST_CASE(DB_app_positive) {
     clear_database();
 
     std::list<app_t> buffer;
     app_t app1("app_1", "pkg_1", 5001, {});
-    app_t app2("app_2", "pkg 2", 5002, {"cert_2"});
-    app_t app2r("app_2_remove", "pkg 2", 5002, {"cert_2"});
-    app_t app3("app 3", "pkg 3", 5003, {"cert_3.1", "cert 3.2"});
-    app_t app4("app 4", "pkg 4", 5004, {"cert_4.1", "cert 4.2", "cert 4.3"});
+
+    chain_t chain2 = {"cert2"};
+    app_t app2("app_2", "pkg 2", 5002, {chain2});
+
+    chain_t chain2r = {"cert2r"};
+    app_t app2r("app_2_remove", "pkg 2", 5002, {chain2, chain2r});
+
+    chain_t chain31 = {"cert_3.1", "cert 3.2"};
+    chain_t chain32 = {"cert_3.1"};
+    app_t app3("app 3", "pkg 3", 5003, {chain31, chain32});
+
+    chain_t chain41 = {"cert_4.1", "cert 4.2"};
+    chain_t chain42 = {"cert_4.2.1", "cert 4.2.2", "cert 4.2.3"};
+    chain_t chain43 = {"cert_4.3.1"};
+
+    app_t app4("app 4", "pkg 4", 5004, {chain41, chain42, chain43});
 
     BOOST_REQUIRE(add_app_to_check_list(app1)==true);
     BOOST_REQUIRE(add_app_to_check_list(app2)==true);
@@ -118,29 +130,89 @@ BOOST_AUTO_TEST_CASE(DB_app) {
 
     app2.verified = app_t::verified_t::NO;
     app3.verified = app_t::verified_t::YES;
+    sort(app1);
+    sort(app2);
+    sort(app3);
+    sort(app4);
     std::list<app_t> buffer_ok = {app1, app2, app3, app4};
 
     get_app_list(buffer);
 
     std::list<app_t>::iterator iter = buffer.begin();
     std::list<app_t>::iterator iter_ok = buffer_ok.begin();
-    for (; iter!=buffer.end(); iter++) {
+    for (; iter != buffer.end(); iter++) {
         bool is_ok = false;
-        for (iter_ok = buffer_ok.begin(); iter_ok!=buffer_ok.end(); iter_ok++) {
-            if (iter->app_id == iter_ok->app_id &&
-                    iter->pkg_id == iter_ok->pkg_id &&
-                    iter->uid == iter_ok->uid &&
-                    iter->certificates == iter_ok->certificates &&
-                    iter->verified == iter_ok->verified) {
-                // check_id field is created by database and can be ignored
-                LogDebug(iter->str() << " has been found");
-                is_ok = true;
-                buffer_ok.erase(iter_ok);
-                break;
-            }
+        //iter->sort();
+        sort(*iter);
+        auto it = std::find(buffer_ok.begin(), buffer_ok.end(), *iter);
+        if (it != buffer_ok.end()) {
+            LogDebug(iter->str() << " has been found. Certificates: " << iter->str_certs());
+            is_ok = true;
+            buffer_ok.erase(it);
         }
         BOOST_REQUIRE(is_ok == true);
     }
+    BOOST_REQUIRE(buffer_ok.empty() == true);
+}
+
+BOOST_AUTO_TEST_CASE(DB_app_negative) {
+    clear_database();
+
+    std::list<app_t> buffer;
+    app_t app1("app_1", "pkg_1", 5001, {});
+
+    chain_t chain2 = {"cert2"};
+    app_t app2("app_2", "pkg 2", 5002, {chain2});
+
+    chain_t chain2r = {"cert2r"};
+    app_t app2r("app_2_remove", "pkg 2", 5002, {chain2, chain2r});
+
+    chain_t chain31 = {"cert_3.1", "cert 3.2"};
+    chain_t chain32 = {"cert_3.1"};
+    app_t app3("app 3", "pkg 3", 5003, {chain31, chain32});
+
+    chain_t chain41 = {"cert_4.1", "cert 4.2"};
+    chain_t chain42 = {"cert_4.2.1", "cert 4.2.2", "cert 4.2.3"};
+    chain_t chain43 = {"cert_4.3.1"};
+
+    app_t app4("app 4", "pkg 4", 5004, {chain41, chain42, chain43});
+
+    BOOST_REQUIRE(add_app_to_check_list(app1)==true);
+    BOOST_REQUIRE(add_app_to_check_list(app2)==true);
+    BOOST_REQUIRE(add_app_to_check_list(app2r)==true);
+    // Skipp adding app3 to database
+    BOOST_REQUIRE(add_app_to_check_list(app4)==true);
+
+    mark_as_verified(app2, app_t::verified_t::NO);
+    mark_as_verified(app3, app_t::verified_t::YES);
+    remove_app_from_check_list(app2r);
+
+    app2.verified = app_t::verified_t::NO;
+    app3.verified = app_t::verified_t::YES;
+    sort(app1);
+    sort(app2);
+    sort(app3);
+    sort(app4);
+    std::list<app_t> buffer_ok = {app1, app2, app3, app4};
+
+    get_app_list(buffer);
+
+    std::list<app_t>::iterator iter = buffer.begin();
+    std::list<app_t>::iterator iter_ok = buffer_ok.begin();
+    for (; iter != buffer.end(); iter++) {
+        bool is_ok = false;
+        //iter->sort();
+        sort(*iter);
+        auto it = std::find(buffer_ok.begin(), buffer_ok.end(), *iter);
+        if (it != buffer_ok.end()) {
+            LogDebug(iter->str() << " has been found. Certificates: " << iter->str_certs());
+            is_ok = true;
+            buffer_ok.erase(it);
+        }
+        BOOST_REQUIRE(is_ok == true);
+    }
+    BOOST_REQUIRE(buffer_ok.empty() == false);
+    BOOST_REQUIRE(buffer_ok.size() == 1); // Should remain 1 app in original buffer
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -22,10 +22,10 @@
 
 #include <sstream>
 #include <string>
-#include <vector>
 #include <sys/types.h>
 
 #include <cchecker/app.h>
+#include <cchecker/log.h>
 
 namespace CCHECKER {
 
@@ -41,12 +41,12 @@ app_t::app_t(void):
 app_t::app_t(const std::string &app_id,
         const std::string &pkg_id,
         uid_t uid,
-        const std::vector<std::string> &certificates):
+        const signatures_t &signatures):
     check_id(-1),
     app_id(app_id),
     pkg_id(pkg_id),
     uid(uid),
-    certificates(certificates),
+    signatures(signatures),
     verified(verified_t::UNKNOWN)
 {}
 
@@ -61,6 +61,18 @@ std::string app_t::str() const
 {
     std::stringstream ss;
     ss << *this;
+    return ss.str();
+}
+
+std::string app_t::str_certs(void) const
+{
+    std::stringstream ss;
+
+    for (const auto &iter : signatures) {
+        for (const auto iter_cert : iter) {
+            ss << "\"" << iter_cert << "\", ";
+        }
+    }
     return ss.str();
 }
 
