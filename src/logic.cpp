@@ -357,8 +357,21 @@ void Logic::process_queue(void)
 
 error_t Logic::process_buffer(void)
 {
-    for(auto iter = m_buffer.begin(); iter != m_buffer.end(); iter++) {
-        // TODO: Implement checking OCSP
+    for (auto iter = m_buffer.begin(); iter != m_buffer.end(); iter++) {
+        // If OCSP checking fails we should remove application from buffer and database
+        Certs::ocsp_response_t ret;
+        ret = m_certs.check_ocsp(*iter);
+        if (ret == Certs::ocsp_response_t::OCSP_APP_OK ||
+                ret == Certs::ocsp_response_t::OCSP_CERT_ERROR) {
+            app_t app_cpy = *iter;
+            iter++;
+            remove_app_from_buffer_and_database(app_cpy);
+        }
+        else if (ret == Certs::ocsp_response_t::OCSP_APP_REVOKED) {
+            LogDebug("Popup should be shown");
+        }
+        // If check_ocsp returns Certs::ocsp_response_t::OCSP_CHECK_AGAIN
+        // app should be checked again later
     }
     return NO_ERROR;
 }
@@ -409,8 +422,7 @@ void Logic::process_event(const event_t &event)
         }
     }
     else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
-        remove_app_from_buffer(event.app);
-        m_sqlquery->remove_app_from_check_list(event.app);
+        remove_app_from_buffer_and_database(event.app);
     }
     else
         LogError("Unknown event type");
@@ -428,7 +440,7 @@ void Logic::add_app_to_buffer_and_database(const app_t &app)
     m_buffer.push_back(app);
 }
 
-void Logic::remove_app_from_buffer(const app_t &app)
+void Logic::remove_app_from_buffer_and_database(const app_t &app)
 {
     // First remove app from DB
     m_sqlquery->remove_app_from_check_list(app);
