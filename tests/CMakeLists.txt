@@ -1,12 +1,13 @@
 PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
     REQUIRED
+    cert-svc-vcore
     dbus-1
     dbus-glib-1
     db-util
     glib-2.0
     gio-2.0
     icu-i18n
-    notification
+    key-manager
     libsystemd-journal
     libtzplatform-config
     sqlite3
@@ -14,6 +15,7 @@ PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
 
 FIND_PACKAGE(Threads REQUIRED)
 ADD_DEFINITIONS( "-DBOOST_TEST_DYN_LINK" )
+ADD_DEFINITIONS("-DTEST_APP_SIGNATURES_DIR=\"${TEST_APP_SIGNATURES_DIR}\"")
 
 SET(CERT_CHECKER_SRC_PATH ${PROJECT_SOURCE_DIR}/src)
 SET(CERT_CHECKER_TESTS_SRC_PATH ${PROJECT_SOURCE_DIR}/tests)
@@ -28,9 +30,12 @@ SET(CERT_CHECKER_TESTS_SOURCES
     ${CERT_CHECKER_TESTS_SRC_PATH}/test_db.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/test_queue.cpp
     ${CERT_CHECKER_TESTS_SRC_PATH}/queue_test_thread.cpp
+    ${CERT_CHECKER_TESTS_SRC_PATH}/test_certs.cpp
+    ${CERT_CHECKER_TESTS_SRC_PATH}/certs_.cpp
     # cert-checker
     ${CERT_CHECKER_SRC_PATH}/app.cpp
     ${CERT_CHECKER_SRC_PATH}/queue.cpp
+    ${CERT_CHECKER_SRC_PATH}/certs.cpp
     # logs
     ${CERT_CHECKER_SRC_PATH}/log/log.cpp
     # dpl
@@ -64,5 +69,14 @@ TARGET_LINK_LIBRARIES(${TARGET_CERT_CHECKER_TESTS}
     boost_unit_test_framework
     -ldl
     )
+
+#### Test files/signatures
+INSTALL(FILES
+    files/app1/author-signature.xml
+    files/app1/signature1.xml
+    DESTINATION ${TEST_APP_SIGNATURES_DIR}/app1/)
+INSTALL(FILES
+    files/app_2/signature1.xml
+    DESTINATION ${TEST_APP_SIGNATURES_DIR}/app_2/)
 
 INSTALL(TARGETS ${TARGET_CERT_CHECKER_TESTS} DESTINATION ${BINDIR})

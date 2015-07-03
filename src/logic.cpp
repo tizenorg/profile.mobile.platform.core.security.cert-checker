@@ -317,25 +317,9 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
     }
 }
 
-void Logic::check_ocsp(app_t &app)
-{
-    (void)app;
-}
-
 void Logic::add_ocsp_url(const string &issuer, const string &url, int64_t date)
 {
     m_sqlquery->set_url(issuer, url, date);
-}
-
-void Logic::pkgmanager_uninstall(const app_t &app)
-{
-    (void)app;
-}
-
-void Logic::get_certs_from_signature(const string &signature, vector<string> &cert)
-{
-    (void)signature;
-    (void)cert;
 }
 
 void Logic::load_database_to_buffer()
@@ -357,8 +341,32 @@ void Logic::process_queue(void)
 
 error_t Logic::process_buffer(void)
 {
-    for(auto iter = m_buffer.begin(); iter != m_buffer.end(); iter++) {
-        // TODO: Implement checking OCSP
+    for (auto iter = m_buffer.begin(); iter != m_buffer.end();) {
+        // If OCSP checking fails we should remove application from buffer and database
+        Certs::ocsp_response_t ret;
+        ret = m_certs.check_ocsp(*iter);
+        if (ret == Certs::ocsp_response_t::OCSP_APP_OK ||
+                ret == Certs::ocsp_response_t::OCSP_CERT_ERROR) {
+            LogDebug(iter->str() << " OCSP verified (or not available for app's chains)");
+            app_t app_cpy = *iter;
+            iter++;
+            remove_app_from_buffer_and_database(app_cpy);
+        }
+        else if (ret == Certs::ocsp_response_t::OCSP_APP_REVOKED) {
+            LogDebug(iter->str() << " certificate has been revoked. Popup should be shown");
+            app_t app_cpy = *iter;
+            iter++;
+            // TODO: Do not remove app here - just waits for user answer from popup
+            //       Temporary solution because popup doesn't work
+            remove_app_from_buffer_and_database(app_cpy);
+
+        }
+        else {
+            LogDebug(iter->str() << " should be checked again later");
+            // If check_ocsp returns Certs::ocsp_response_t::OCSP_CHECK_AGAIN
+            // app should be checked again later
+            iter++;
+        }
     }
     return NO_ERROR;
 }
@@ -409,8 +417,7 @@ void Logic::process_event(const event_t &event)
         }
     }
     else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
-        remove_app_from_buffer(event.app);
-        m_sqlquery->remove_app_from_check_list(event.app);
+        remove_app_from_buffer_and_database(event.app);
     }
     else
         LogError("Unknown event type");
@@ -428,21 +435,23 @@ void Logic::add_app_to_buffer_and_database(const app_t &app)
     m_buffer.push_back(app);
 }
 
-void Logic::remove_app_from_buffer(const app_t &app)
+// Notice that this operator doesn't compare list of certificate, because it isn't needed here.
+// This operator is implemented only for using in m_buffer.remove() method;
+// Operator which compares certificates is implemented in tests.
+bool operator ==(const app_t &app1, const app_t &app2)
+{
+    return app1.app_id == app2.app_id &&
+            app1.pkg_id == app2.pkg_id &&
+            app1.uid == app2.uid;
+}
+
+void Logic::remove_app_from_buffer_and_database(const app_t &app)
 {
     // First remove app from DB
     m_sqlquery->remove_app_from_check_list(app);
 
     // Then remove app from buffer
-    for (auto iter = m_buffer.begin(); iter != m_buffer.end(); ++iter) {
-        if (iter->app_id == app.app_id &&
-                iter->pkg_id == app.pkg_id &&
-                iter->uid == app.uid) {
-            LogDebug(iter->str() << " found in buffer - will be removed");
-            m_buffer.erase(iter);
-            break;
-        }
-    }
+    m_buffer.remove(app);
 }
 
 bool Logic::get_should_exit(void) const
