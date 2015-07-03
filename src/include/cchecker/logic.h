@@ -80,13 +80,9 @@ class Logic {
         error_t setup_db();
         void load_database_to_buffer();
 
-        void check_ocsp(app_t &app);
         void add_ocsp_url(const std::string &issuer, const std::string &url, int64_t date);
-        void pkgmanager_uninstall(const app_t &app);
-        void get_certs_from_signature(const std::string &signature, std::vector<std::string> &cert);
-
         void add_app_to_buffer_and_database(const app_t &app);
-        void remove_app_from_buffer(const app_t &app);
+        void remove_app_from_buffer_and_database(const app_t &app);
 
         void pkgmgr_callback_internal(GVariant *parameters, pkgmgr_event_t event);
         error_t register_dbus_signal_handler(GDBusProxy *proxy,

@@ -15,6 +15,7 @@ BuildRequires: pkgconfig(notification)
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(cert-svc-vcore)
+BuildRequires: pkgconfig(key-manager)
 BuildRequires: pkgconfig(libsystemd-journal)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: pkgconfig(sqlite3)
@@ -44,7 +45,8 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
 %cmake . -DVERSION=%{version} \
         -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
         -DCMAKE_BUILD_TYPE=%{?build_type:%build_type}%{!?build_type:RELEASE} \
-        -DCMAKE_VERBOSE_MAKEFILE=ON
+        -DCMAKE_VERBOSE_MAKEFILE=ON \
+        -DTEST_APP_SIGNATURES_DIR="/root/cert-checker-test"
 
 make %{?jobs:-j%jobs}
 
@@ -68,3 +70,4 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{_bindir}/cert-checker-tests
 %{TZ_SYS_DB}/.cert-checker-test.db
+/root/cert-checker-test/*/*.xml

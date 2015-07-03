@@ -8,6 +8,7 @@ PKG_CHECK_MODULES(CERT_CHECKER_DEP
     gio-2.0
     icu-i18n
     notification
+    key-manager
     libsystemd-journal
     libtzplatform-config
     sqlite3
