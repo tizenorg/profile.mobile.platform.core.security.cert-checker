@@ -18,7 +18,7 @@
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
  * @brief       This file is the implementation of certificates logic
- *              Getting out findinf app signature, getting certificates out of
+ *              Getting out app signature, getting certificates out of
  *              signature. Checking OCSP
  */
 #include <sys/types.h>
@@ -26,13 +26,14 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <set>
 #include <vector>
-#include <vcore/Certificate.h>
+#include <vcore/CertificateCollection.h>
 #include <vcore/SignatureReader.h>
 #include <vcore/SignatureFinder.h>
 #include <vcore/WrtSignatureValidator.h>
 #include <vcore/VCore.h>
+#include <ckm/ckm-type.h>
+#include <ckm/ckm-raw-buffer.h>
 
 #include <cchecker/certs.h>
 #include <cchecker/log.h>
@@ -47,6 +48,7 @@ namespace CCHECKER {
 Certs::Certs()
 {
     ValidationCore::VCoreInit();
+    m_ckm = CKM::Manager::create();
 }
 
 Certs::~Certs()
@@ -156,6 +158,170 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
             LogDebug("Certificates chain added to the app");
         }
     }
+}
+
+bool Certs::ocsp_create_list (const chain_t &chain, ValidationCore::CertificateList &certs_list)
+{
+    ValidationCore::CertificateCollection collection;
+    ValidationCore::CertificateList list;
+
+    LogDebug("Chain size: " << chain.size());
+    for (auto &iter : chain) {
+        try {
+            ValidationCore::CertificatePtr p_cert(
+                    new ValidationCore::Certificate(iter, ValidationCore::Certificate::FORM_BASE64));
+            list.push_back(p_cert);
+        } catch (const ValidationCore::Certificate::Exception::Base& exception) {
+            LogError("Error while creating certificate from BASE64: " << exception.DumpToString());
+            return false;
+        }
+        LogDebug("Load certificate to list: " << list.size());
+    }
+
+    // Function collection.load which takes certificate in std::string BASE64 fails for some reason,
+    // so load(const CertificateList &certList) is used.
+    collection.load(list);
+    LogDebug("Load certificate to CertificateCollection: " << collection.size());
+
+    if (!collection.sort()) {
+        LogError("Cannot make chain of certificates");
+        // What to do if chain cannot be build?
+        return false;
+    }
+
+    if (collection.isChain()) {
+        LogDebug("Build chain succeed, size: " << collection.size());
+    } else {
+        LogError("Building chain failed");
+        return false;
+    }
+
+    certs_list = collection.getCertificateList();
+
+    return true;
+}
+
+bool Certs::ocsp_build_chain (const ValidationCore::CertificateList &certs_list, CKM::CertificateShPtrVector &vect_ckm_chain)
+{
+    CKM::CertificateShPtrVector vect_untrusted;
+
+    bool first = true;
+    CKM::CertificateShPtr cert_end_entity;
+    LogDebug("Size of certs_list: " << certs_list.size());
+    for (auto &iter : certs_list) {
+        std::string cert_cp(iter->getBase64());
+        CKM::RawBuffer buff(cert_cp.begin(), cert_cp.end());
+        CKM::CertificateShPtr cert = CKM::Certificate::create(buff, CKM::DataFormat::FORM_DER_BASE64);
+
+        if (!cert) {
+            LogDebug("CKM failed to create certificate");
+            return false;
+        }
+        else if (first) {
+            cert_end_entity = cert;
+            first = false;
+            LogDebug("Found end entity certificate");
+        }
+        else {
+            vect_untrusted.push_back(cert);
+            LogDebug("Found untrusted certificate");
+        }
+    }
+
+    int ret = m_ckm->getCertificateChain(
+            cert_end_entity,
+            vect_untrusted,
+            CKM::CertificateShPtrVector(),
+            true, // useTrustedSystemCertificates
+            vect_ckm_chain);
+    if (ret != CKM_API_SUCCESS) {
+        LogError("CKM getCertificateChain returned: " << ret);
+        // TODO: Add handling for different errors codes?
+        return false;
+    }
+
+    return true;
+}
+
+Certs::ocsp_response_t Certs::check_ocsp_chain (const chain_t &chain)
+{
+    ValidationCore::CertificateList certs_list;
+    if (!ocsp_create_list(chain, certs_list)) {
+        LogError("Error while build list of certificates");
+        return Certs::ocsp_response_t::OCSP_CERT_ERROR;
+    }
+
+    CKM::CertificateShPtrVector vect_ckm_chain;
+
+    if (!ocsp_build_chain(certs_list, vect_ckm_chain)) {
+        LogError("Error while build chain of certificates");
+        return Certs::ocsp_response_t::OCSP_CERT_ERROR;
+    }
+
+    int status;
+    int ret = m_ckm->ocspCheck(vect_ckm_chain, status);
+    if (ret != CKM_API_SUCCESS) {
+        LogError("CKM ckeck OCSP returned " << ret);
+        // Add handling for different errors codes
+        // For these we can try to check ocsp again later:
+        switch (ret) {
+        case CKM_API_ERROR_SOCKET:
+        case CKM_API_ERROR_BAD_REQUEST:
+        case CKM_API_ERROR_BAD_RESPONSE:
+        case CKM_API_ERROR_SEND_FAILED:
+        case CKM_API_ERROR_RECV_FAILED:
+        case CKM_API_ERROR_SERVER_ERROR:
+        case CKM_API_ERROR_OUT_OF_MEMORY:
+            return Certs::ocsp_response_t::OCSP_CHECK_AGAIN;
+        // Any other error should be recurrent - checking the same app again
+        // should give the same result.
+        default:
+            return Certs::ocsp_response_t::OCSP_CERT_ERROR;
+        }
+    }
+
+    LogDebug("OCSP status: " << status);
+    switch (status) {
+    // Remove app from "to-check" list:
+    case CKM_API_OCSP_STATUS_GOOD:
+        return Certs::ocsp_response_t::OCSP_APP_OK;
+    case CKM_API_OCSP_STATUS_UNSUPPORTED:
+    case CKM_API_OCSP_STATUS_UNKNOWN:
+    case CKM_API_OCSP_STATUS_INVALID_URL:
+        return Certs::ocsp_response_t::OCSP_CERT_ERROR;
+
+    //Show popup to user and remove app from "to-check" list
+    case CKM_API_OCSP_STATUS_REVOKED:
+        return Certs::ocsp_response_t::OCSP_APP_REVOKED;
+
+     //Keep app for checking it again later:
+    case CKM_API_OCSP_STATUS_NET_ERROR:
+    case CKM_API_OCSP_STATUS_INVALID_RESPONSE:
+    case CKM_API_OCSP_STATUS_REMOTE_ERROR:
+    case CKM_API_OCSP_STATUS_INTERNAL_ERROR:
+        return Certs::ocsp_response_t::OCSP_CHECK_AGAIN;
+
+    default:
+        // This should never happen
+        return Certs::ocsp_response_t::OCSP_CERT_ERROR;
+    }
+}
+
+Certs::ocsp_response_t Certs::check_ocsp (const app_t &app)
+{
+    bool check_again = false;
+
+    for (auto &iter : app.signatures) {
+        Certs::ocsp_response_t resp = check_ocsp_chain(iter);
+        if (resp == Certs::ocsp_response_t::OCSP_APP_REVOKED)
+            return Certs::ocsp_response_t::OCSP_APP_REVOKED;
+        if (resp == Certs::ocsp_response_t::OCSP_CHECK_AGAIN)
+           check_again = true;
+    }
+
+    if (check_again)
+        return Certs::ocsp_response_t::OCSP_CHECK_AGAIN;
+    return Certs::ocsp_response_t::OCSP_APP_OK;
 }
 
 } // CCHECKER
