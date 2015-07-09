@@ -317,25 +317,9 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
     }
 }
 
-void Logic::check_ocsp(app_t &app)
-{
-    (void)app;
-}
-
 void Logic::add_ocsp_url(const string &issuer, const string &url, int64_t date)
 {
     m_sqlquery->set_url(issuer, url, date);
-}
-
-void Logic::pkgmanager_uninstall(const app_t &app)
-{
-    (void)app;
-}
-
-void Logic::get_certs_from_signature(const string &signature, vector<string> &cert)
-{
-    (void)signature;
-    (void)cert;
 }
 
 void Logic::load_database_to_buffer()
