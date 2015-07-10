@@ -1,0 +1,10 @@
+[Unit]
+Description=Start the Cert-Checker
+Requires=dbus.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/cert-checker
+
+[Install]
+WantedBy=multi-user.target

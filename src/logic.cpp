@@ -61,7 +61,7 @@ Logic::~Logic(void)
 Logic::Logic(void) :
         m_sqlquery(NULL),
         m_was_setup_called(false),
-        m_is_online(true),
+        m_is_online(false),
         m_should_exit(false),
         m_proxy_connman(NULL),
         m_proxy_pkgmgr_install(NULL),
