@@ -46,7 +46,8 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
         -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
         -DCMAKE_BUILD_TYPE=%{?build_type:%build_type}%{!?build_type:RELEASE} \
         -DCMAKE_VERBOSE_MAKEFILE=ON \
-        -DTEST_APP_SIGNATURES_DIR="/root/cert-checker-test"
+        -DTEST_APP_SIGNATURES_DIR="/root/cert-checker-test" \
+        -DSYSTEMD_UNIT_DIR=%{_unitdir}
 
 make %{?jobs:-j%jobs}
 
@@ -57,14 +58,46 @@ cp LICENSE %{buildroot}/usr/share/license/%{name}
 %make_install
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/
 
+%make_install
+mkdir -p %{buildroot}%{_unitdir}/multi-user.target.wants
+ln -s ../cert-checker.service %{buildroot}%{_unitdir}/multi-user.target.wants/cert-checker.service
+
 %clean
 rm -rf %{buildroot}
+
+%post
+systemctl daemon-reload
+if [ $1 = 1 ]; then
+    # installation
+    systemctl start cert-checker.service
+fi
+
+if [ $1 = 2 ]; then
+    # update
+    systemctl restart cert-checker.service
+fi
+
+
+%preun
+if [ $1 = 0 ]; then
+    # unistall
+    systemctl stop cert-checker.service
+fi
+
+%postun
+if [ $1 = 0 ]; then
+    # unistall
+    systemctl daemon-reload
+fi
+
 
 %files
 %{_bindir}/cert-checker
 %manifest %{_datadir}/%{name}.manifest
 %{_datadir}/license/%{name}
 %config(noreplace) %attr(0600,root,root) %{TZ_SYS_DB}/.cert-checker.db
+%{_unitdir}/cert-checker.service
+%{_unitdir}/multi-user.target.wants/cert-checker.service
 
 %files -n cert-checker-tests
 %defattr(-,root,root,-)
