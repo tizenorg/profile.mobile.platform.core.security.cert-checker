@@ -122,7 +122,7 @@ error_t  Logic::setup()
 
     // Add pkgmgr install callback
     LogDebug("register pkgmgr install event callback start");
-    if (register_dbus_signal_handler(m_proxy_pkgmgr_install,
+    if (register_dbus_signal_handler(&m_proxy_pkgmgr_install,
             "org.tizen.slp.pkgmgr_status",
             "/org/tizen/slp/pkgmgr/install",
             "org.tizen.slp.pkgmgr.install",
@@ -134,7 +134,7 @@ error_t  Logic::setup()
 
     // Add pkgmgr uninstall callback
     LogDebug("register pkgmgr uninstall event callback start");
-    if (register_dbus_signal_handler(m_proxy_pkgmgr_uninstall,
+    if (register_dbus_signal_handler(&m_proxy_pkgmgr_uninstall,
             "org.tizen.slp.pkgmgr_status",
             "/org/tizen/slp/pkgmgr/uninstall",
             "org.tizen.slp.pkgmgr.uninstall",
@@ -146,7 +146,7 @@ error_t  Logic::setup()
 
     // Add connman callback
     LogDebug("register connman event callback start");
-    if (register_dbus_signal_handler(m_proxy_connman,
+    if (register_dbus_signal_handler(&m_proxy_connman,
             "net.connman",
             "/",
             "net.connman.Manager",
@@ -156,10 +156,12 @@ error_t  Logic::setup()
     }
     LogDebug("register connman event callback success");
 
+    set_connman_online_state();
+
     return NO_ERROR;
 }
 
-error_t Logic::register_dbus_signal_handler(GDBusProxy *proxy,
+error_t Logic::register_dbus_signal_handler(GDBusProxy **proxy,
         const char *name,
         const char *object_path,
         const char *interface_name,
@@ -174,7 +176,7 @@ error_t Logic::register_dbus_signal_handler(GDBusProxy *proxy,
     GDBusProxyFlags flags = G_DBUS_PROXY_FLAGS_NONE;
 
     // Obtain a connection to the System Bus
-    proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
+    *proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
             flags,
             NULL, /* GDBusInterfaceInfo */
             name,
@@ -183,7 +185,7 @@ error_t Logic::register_dbus_signal_handler(GDBusProxy *proxy,
             NULL, /* GCancellable */
             &error);
 
-    if (proxy == NULL) {
+    if (*proxy == NULL) {
         if (error) {
             LogError("Error creating D-Bus proxy for /'" << interface_name <<"/': " << error->message);
             g_error_free(error);
@@ -194,12 +196,57 @@ error_t Logic::register_dbus_signal_handler(GDBusProxy *proxy,
     }
 
     // Connect to g-signal to receive signals from proxy
-    if (g_signal_connect(proxy, "g-signal", G_CALLBACK(callback), this) < 1) {
+    if (g_signal_connect(*proxy, "g-signal", G_CALLBACK(callback), this) < 1) {
         LogError("g_signal_connect error while connecting " << interface_name);
         return REGISTER_CALLBACK_ERROR;
     }
 
     return NO_ERROR;
+}
+
+void Logic::set_connman_online_state()
+{
+    GError *error = NULL;
+    GVariant *response;
+
+    if (m_proxy_connman == NULL) {
+        LogError("connman proxy is NULL");
+        return;
+    }
+
+    response = g_dbus_proxy_call_sync (m_proxy_connman,
+            "GetProperties",
+            NULL, // GetProperties gets no parameters
+            G_DBUS_CALL_FLAGS_NONE,
+            -1, // Default timeout
+            NULL,
+            &error);
+
+    if (error) {
+        LogError("Error while calling connman GetProperties() Dbus API: " << error->message);
+        g_error_free(error);
+        return;
+    }
+
+    if (response == NULL) {
+        // This should never happen
+        return;
+    }
+
+    gchar *resp_g = g_variant_print(response, TRUE);
+    std::string resp_s(resp_g);
+    LogDebug("response: " << resp_s);
+    g_free(resp_g);
+
+    // Response should look like this:
+    // ({'State': <'online'>, 'OfflineMode': <false>, 'SessionMode': <false>},)
+    if (resp_s.find("'State': <'online'>", 0) != std::string::npos) {
+        LogDebug("Connman has returned: online");
+        set_online(true);
+    }
+
+    // free memory
+    g_variant_unref(response);
 }
 
 // FIXME: pkgmgr callback doesn't receive signals with successful installation/uninstallation.
@@ -252,15 +299,10 @@ void Logic::pkgmgr_callback_internal(GVariant       *parameters,
         return;
     }
 
-    guint32 uid;
-    gchar *pkgid = NULL;
-    gchar *state = NULL;
-    gchar *status = NULL;
-
-    uid = g_variant_get_uint32(g_variant_get_child_value(parameters, 0));
-    pkgid = g_variant_dup_string(g_variant_get_child_value(parameters, 3), NULL);
-    state = g_variant_dup_string(g_variant_get_child_value(parameters, 4), NULL);
-    status = g_variant_dup_string(g_variant_get_child_value(parameters, 5), NULL);
+    guint32 uid = g_variant_get_uint32(g_variant_get_child_value(parameters, 0));
+    const gchar *pkgid = g_variant_get_string(g_variant_get_child_value(parameters, 3), NULL);
+    const gchar *state = g_variant_get_string(g_variant_get_child_value(parameters, 4), NULL);
+    const gchar *status = g_variant_get_string(g_variant_get_child_value(parameters, 5), NULL);
 
     // FIXME: No information about app_id in the signal. Use stub.
     app_t app(TEMP_APP_ID, pkgid, uid, {});
@@ -281,10 +323,6 @@ void Logic::pkgmgr_callback_internal(GVariant       *parameters,
     }
     else
         LogDebug("Wrong state (" << std::string(state) << ") or status (" << std::string(status) << ")");
-
-    g_free(pkgid);
-    g_free(state);
-    g_free(status);
 }
 
 void Logic::connman_callback(GDBusProxy */*proxy*/,
@@ -308,7 +346,6 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
     if (params_str == "('State', <'online'>)") {
         LogDebug("Device online");
         logic->set_online(true);
-
         logic->m_to_process.notify_one();
     }
     else if (params_str == "('State', <'offline'>)") {
