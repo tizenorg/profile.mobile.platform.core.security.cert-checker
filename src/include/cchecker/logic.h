@@ -84,8 +84,9 @@ class Logic {
         void add_app_to_buffer_and_database(const app_t &app);
         void remove_app_from_buffer_and_database(const app_t &app);
 
+        void set_connman_online_state();
         void pkgmgr_callback_internal(GVariant *parameters, pkgmgr_event_t event);
-        error_t register_dbus_signal_handler(GDBusProxy *proxy,
+        error_t register_dbus_signal_handler(GDBusProxy **proxy,
                 const char *name,
                 const char *object_path,
                 const char *interface_name,
