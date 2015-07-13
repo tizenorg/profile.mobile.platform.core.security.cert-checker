@@ -2,4 +2,7 @@
     <request>
         <domain name="_"/>
     </request>
+    <assign>
+        <filesystem path="/usr/dbspace/.cert-checker.db" label="System"/>
+    </assign>
 </manifest>
