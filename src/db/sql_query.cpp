@@ -26,17 +26,21 @@
 
 namespace {
 
-    // TODO: Make defines with these identifiers.
-    // 101 - issuer
-    // 102 - url
-    // 103 - date
-    // 104 - app_id
-    // 105 - pkg_id
-    // 106 - uid
-    // 107 - check_id
-    // 108 - certificate
-    // 109 - verified
-    // 110 - chain_id
+    #define DB_ISSUER      101
+    #define DB_URL         102
+    #define DB_DATE        103
+    #define DB_APP_ID      104
+    #define DB_PKG_ID      105
+    #define DB_UID         106
+    #define DB_CHECK_ID    107
+    #define DB_CERTIFICATE 108
+    #define DB_VERIFIED    109
+    #define DB_CHAIN_ID    110
+
+    // This changes define into question mark and a number in quotes
+    // e.g. _(DB_ISSUER) -> "?" "101"
+    #define _(db) __(db)
+    #define __(db) "?" #db
 
     // setup
     const char *DB_CMD_SETUP = "VACUUM; PRAGMA foregin_keys=ON;";
@@ -45,42 +49,42 @@ namespace {
 
     // urls
     const char *DB_CMD_GET_URL =
-            "SELECT url, date FROM ocsp_urls WHERE issuer = ?101;";
+            "SELECT url, date FROM ocsp_urls WHERE issuer = " _(DB_ISSUER) ";";
 
     const char *DB_CMD_SET_URL =
-            "INSERT INTO  ocsp_urls(issuer, url, date) VALUES(?101, ?102, ?103);";
+            "INSERT INTO  ocsp_urls(issuer, url, date) VALUES(" _(DB_ISSUER) ", " _(DB_URL) ", " _(DB_DATE) ");";
 
     const char *DB_CMD_UPDATE_URL =
-            "UPDATE ocsp_urls SET url=?102, date=?103 WHERE issuer=?101;"; // Issuer should be unique
+            "UPDATE ocsp_urls SET url=" _(DB_URL) ", date=" _(DB_DATE) " WHERE issuer=" _(DB_ISSUER) ";"; // Issuer should be unique
 
     // apps
     const char *DB_CMD_ADD_APP =
-            "INSERT INTO to_check(app_id, pkg_id, uid, verified) VALUES(?104, ?105, ?106, ?109);";
+            "INSERT INTO to_check(app_id, pkg_id, uid, verified) VALUES(" _(DB_APP_ID) ", " _(DB_PKG_ID) ", " _(DB_UID) ", " _(DB_VERIFIED) ");";
 
     const char *DB_CMD_GET_CHECK_ID =
-            "SELECT check_id FROM to_check WHERE app_id=?104 AND pkg_id=?105 AND uid=?106;";
+            "SELECT check_id FROM to_check WHERE app_id=" _(DB_APP_ID) " AND pkg_id=" _(DB_PKG_ID) " AND uid=" _(DB_UID) ";";
 
     const char *DB_CMD_ADD_CHAIN =
-            "INSERT INTO chains_to_check(check_id) VALUES(?107);";
+            "INSERT INTO chains_to_check(check_id) VALUES(" _(DB_CHECK_ID) ");";
 
     const char *DB_CMD_ADD_CERT =
-            "INSERT INTO certs_to_check(chain_id, certificate) VALUES(?110, ?108);";
+            "INSERT INTO certs_to_check(chain_id, certificate) VALUES(" _(DB_CHAIN_ID) ", " _(DB_CERTIFICATE) ");";
 
     const char *DB_CMD_GET_CHAINS =
-            "SELECT chain_id FROM chains_to_check INNER JOIN to_check ON chains_to_check.check_id=to_check.check_id \
-WHERE to_check.app_id=?104 AND to_check.pkg_id=?105 AND to_check.uid=?106;";
+            "SELECT chain_id FROM chains_to_check INNER JOIN to_check ON chains_to_check.check_id=to_check.check_id WHERE to_check.app_id="
+            _(DB_APP_ID) " AND to_check.pkg_id=" _(DB_PKG_ID) " AND to_check.uid=" _(DB_UID) ";";
 
     const char *DB_CMD_REMOVE_APP =
-            "DELETE FROM to_check WHERE app_id=?104 AND pkg_id=?105 AND uid=?106;";
+            "DELETE FROM to_check WHERE app_id=" _(DB_APP_ID) " AND pkg_id=" _(DB_PKG_ID) " AND uid=" _(DB_UID) ";";
 
     const char *DB_CMD_GET_APPS =
             "SELECT app_id, pkg_id, uid, verified FROM to_check";
 
     const char *DB_CMD_GET_CERTS =
-            "SELECT certificate FROM certs_to_check WHERE chain_id=?110;";
+            "SELECT certificate FROM certs_to_check WHERE chain_id=" _(DB_CHAIN_ID) ";";
 
     const char *DB_CMD_SET_APP_AS_VERIFIED =
-            "UPDATE to_check SET verified=?109 WHERE check_id=?107";
+            "UPDATE to_check SET verified=" _(DB_VERIFIED) " WHERE check_id=" _(DB_CHECK_ID) ";";
 }
 
 namespace CCHECKER {
@@ -129,7 +133,7 @@ bool SqlQuery::get_url(const std::string &issuer, std::string &url)
 {
     SqlConnection::DataCommandAutoPtr getUrlCommand =
                     m_connection->PrepareDataCommand(DB_CMD_GET_URL);
-    getUrlCommand->BindString(101, issuer.c_str());
+    getUrlCommand->BindString(DB_ISSUER, issuer.c_str());
 
     if (getUrlCommand->Step()) {
         url = getUrlCommand->GetColumnString(0);
@@ -146,7 +150,7 @@ void SqlQuery::set_url(const std::string &issuer, const std::string &url, const 
     m_connection->BeginTransaction();
     SqlConnection::DataCommandAutoPtr getUrlCommand =
                     m_connection->PrepareDataCommand(DB_CMD_GET_URL);
-    getUrlCommand->BindString(101, issuer.c_str());
+    getUrlCommand->BindString(DB_ISSUER, issuer.c_str());
 
     if (getUrlCommand->Step()) { // This means that url already exists in database for this issuer
                                  // There's need to check the date
@@ -157,9 +161,9 @@ void SqlQuery::set_url(const std::string &issuer, const std::string &url, const 
             // Url in DB is older - update is needed
             SqlConnection::DataCommandAutoPtr updateUrlCommand =
                             m_connection->PrepareDataCommand(DB_CMD_UPDATE_URL);
-            updateUrlCommand->BindString(101, issuer.c_str());
-            updateUrlCommand->BindString(102, url.c_str());
-            updateUrlCommand->BindInt64(103, date);
+            updateUrlCommand->BindString(DB_ISSUER, issuer.c_str());
+            updateUrlCommand->BindString(DB_URL, url.c_str());
+            updateUrlCommand->BindInt64(DB_DATE, date);
             updateUrlCommand->Step();
         } else // Url in DB is up-to-date, no need for update
             LogDebug("Url for " << issuer << " in databse is up-to-date. No update needed");
@@ -168,9 +172,9 @@ void SqlQuery::set_url(const std::string &issuer, const std::string &url, const 
         LogDebug("No url for "<< issuer << " in databse. Adding the new one.");
         SqlConnection::DataCommandAutoPtr setUrlCommand =
                         m_connection->PrepareDataCommand(DB_CMD_SET_URL);
-        setUrlCommand->BindString(101, issuer.c_str());
-        setUrlCommand->BindString(102, url.c_str());
-        setUrlCommand->BindInt64(103, date);
+        setUrlCommand->BindString(DB_ISSUER, issuer.c_str());
+        setUrlCommand->BindString(DB_URL, url.c_str());
+        setUrlCommand->BindInt64(DB_DATE, date);
         setUrlCommand->Step();
     }
     m_connection->CommitTransaction();
@@ -186,9 +190,9 @@ bool SqlQuery::get_check_id(const app_t &app, int32_t &check_id)
 {
     SqlConnection::DataCommandAutoPtr getCheckIDCommand =
                     m_connection->PrepareDataCommand(DB_CMD_GET_CHECK_ID);
-    getCheckIDCommand->BindString(104, app.app_id.c_str());
-    getCheckIDCommand->BindString(105, app.pkg_id.c_str());
-    getCheckIDCommand->BindInt64(106, app.uid);
+    getCheckIDCommand->BindString(DB_APP_ID, app.app_id.c_str());
+    getCheckIDCommand->BindString(DB_PKG_ID, app.pkg_id.c_str());
+    getCheckIDCommand->BindInt64(DB_UID, app.uid);
     if (getCheckIDCommand->Step()) {
         check_id = getCheckIDCommand->GetColumnInt32(0);
         LogDebug("Found check id: " << check_id << ", for app: " << app.app_id);
@@ -203,7 +207,7 @@ bool SqlQuery::add_chain_id(const int32_t check_id, int32_t &chain_id)
     // Add new chain for an app
     SqlConnection::DataCommandAutoPtr addChainCommand =
             m_connection->PrepareDataCommand(DB_CMD_ADD_CHAIN);
-    addChainCommand->BindInt32(107, check_id);
+    addChainCommand->BindInt32(DB_CHECK_ID, check_id);
     addChainCommand->Step();
 
     // get chain_id
@@ -229,10 +233,10 @@ bool SqlQuery::add_app_to_check_list(const app_t &app)
     //Add app to to_check table
     SqlConnection::DataCommandAutoPtr addAppCommand =
             m_connection->PrepareDataCommand(DB_CMD_ADD_APP);
-    addAppCommand->BindString(104, app.app_id.c_str());
-    addAppCommand->BindString(105, app.pkg_id.c_str());
-    addAppCommand->BindInt64(106, app.uid);
-    addAppCommand->BindInt32(109, static_cast<int32_t>(app_t::verified_t::UNKNOWN));  // Set app as not-verified
+    addAppCommand->BindString(DB_APP_ID, app.app_id.c_str());
+    addAppCommand->BindString(DB_PKG_ID, app.pkg_id.c_str());
+    addAppCommand->BindInt64(DB_UID, app.uid);
+    addAppCommand->BindInt32(DB_VERIFIED, static_cast<int32_t>(app_t::verified_t::UNKNOWN));  // Set app as not-verified
     addAppCommand->Step();
     LogDebug("App " << app.app_id << " added to to_check table, adding certificates.");
 
@@ -253,8 +257,8 @@ bool SqlQuery::add_app_to_check_list(const app_t &app)
             for (const auto &iter_cert : iter) {
                 SqlConnection::DataCommandAutoPtr addCertCommand =
                         m_connection->PrepareDataCommand(DB_CMD_ADD_CERT);
-                addCertCommand->BindInt32(110, chain_id);
-                addCertCommand->BindString(108, iter_cert.c_str());
+                addCertCommand->BindInt32(DB_CHAIN_ID, chain_id);
+                addCertCommand->BindString(DB_CERTIFICATE, iter_cert.c_str());
                 addCertCommand->Step();
                 LogDebug("Certificate for app " << app.app_id << "added");
             }
@@ -276,9 +280,9 @@ void SqlQuery::remove_app_from_check_list(const app_t &app)
     //Remove app from to_check table
     SqlConnection::DataCommandAutoPtr removeAppCommand =
             m_connection->PrepareDataCommand(DB_CMD_REMOVE_APP);
-    removeAppCommand->BindString(104, app.app_id.c_str());
-    removeAppCommand->BindString(105, app.pkg_id.c_str());
-    removeAppCommand->BindInt32(106, app.uid);
+    removeAppCommand->BindString(DB_APP_ID, app.app_id.c_str());
+    removeAppCommand->BindString(DB_PKG_ID, app.pkg_id.c_str());
+    removeAppCommand->BindInt32(DB_UID, app.uid);
     removeAppCommand->Step();
     LogDebug("Removed app: " << app.str());
 
@@ -293,8 +297,8 @@ void SqlQuery::mark_as_verified(const app_t &app, const app_t::verified_t &verif
     if (get_check_id(app, check_id)) {
         SqlConnection::DataCommandAutoPtr setVerifiedCommand =
                         m_connection->PrepareDataCommand(DB_CMD_SET_APP_AS_VERIFIED);
-        setVerifiedCommand->BindInt32(107, check_id);
-        setVerifiedCommand->BindInt32(109, static_cast<int32_t>(verified));
+        setVerifiedCommand->BindInt32(DB_CHECK_ID, check_id);
+        setVerifiedCommand->BindInt32(DB_VERIFIED, static_cast<int32_t>(verified));
         setVerifiedCommand->Step();
         LogDebug("App: " << app.str() << " marked as verified: " << static_cast<int32_t>(verified));
     }
@@ -328,9 +332,9 @@ void SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
     for (auto &iter_app : apps_buffer) {
         SqlConnection::DataCommandAutoPtr getChainsCommand =
                 m_connection->PrepareDataCommand(DB_CMD_GET_CHAINS);
-        getChainsCommand->BindString(104, iter_app.app_id.c_str());
-        getChainsCommand->BindString(105, iter_app.pkg_id.c_str());
-        getChainsCommand->BindInt32(106, iter_app.uid);
+        getChainsCommand->BindString(DB_APP_ID, iter_app.app_id.c_str());
+        getChainsCommand->BindString(DB_PKG_ID, iter_app.pkg_id.c_str());
+        getChainsCommand->BindInt32(DB_UID, iter_app.uid);
 
         // Get all certs from chain
         while (getChainsCommand->Step()) {
@@ -341,7 +345,7 @@ void SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
 
             SqlConnection::DataCommandAutoPtr getCertsCommand =
                     m_connection->PrepareDataCommand(DB_CMD_GET_CERTS);
-            getCertsCommand->BindInt32(110, chain_id);
+            getCertsCommand->BindInt32(DB_CHAIN_ID, chain_id);
 
             // Add found certs to chain
             while (getCertsCommand->Step()) {
