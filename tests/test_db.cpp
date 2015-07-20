@@ -39,8 +39,6 @@ BOOST_AUTO_TEST_CASE(DB_url) {
     std::string url_org3 = "########";
     std::string url_update3 = "@@@";
 
-    clear_database();
-
     // No url in database
     BOOST_REQUIRE(get_url("Issuer_test1", url)==false);
     BOOST_REQUIRE(get_url("Issuer_test2", url)==false);
@@ -97,7 +95,6 @@ BOOST_AUTO_TEST_CASE(DB_url) {
 }
 
 BOOST_AUTO_TEST_CASE(DB_app_positive) {
-    clear_database();
 
     std::list<app_t> buffer;
     app_t app1("app_1", "pkg_1", 5001, {});
@@ -144,7 +141,6 @@ BOOST_AUTO_TEST_CASE(DB_app_positive) {
 }
 
 BOOST_AUTO_TEST_CASE(DB_app_negative) {
-    clear_database();
 
     std::list<app_t> buffer;
     app_t app1("app_1", "pkg_1", 5001, {});

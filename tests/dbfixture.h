@@ -31,8 +31,6 @@ class DBFixture : public DB::SqlQuery {
     public:
         DBFixture();
         virtual ~DBFixture();
-
-        void clear_database ();
 };
 
 #endif //CCHECKER_DBFIXTURE_H
