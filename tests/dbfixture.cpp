@@ -19,43 +19,35 @@
  * @version     1.0
  * @brief       Implementation of DB test class
  */
+#include <boost/test/unit_test.hpp>
 #include <tzplatform_config.h>
+#include <fstream>
 
 #include <dbfixture.h>
 
 using namespace CCHECKER;
 
 namespace {
-const char *TEST_DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker-test.db");
-
-const char *DB_CMD_CLEAR_URL =
-            "DELETE FROM ocsp_urls;";
-
-const char *DB_CMD_CLEAR_TO_CHECK =
-            "DELETE FROM to_check;";
-
-const char *DB_CMD_CLEAR_CERTS_TO_CHECK =
-            "DELETE FROM certs_to_check;";
+const char *TEST_DB_PATH      = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker-test.db");
+const char *TEST_DB_PATH_TEMP = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker-test-temp.db");
 } // anonymus namespace
 
 DBFixture::DBFixture() :
-    DB::SqlQuery(TEST_DB_PATH)
-{};
+        DB::SqlQuery()
+{
+    // Remove temporary databse
+    BOOST_CHECK(unlink(TEST_DB_PATH_TEMP) == 0 || errno == ENOENT);
+
+    // Restore original database
+    std::ifstream f1(TEST_DB_PATH, std::fstream::binary);
+    std::ofstream f2(TEST_DB_PATH_TEMP, std::fstream::trunc|std::fstream::binary);
+    f2 << f1.rdbuf();
+    f2.close();
+    f1.close();
+
+    // Open temporary database
+    BOOST_REQUIRE(connect(TEST_DB_PATH_TEMP));
+};
 
 DBFixture::~DBFixture()
 {};
-
-void DBFixture::clear_database ()
-{
-    // TODO: Restore DB from copy instead of removing all data from it.
-
-    DB::SqlConnection::DataCommandAutoPtr getUrlCommand =
-            m_connection->PrepareDataCommand(DB_CMD_CLEAR_URL);
-    getUrlCommand->Step();
-
-    getUrlCommand = m_connection->PrepareDataCommand(DB_CMD_CLEAR_CERTS_TO_CHECK);
-    getUrlCommand->Step();
-
-    getUrlCommand = m_connection->PrepareDataCommand(DB_CMD_CLEAR_TO_CHECK);
-    getUrlCommand->Step();
-}
