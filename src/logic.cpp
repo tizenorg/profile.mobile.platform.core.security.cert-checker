@@ -17,7 +17,7 @@
  * @file        logic.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
- * @brief       This file is the implementation of SQL queries
+ * @brief       This file is the implementation of cert-checker logic
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
@@ -30,9 +30,6 @@
 
 using namespace std;
 
-// FIXME: Popup temporary disabled
-#define POPUP 0
-
 namespace CCHECKER {
 
 namespace {
@@ -41,19 +38,6 @@ const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
 
 Logic::~Logic(void)
 {
-    LogDebug("Cert-checker cleaning.");
-
-    // wait and join processing thread
-    if (m_thread.joinable()) {
-        LogDebug("Waiting for join processing thread");
-        set_should_exit();
-        m_to_process.notify_one();
-        m_thread.join();
-        LogDebug("Processing thread joined");
-    }
-    else
-        LogDebug("No thread to join");
-
     if (m_proxy_connman)
         g_object_unref(m_proxy_connman);
     if (m_proxy_pkgmgr_install)
@@ -61,6 +45,28 @@ Logic::~Logic(void)
     if (m_proxy_pkgmgr_uninstall)
         g_object_unref(m_proxy_pkgmgr_uninstall);
     delete m_sqlquery;
+}
+
+void Logic::clean(void)
+{
+    LogDebug("Cert-checker cleaning.");
+
+    // wait and join processing thread
+    if (m_thread.joinable()) {
+        LogDebug("Waiting for join processing thread");
+        set_should_exit();
+#if TESTS
+        while (!m_do_not_sleep.try_lock())
+#endif
+            m_to_process.notify_one();
+        m_thread.join();
+#if TESTS
+        m_do_not_sleep.unlock();
+#endif
+        LogDebug("Processing thread joined");
+    }
+    else
+        LogDebug("No thread to join");
 }
 
 Logic::Logic(void) :
@@ -450,8 +456,19 @@ void Logic::process_all()
         std::unique_lock<std::mutex> lock(m_mutex_cv);
 
         if (m_queue.empty()) {
-            LogDebug("Processing thread: waiting on condition");
-            m_to_process.wait(lock);
+#if TESTS
+            // Protection against deadlock
+            if (m_do_not_sleep.try_lock()) {
+                _notify(false);
+#endif
+                LogDebug("Processing thread: waiting on condition");
+                m_to_process.wait(lock);
+#if TESTS
+                m_do_not_sleep.unlock();
+            }
+            else
+                _notify(false);
+#endif
         }
         else
             LogDebug("Processing thread: More events in queue - processing again");
@@ -459,10 +476,18 @@ void Logic::process_all()
         LogDebug("Processing thread: running");
 
         process_queue();
-        if (get_online())
+        if (get_online()) {
             process_buffer();
-        else
+#if TESTS
+            _notify(true);
+#endif
+        }
+        else {
             LogDebug("No network. Buffer won't be processed");
+#if TESTS
+            _notify(true);
+#endif
+        }
 
         LogDebug("Processing done");
     }
@@ -476,6 +501,7 @@ void Logic::process_event(const event_t &event)
     if (event.event_type == event_t::event_type_t::APP_INSTALL) {
         // pulling out certificates from signatures
         app_t app = event.app;
+        LogDebug("APP_INSTALL event has been found, adding " << app.str());
         ocsp_urls_t ocsp_urls;
         m_certs.get_certificates(app, ocsp_urls);
         add_app_to_buffer_and_database(app);
@@ -489,6 +515,7 @@ void Logic::process_event(const event_t &event)
         }
     }
     else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
+        LogDebug("APP_UNINSTALL event has been found, removing app form the buffer and the databse");
         remove_app_from_buffer_and_database(event.app);
     }
     else
@@ -503,7 +530,18 @@ void Logic::add_app_to_buffer_and_database(const app_t &app)
         // We can do nothing about it. We can only log the error.
     }
 
-    // Then add app to buffer
+    // Then add app to buffer - skip if already added.
+    // FIXME: What to do if the same app will be installed twice?
+    //        Add it twice to the buffer, or check if apps in buffer are unique?
+    //        At the moment doubled apps are skipped.
+    for (auto &iter : m_buffer) {
+        if (iter.app_id == app.app_id &&
+            iter.pkg_id == app.pkg_id &&
+            iter.uid == app.uid) {
+                LogDebug(app.str() << " already in buffer. Skip.");
+                return;
+        }
+    }
     m_buffer.push_back(app);
 }
 
