@@ -17,7 +17,7 @@
  * @file        logic.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
- * @brief       This file is the implementation of SQL queries
+ * @brief       This file is the implementation of cert-checker logic
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
@@ -29,9 +29,6 @@
 #include <cchecker/UIBackend.h>
 
 using namespace std;
-
-// FIXME: Popup temporary disabled
-#define POPUP 0
 
 namespace CCHECKER {
 
@@ -475,6 +472,7 @@ void Logic::process_event(const event_t &event)
     if (event.event_type == event_t::event_type_t::APP_INSTALL) {
         // pulling out certificates from signatures
         app_t app = event.app;
+        LogDebug("APP_INSTALL event has been found, adding " << app.str());
         ocsp_urls_t ocsp_urls;
         m_certs.get_certificates(app, ocsp_urls);
         add_app_to_buffer_and_database(app);
@@ -488,6 +486,7 @@ void Logic::process_event(const event_t &event)
         }
     }
     else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
+        LogDebug("APP_UNINSTALL event has been found, removing app form the buffer and the databse");
         remove_app_from_buffer_and_database(event.app);
     }
     else
@@ -502,7 +501,18 @@ void Logic::add_app_to_buffer_and_database(const app_t &app)
         // We can do nothing about it. We can only log the error.
     }
 
-    // Then add app to buffer
+    // Then add app to buffer - skip if already added.
+    // FIXME: What to do if the same app will be installed twice?
+    //        Add it twice to the buffer, or check if apps in buffer are unique?
+    //        At the moment doubled apps are skipped.
+    for (auto &iter : m_buffer) {
+        if (iter.app_id == app.app_id &&
+            iter.pkg_id == app.pkg_id &&
+            iter.uid == app.uid) {
+                LogDebug(app.str() << " already in buffer. Skip.");
+                return;
+        }
+    }
     m_buffer.push_back(app);
 }
 

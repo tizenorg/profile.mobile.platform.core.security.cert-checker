@@ -104,6 +104,7 @@ fi
 %files -n cert-checker-tests
 %defattr(-,root,root,-)
 %{_bindir}/cert-checker-tests
+%{_bindir}/cert-checker-tests-logic
 %{_bindir}/cert-checker-popup-test
 %{TZ_SYS_DB}/.cert-checker-test.db
 /root/cert-checker-test/*/*.xml

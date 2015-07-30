@@ -17,7 +17,7 @@
  * @file        logic.h
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
- * @brief       This file is the implementation of SQL queries
+ * @brief       This file is the implementation of cert-checker logic
  */
 
 #ifndef CCHECKER_LOGIC_H
@@ -76,7 +76,7 @@ class Logic {
                 void *logic_ptr);
 
 
-    private:
+    protected:
         error_t setup_db();
         void load_database_to_buffer();
 
