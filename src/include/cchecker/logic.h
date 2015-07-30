@@ -17,7 +17,7 @@
  * @file        logic.h
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
- * @brief       This file is the implementation of SQL queries
+ * @brief       This file is the implementation of cert-checker logic
  */
 
 #ifndef CCHECKER_LOGIC_H
@@ -76,7 +76,7 @@ class Logic {
                 void *logic_ptr);
 
 
-    private:
+    protected:
         error_t setup_db();
         void load_database_to_buffer();
 
@@ -117,6 +117,7 @@ class Logic {
         bool m_was_setup_called;
 
         bool m_is_online;
+        bool m_do_not_sleep;
         std::condition_variable m_to_process;
         std::mutex m_mutex_cv;
         std::thread m_thread;
@@ -125,6 +126,9 @@ class Logic {
         GDBusProxy *m_proxy_connman;
         GDBusProxy *m_proxy_pkgmgr_install;
         GDBusProxy *m_proxy_pkgmgr_uninstall;
+
+        // --- for tests only ---
+        virtual void _notify (void) {};
 };
 
 } // CCHECKER
