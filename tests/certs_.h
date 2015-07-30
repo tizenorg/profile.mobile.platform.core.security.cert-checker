@@ -22,8 +22,8 @@
 
 #include <cchecker/certs.h>
 
-#ifndef CCHECKER_DBFIXTURE_H
-#define CCHECKER_DBFIXTURE_H
+#ifndef CCHECKER_CERTS__H
+#define CCHECKER_CERTS__H
 
 using namespace CCHECKER;
 
@@ -34,4 +34,4 @@ class Certs_ : public Certs {
         void find_app_signatures_ (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls);
 };
 
-#endif //CCHECKER_DBFIXTURE_H
+#endif //CCHECKER_CERTS__H
