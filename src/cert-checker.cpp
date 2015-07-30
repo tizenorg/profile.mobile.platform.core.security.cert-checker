@@ -44,5 +44,6 @@ int main(void)
     g_main_loop_run(main_loop);
 
     LogDebug("Cert-checker exit!");
+    logic.clean();
     return 0;
 }
