@@ -30,7 +30,6 @@
 #include <vcore/CertificateCollection.h>
 #include <vcore/SignatureReader.h>
 #include <vcore/SignatureFinder.h>
-#include <vcore/WrtSignatureValidator.h>
 #include <vcore/VCore.h>
 #include <ckm/ckm-type.h>
 #include <ckm/ckm-raw-buffer.h>
