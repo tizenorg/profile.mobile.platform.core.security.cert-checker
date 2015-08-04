@@ -28,6 +28,8 @@
 
 namespace CCHECKER {
 
+void sort_buffer(std::list<app_t> &buff);
+
 void sort(app_t &app);
 bool operator ==(const app_t &app1, const app_t &app2);
 bool operator !=(const app_t &app1, const app_t &app2);

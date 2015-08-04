@@ -65,9 +65,11 @@ std::string app_t::str_certs(void) const
     std::stringstream ss;
 
     for (const auto &iter : signatures) {
+        ss << " { ";
         for (const auto iter_cert : iter) {
             ss << "\"" << iter_cert << "\", ";
         }
+        ss << " } ,";
     }
     return ss.str();
 }

@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS chains_to_check (
 CREATE TABLE IF NOT EXISTS certs_to_check (
   chain_id    INTEGER NOT NULL,
   certificate TEXT NOT NULL,
+  cert_order  INTEGER NOT NULL,
 
   PRIMARY KEY (chain_id, certificate),
   FOREIGN KEY (chain_id) REFERENCES chains_to_check(chain_id) ON DELETE CASCADE
