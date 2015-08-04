@@ -127,16 +127,15 @@ BOOST_AUTO_TEST_CASE(DB_app_positive) {
 
     app2.verified = app_t::verified_t::NO;
     app3.verified = app_t::verified_t::YES;
-    sort(app1);
-    sort(app2);
-    sort(app3);
-    sort(app4);
+
     std::list<app_t> buffer_ok = {app1, app2, app3, app4};
 
     get_app_list(buffer);
 
-    buffer.sort();
-    buffer_ok.sort();
+    // Need to sort buffer
+    sort_buffer(buffer);
+    sort_buffer(buffer_ok);
+
     BOOST_REQUIRE(buffer_ok == buffer);
 }
 
@@ -173,17 +172,14 @@ BOOST_AUTO_TEST_CASE(DB_app_negative) {
 
     app2.verified = app_t::verified_t::NO;
     app3.verified = app_t::verified_t::YES;
-    sort(app1);
-    sort(app2);
-    sort(app3);
-    sort(app4);
+
     std::list<app_t> buffer_ok = {app1, app2, app3, app4};
 
     get_app_list(buffer);
 
     // list has to be sorted before comparison.
-    buffer.sort();
-    buffer_ok.sort();
+    sort_buffer(buffer);
+    sort_buffer(buffer_ok);
     BOOST_REQUIRE(buffer_ok != buffer);
 }
 
