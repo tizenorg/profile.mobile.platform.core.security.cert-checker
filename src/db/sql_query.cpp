@@ -36,6 +36,7 @@ namespace {
     #define DB_CERTIFICATE 108
     #define DB_VERIFIED    109
     #define DB_CHAIN_ID    110
+    #define DB_CERT_ORDER  111
 
     // This changes define into question mark and a number in quotes
     // e.g. _(DB_ISSUER) -> "?" "101"
@@ -68,7 +69,7 @@ namespace {
             "INSERT INTO chains_to_check(check_id) VALUES(" _(DB_CHECK_ID) ");";
 
     const char *DB_CMD_ADD_CERT =
-            "INSERT INTO certs_to_check(chain_id, certificate) VALUES(" _(DB_CHAIN_ID) ", " _(DB_CERTIFICATE) ");";
+            "INSERT INTO certs_to_check(chain_id, certificate, cert_order) VALUES(" _(DB_CHAIN_ID) ", " _(DB_CERTIFICATE) ", " _(DB_CERT_ORDER) ");";
 
     const char *DB_CMD_GET_CHAINS =
             "SELECT chain_id FROM chains_to_check INNER JOIN to_check ON chains_to_check.check_id=to_check.check_id WHERE to_check.app_id="
@@ -81,7 +82,7 @@ namespace {
             "SELECT app_id, pkg_id, uid, verified FROM to_check";
 
     const char *DB_CMD_GET_CERTS =
-            "SELECT certificate FROM certs_to_check WHERE chain_id=" _(DB_CHAIN_ID) ";";
+            "SELECT certificate FROM certs_to_check WHERE chain_id=" _(DB_CHAIN_ID) " ORDER BY cert_order ASC;";
 
     const char *DB_CMD_SET_APP_AS_VERIFIED =
             "UPDATE to_check SET verified=" _(DB_VERIFIED) " WHERE check_id=" _(DB_CHECK_ID) ";";
@@ -253,13 +254,16 @@ bool SqlQuery::add_app_to_check_list(const app_t &app)
     for (const auto &iter : app.signatures) {
         // Add chain
         if (add_chain_id(check_id, chain_id)) {
-            // add certificates from chain
+            // add certificates from chain in right order (start with 1) - end entity go first
+            int32_t cert_order = 1;
             for (const auto &iter_cert : iter) {
                 SqlConnection::DataCommandAutoPtr addCertCommand =
                         m_connection->PrepareDataCommand(DB_CMD_ADD_CERT);
                 addCertCommand->BindInt32(DB_CHAIN_ID, chain_id);
                 addCertCommand->BindString(DB_CERTIFICATE, iter_cert.c_str());
+                addCertCommand->BindInt32(DB_CERT_ORDER, cert_order);
                 addCertCommand->Step();
+                cert_order++;
                 LogDebug("Certificate for app " << app.app_id << "added");
             }
         } else {
@@ -268,9 +272,9 @@ bool SqlQuery::add_app_to_check_list(const app_t &app)
             return false;
         }
 
-     }
-     m_connection->CommitTransaction();
-     return true;
+    }
+    m_connection->CommitTransaction();
+    return true;
 }
 
 void SqlQuery::remove_app_from_check_list(const app_t &app)
@@ -336,7 +340,7 @@ void SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
         getChainsCommand->BindString(DB_PKG_ID, iter_app.pkg_id.c_str());
         getChainsCommand->BindInt32(DB_UID, iter_app.uid);
 
-        // Get all certs from chain
+        // Get all certs from chain - certs will be sorted - end entity go first
         while (getChainsCommand->Step()) {
             chain_t chain;
             int32_t chain_id;
