@@ -27,11 +27,17 @@
 
 namespace CCHECKER {
 
+void sort_buffer(std::list<app_t> &buff)
+{
+    for (auto &iter : buff) {
+        sort(iter);
+    }
+
+    buff.sort();
+}
+
 void sort(app_t &app)
 {
-    for (auto &iter : app.signatures) {
-        iter.sort();
-    }
     app.signatures.sort();
 }
 

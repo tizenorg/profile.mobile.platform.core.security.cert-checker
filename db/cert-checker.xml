@@ -92,6 +92,9 @@
 <row name="certificates" null="0" autoincrement="0">
 <datatype>MEDIUMTEXT</datatype>
 <default>'NULL'</default></row>
+<row name="cert_order" null="0" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>certificates</part>
 <part>chain_id</part>
