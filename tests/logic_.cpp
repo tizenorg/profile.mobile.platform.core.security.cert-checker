@@ -85,7 +85,7 @@ void Logic_::_wait(int line)
         }
         m_do_not_sleep.unlock();
     }
-    else // if cannot wait for lock, just wait some amount of time
+    else // if cannot wait on lock, just wait some amount of time
         sleep(2);
 
     LogDebug("_wait end: " << line);
