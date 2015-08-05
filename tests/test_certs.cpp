@@ -474,4 +474,44 @@ VhfnkHwPltmrpYVe"};
     BOOST_REQUIRE(app2 == origin2);
 }
 
+BOOST_AUTO_TEST_CASE(find_app_signatures_negative) {
+
+    // App1
+    app_t app1("app_id", "pkg_id", 101, {});
+    ocsp_urls_t ocsp_urls;
+    std::string path1 = std::string(TEST_APP_SIGNATURES_DIR) + std::string("/app3");
+
+    find_app_signatures (app1, path1, ocsp_urls);
+    // signature exists, but contains error - should not be parsed
+    BOOST_REQUIRE(app1.signatures.empty());
+}
+
+BOOST_AUTO_TEST_CASE(find_app_signatures_mixed) {
+
+    app_t app("app_id", "pkg_id", 101, {});
+    ocsp_urls_t ocsp_urls;
+    std::string path = std::string(TEST_APP_SIGNATURES_DIR) + std::string("/app4");
+
+    find_app_signatures (app, path, ocsp_urls);
+    // 2 signatures exist, but one of them contains error - only one should be parsed
+    BOOST_REQUIRE(app.signatures.size() == 1);
+
+    app_t origin("app_id", "pkg_id", 101, {});
+    chain_t chain = {"MIIClDCCAf2gAwIBAgIGAT4hYbcpMA0GCSqGSIb3DQEBBQUAMIGEMQswCQYDVQQGEwJLUjEOMAwG\
+A1UECAwFU3V3b24xDjAMBgNVBAcMBVN1d29uMRYwFAYDVQQKDA1UaXplbiBUZXN0IENBMSAwHgYD\
+VQQLDBdUaXplbiBEZXZlbG9wZXIgVGVzdCBDQTEbMBkGA1UEAwwSVGl6ZW4gRGV2ZWxvcGVyIENB\
+MB4XDTEzMDQxOTA4MjA1MloXDTQwMDkwNDA4MjA1MVowgZUxCzAJBgNVBAYTAlBMMREwDwYDVQQI\
+DAhNYXpvdmlhbjEPMA0GA1UEBwwGV2Fyc2F3MQ4wDAYDVQQKDAVTUlBPTDERMA8GA1UECwwIS1NG\
+L1dTU1AxJTAjBgkqhkiG9w0BCQEWFmoua296ZXJza2lAc2Ftc3VuZy5jb20xGDAWBgNVBAMMD0ph\
+bnVzeiBLb3plcnNraTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAs0REWSsOn/QyVDSjSTRE\
+0W+LacX4cifRYI16nQi8WJhCAymhOg4UVXUk31Iwta8lOnQvgoce8bR+/dbCzDBmnogq8KXWlEtn\
+Ma3X6Tvz5BZfNy4Zj44G/aK0tJvnBj28h2ZZe545BNNW4zKR4SvNie9uM8v1r16PZaaS0YxOXl0C\
+AwEAATANBgkqhkiG9w0BAQUFAAOBgQCGuwLCcQAAQz2Op83gTl0Pb+f7AinL8d3XGRC8dtFPqSrZ\
+wN3gEEIQxQeYLahEVPAsD1K9aWebbWm/sjpDERKW7hmYvGYz90Z+ocLKdork5XgQWqVGt7qi+pxZ\
+x6VDuNVxDrQtsX/hLf/YBhZJuzs/LSdlErUKQM8fdxvVzbld3w=="};
+    origin.signatures.push_back(chain);
+
+    BOOST_REQUIRE(app == origin);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
