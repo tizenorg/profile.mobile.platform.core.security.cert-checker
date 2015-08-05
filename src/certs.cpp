@@ -27,11 +27,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <vcore/CertificateCollection.h>
-#include <vcore/SignatureReader.h>
+#include <vcore/SignatureValidator.h>
 #include <vcore/SignatureFinder.h>
-#include <vcore/WrtSignatureValidator.h>
-#include <vcore/VCore.h>
+#include <vcore/Certificate.h>
 #include <ckm/ckm-type.h>
 #include <ckm/ckm-raw-buffer.h>
 #include <tzplatform_config.h>
@@ -39,23 +37,15 @@
 #include <cchecker/certs.h>
 #include <cchecker/log.h>
 
-namespace {
-const std::string signatureXmlSchemaPath = std::string(tzplatform_getenv(TZ_SYS_SHARE))
-        + std::string("/app-installers/signature_schema.xsd");
-}
-
 namespace CCHECKER {
 
 Certs::Certs()
 {
-    ValidationCore::VCoreInit();
     m_ckm = CKM::Manager::create();
 }
 
 Certs::~Certs()
-{
-    ValidationCore::VCoreDeinit();
-}
+{}
 
 void Certs::get_certificates (app_t &app, ocsp_urls_t &ocsp_urls)
 {
@@ -123,35 +113,30 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
 
     LogDebug("Searching for certificates");
     for (auto iter = signature_files.begin(); iter != signature_files.end(); iter++) {
-        chain_t chain;
         LogDebug("Checking signature");
-        ValidationCore::SignatureData data(app_path + std::string("/") + (*iter).getFileName(),
-                (*iter).getFileNumber());
-        LogDebug("signatureXmlSchemaPath: " << signatureXmlSchemaPath);
-        try {
-            ValidationCore::SignatureReader reader;
-            reader.initialize(data, signatureXmlSchemaPath);
-            reader.read(data);
-            ValidationCore::CertificateList certs = data.getCertList();
-            for (auto cert_iter = certs.begin(); cert_iter != certs.end(); cert_iter++ ){
-                std::string app_cert = (*cert_iter)->getBase64();
-                chain.push_back(app_cert);
-                LogDebug("Certificate: " << app_cert << " has been added");
+        chain_t chain;
+        ValidationCore::CertificateList certs;
+        if (ValidationCore::SignatureValidator::makeIncompleteChainBySignature(*iter, certs) !=
+                ValidationCore::SignatureValidator::SIGNATURE_VALID) {
+            LogError("Signature: " << iter->getFileName() << " of " << app_path.c_str() << " is invalid");
+            continue;
+        }
 
-                // check OCSP URL
-                std::string ocsp_url = (*cert_iter)->getOCSPURL();
-                if (ocsp_url != std::string("")) {
-                    std::string issuer = (*cert_iter)->getCommonName(ValidationCore::Certificate::FIELD_ISSUER);
-                    int64_t time = (*cert_iter)->getNotBefore();
-                    url_t url(issuer, ocsp_url, time);
-                    ocsp_urls.push_back(url);
-                    LogDebug("Found OCSP URL: " << ocsp_url << " for issuer: " <<  issuer << ", time: " << time);
+        for (auto cert_iter = certs.begin(); cert_iter != certs.end(); cert_iter++) {
+            std::string app_cert = (*cert_iter)->getBase64();
+            chain.push_back(app_cert);
+            LogDebug("Certificate: " << app_cert << " has been added");
 
-                }
+            // check OCSP URL
+            std::string ocsp_url = (*cert_iter)->getOCSPURL();
+            if (ocsp_url != std::string("")) {
+                std::string issuer = (*cert_iter)->getCommonName(ValidationCore::Certificate::FIELD_ISSUER);
+                int64_t time = (*cert_iter)->getNotBefore();
+                url_t url(issuer, ocsp_url, time);
+                ocsp_urls.push_back(url);
+                LogDebug("Found OCSP URL: " << ocsp_url << " for issuer: " << issuer << ", time: " << time);
+
             }
-        } catch (const ValidationCore::ParserSchemaException::Base& exception) {
-            // Needs to catch parser exceptions
-            LogError("Error occured in ParserSchema: " << exception.DumpToString());
         }
         if (!chain.empty()) {
             app.signatures.push_back(chain);
@@ -160,66 +145,26 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
     }
 }
 
-bool Certs::ocsp_create_list (const chain_t &chain, ValidationCore::CertificateList &certs_list)
+// We assume that chain is sorted - first element is an end entity
+bool Certs::ocsp_build_chain (const chain_t &chain, CKM::CertificateShPtrVector &vect_ckm_chain)
 {
-    ValidationCore::CertificateCollection collection;
-    ValidationCore::CertificateList list;
-
-    LogDebug("Chain size: " << chain.size());
-    for (auto &iter : chain) {
-        try {
-            ValidationCore::CertificatePtr p_cert(
-                    new ValidationCore::Certificate(iter, ValidationCore::Certificate::FORM_BASE64));
-            list.push_back(p_cert);
-        } catch (const ValidationCore::Certificate::Exception::Base& exception) {
-            LogError("Error while creating certificate from BASE64: " << exception.DumpToString());
-            return false;
-        }
-        LogDebug("Load certificate to list: " << list.size());
-    }
-
-    // Function collection.load which takes certificate in std::string BASE64 fails for some reason,
-    // so load(const CertificateList &certList) is used.
-    collection.load(list);
-    LogDebug("Load certificate to CertificateCollection: " << collection.size());
-
-    if (!collection.sort()) {
-        LogError("Cannot make chain of certificates");
-        // What to do if chain cannot be build?
-        return false;
-    }
-
-    if (collection.isChain()) {
-        LogDebug("Build chain succeed, size: " << collection.size());
-    } else {
-        LogError("Building chain failed");
-        return false;
-    }
-
-    certs_list = collection.getCertificateList();
-
-    return true;
-}
-
-bool Certs::ocsp_build_chain (const ValidationCore::CertificateList &certs_list, CKM::CertificateShPtrVector &vect_ckm_chain)
-{
-    CKM::CertificateShPtrVector vect_untrusted;
-
     bool first = true;
     CKM::CertificateShPtr cert_end_entity;
-    LogDebug("Size of certs_list: " << certs_list.size());
-    for (auto &iter : certs_list) {
-        std::string cert_cp(iter->getBase64());
-        CKM::RawBuffer buff(cert_cp.begin(), cert_cp.end());
+    CKM::CertificateShPtrVector vect_untrusted;
+
+    LogDebug("Size of chain: " << chain.size());
+
+    for (auto iter = chain.begin(); iter != chain.end(); iter++) {
+        CKM::RawBuffer buff(iter->begin(), iter->end());
         CKM::CertificateShPtr cert = CKM::Certificate::create(buff, CKM::DataFormat::FORM_DER_BASE64);
 
         if (!cert) {
-            LogDebug("CKM failed to create certificate");
+            LogError("CKM failed to create certificate");
             return false;
         }
-        else if (first) {
-            cert_end_entity = cert;
+        if (first) {
             first = false;
+            cert_end_entity = cert;
             LogDebug("Found end entity certificate");
         }
         else {
@@ -245,15 +190,9 @@ bool Certs::ocsp_build_chain (const ValidationCore::CertificateList &certs_list,
 
 Certs::ocsp_response_t Certs::check_ocsp_chain (const chain_t &chain)
 {
-    ValidationCore::CertificateList certs_list;
-    if (!ocsp_create_list(chain, certs_list)) {
-        LogError("Error while build list of certificates");
-        return Certs::ocsp_response_t::OCSP_CERT_ERROR;
-    }
-
     CKM::CertificateShPtrVector vect_ckm_chain;
 
-    if (!ocsp_build_chain(certs_list, vect_ckm_chain)) {
+    if (!ocsp_build_chain(chain, vect_ckm_chain)) {
         LogError("Error while build chain of certificates");
         return Certs::ocsp_response_t::OCSP_CERT_ERROR;
     }

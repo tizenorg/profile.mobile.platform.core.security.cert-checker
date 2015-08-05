@@ -82,17 +82,9 @@ void Certs::search_app (app_t &app, ocsp_urls_t &ocsp_urls)
     (void)ocsp_urls;
 }
 
-bool Certs::ocsp_create_list(const chain_t &chain, ValidationCore::CertificateList &certs_list)
+bool Certs::ocsp_build_chain(const chain_t &chain, CKM::CertificateShPtrVector &vect_ckm_chain)
 {
     (void)chain;
-    (void)certs_list;
-    return true;
-}
-
-bool Certs::ocsp_build_chain (const ValidationCore::CertificateList &certs_list,
-        CKM::CertificateShPtrVector &vect_ckm_chain)
-{
-    (void)certs_list;
     (void)vect_ckm_chain;
     return true;
 }
