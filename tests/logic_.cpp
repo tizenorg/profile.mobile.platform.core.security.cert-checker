@@ -26,6 +26,8 @@
  */
 
 #include <cchecker/log.h>
+#include <chrono>
+#include <boost/test/unit_test.hpp>
 
 #include <logic_.h>
 
@@ -33,66 +35,88 @@ namespace CCHECKER {
 
 Logic_::Logic_(void) :
         Logic(),
-        _m_done_buffer(false)
+        m_installCnt(0),
+        m_uninstallCnt(0),
+        m_bufferCnt(0)
 {}
 
 Logic_::~Logic_(void)
-{}
+{
+    clean();
+}
 
 // For tests only
 
 void Logic_::connman_callback_manual_(bool state)
 {
-    set_online(state);
-
-    if (state) {
-        m_to_process.notify_one();
-    }
+    Logic::set_online(state);
 }
 
 void Logic_::pkgmgr_install_manual_(const app_t &app)
 {
-    m_queue.push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
-    m_to_process.notify_one();
+    push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
 }
 
 void Logic_::pkgmgr_uninstall_manual_(const app_t &app)
 {
-    m_queue.push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
-    m_to_process.notify_one();
+    push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
 }
 
-void Logic_::notify_(bool buffer)
+void Logic_::process_event(const event_t &event)
 {
-    if (buffer) {
-        _m_done_buffer = true;
+    Logic::process_event(event);
+
+    std::lock_guard<std::mutex> lock(_m_mutex_wait_cv);
+    switch(event.event_type)
+    {
+    case event_t::event_type_t::APP_INSTALL:
+        m_installCnt++;
+        LogDebug(m_installCnt << " " << m_uninstallCnt << " " << m_bufferCnt);
+        break;
+    case event_t::event_type_t::APP_UNINSTALL:
+        m_uninstallCnt++;
+        LogDebug(m_installCnt << " " << m_uninstallCnt << " " << m_bufferCnt);
+        break;
+    default:
         return;
     }
-
-    _m_done = true;
+    // notify caller
     _m_wait_for_process.notify_one();
 }
 
-void Logic_::wait_(int line)
+void Logic_::app_processed()
 {
-    LogDebug("_wait begin: " << line);
+    std::lock_guard<std::mutex> lock(_m_mutex_wait_cv);
+    m_bufferCnt++;
+    LogDebug(m_installCnt << " " << m_uninstallCnt << " " << m_bufferCnt);
+
+    // notify caller
+    _m_wait_for_process.notify_one();
+}
+
+void Logic_::reset_cnt()
+{
+    m_installCnt = 0;
+    m_uninstallCnt = 0;
+    m_bufferCnt = 0;
+}
+
+void Logic_::wait_for_worker(int installCnt, int uninstallCnt, int bufferCnt)
+{
+    LogDebug("Wait for: " << installCnt << " " << uninstallCnt << " " << bufferCnt);
     std::unique_lock<std::mutex> lock(_m_mutex_wait_cv);
-    _m_done = false;
-    _m_done_buffer = false;
-    bool should_wait = true;
-
-    // Protection against deadlock
-    while (!_m_done || !_m_done_buffer || should_wait) {
-        if (should_wait && m_do_not_sleep.try_lock()) {
-            _m_wait_for_process.wait(lock);
-            should_wait = false;
-            m_do_not_sleep.unlock();
-        }
-        else
-            m_to_process.notify_one();
-    }
-
-    LogDebug("_wait end: " << line);
+    bool timeout = !_m_wait_for_process.wait_for(
+            lock,
+            std::chrono::seconds(10),
+            [this, installCnt, uninstallCnt, bufferCnt]{
+                return m_installCnt == installCnt &&
+                       m_uninstallCnt == uninstallCnt &&
+                       m_bufferCnt == bufferCnt;
+            }
+    );
+    _m_mutex_wait_cv.unlock();
+    BOOST_REQUIRE(!timeout);
+    reset_cnt();
 }
 
 const std::list<app_t>& Logic_::get_buffer_()

@@ -43,12 +43,38 @@ class Logic_ : public Logic {
         void pkgmgr_uninstall_manual_(const app_t &app);
         const std::list<app_t>& get_buffer_();
 
-        virtual void wait_(int line);
+        void reset_cnt();
+        void wait_for_worker(int installCnt, int uninstallCnt, int bufferCnt);
+
     private:
-        virtual void notify_(bool buffer);
+        int m_installCnt;
+        int m_uninstallCnt;
+        int m_bufferCnt;
+
+        void process_event(const event_t &event);
+        void app_processed();
         std::condition_variable _m_wait_for_process;
         std::mutex _m_mutex_wait_cv;
-        bool _m_done_buffer;
+};
+
+class LogicWrapper {
+public:
+    LogicWrapper() {}
+    ~LogicWrapper() { m_logic.clean(); }
+
+    error_t setup() { return m_logic.setup(); }
+    void clean() { m_logic.clean(); }
+    void connman_callback_manual_(bool state) { m_logic.connman_callback_manual_(state); }
+    void pkgmgr_install_manual_(const app_t &app) { m_logic.pkgmgr_install_manual_(app); }
+    void pkgmgr_uninstall_manual_(const app_t &app) { m_logic.pkgmgr_uninstall_manual_(app); }
+    const std::list<app_t>& get_buffer_() { return m_logic.get_buffer_(); }
+
+    void wait_for_worker(int installCnt = 0, int uninstallCnt = 0, int bufferCnt = 0) {
+        m_logic.wait_for_worker(installCnt, uninstallCnt, bufferCnt);
+    }
+
+private:
+    Logic_ m_logic;
 };
 
 } // CCHECKER
