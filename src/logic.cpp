@@ -54,11 +54,12 @@ void Logic::clean(void)
     // wait and join processing thread
     if (m_thread.joinable()) {
         LogDebug("Waiting for join processing thread");
-        set_should_exit();
-        while (!m_do_not_sleep.try_lock())
+        {
+            std::lock_guard<std::mutex> lock(m_mutex_cv);
+            set_should_exit();
             m_to_process.notify_one();
+        }
         m_thread.join();
-        m_do_not_sleep.unlock();
         LogDebug("Processing thread joined");
     }
     else
@@ -69,6 +70,7 @@ Logic::Logic(void) :
         m_sqlquery(NULL),
         m_was_setup_called(false),
         m_is_online(false),
+        m_is_online_enabled(false),
         m_should_exit(false),
         m_proxy_connman(NULL),
         m_proxy_pkgmgr_install(NULL),
@@ -82,7 +84,14 @@ bool Logic::get_online() const
 
 void Logic::set_online(bool online)
 {
+    std::lock_guard<std::mutex> lock(m_mutex_cv);
+    if (m_is_online == online)
+        return;
     m_is_online = online;
+    if (m_is_online) {
+        m_is_online_enabled = true;
+        m_to_process.notify_one();
+    }
 }
 
 error_t Logic::setup_db()
@@ -318,15 +327,13 @@ void Logic::pkgmgr_callback_internal(GVariant       *parameters,
         if (event == EVENT_INSTALL) {
             LogDebug("Install: uid : " << uid << ", pkgid: " << pkgid <<
                     ", state: " << state << ", status: " << status);
-            m_queue.push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
+            push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
         }
         else if (event == EVENT_UNINSTALL) {
             LogDebug("Uninstall: uid : " << uid << ", pkgid: " << pkgid <<
                     ", state: " << state << ", status: " << status);
-            m_queue.push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
+            push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
         }
-
-        m_to_process.notify_one();
     }
     else
         LogDebug("Wrong state (" << std::string(state) << ") or status (" << std::string(status) << ")");
@@ -383,116 +390,96 @@ void Logic::process_queue(void)
     }
 }
 
-void Logic::call_ui(const app_t &app)
+bool Logic::call_ui(const app_t &app)
 {
     UI::UIBackend ui;
 
     if (ui.call_popup(app)) { // If calling popup or app_controll service will fail,
                                 // do not remove application, and ask about it once again later
-        remove_app_from_buffer_and_database(app);
         LogDebug("Popup shown correctly. Application will be removed from DB and buffer");
+        return true;
     }
-    else
-        LogDebug("Popup error. Application will be marked to show popup later.");
+    LogDebug("Popup error. Application will be marked to show popup later.");
+    return false;
+}
+
+bool Logic::process_app(app_t& app) {
+    // Check if app hasn't already been verified.
+    // If yes then just try to display popup once again, and go the next app.
+#if POPUP
+    if (app.verified == app_t::verified_t::NO) {
+        LogDebug(app.str() << " has been verified before. Popup should be shown.");
+        return call_ui(app);
+    }
+#endif
+
+    Certs::ocsp_response_t ret;
+    ret = m_certs.check_ocsp(app);
+
+    // If OCSP returns success or OCSP checking fails we should remove application from buffer and database
+    if (ret == Certs::ocsp_response_t::OCSP_APP_OK ||
+            ret == Certs::ocsp_response_t::OCSP_CERT_ERROR) {
+        LogDebug(app.str() << " OCSP verified (or not available for app's chains)");
+        return true;
+    }
+    else if (ret == Certs::ocsp_response_t::OCSP_APP_REVOKED) {
+        LogDebug(app.str() << " certificate has been revoked. Popup should be shown");
+        app.verified = app_t::verified_t::NO;
+#if POPUP
+// Do not remove app here - just waits for user answer from popup
+// Temporary solution because notification framework doesn't work
+        return call_ui(app);
+#else
+        return true;
+#endif
+    }
+    else {
+        LogDebug(app.str() << " should be checked again later");
+        // If check_ocsp returns Certs::ocsp_response_t::OCSP_CHECK_AGAIN
+        // app should be checked again later
+    }
+    return false;
 }
 
 void Logic::process_buffer(void)
 {
     for (auto iter = m_buffer.begin(); iter != m_buffer.end();) {
-
-        // Check if app hasn't already been verified.
-        // If yes then just try to display popup once again, and go the next app.
-#if POPUP
-        if (iter->verified == app_t::verified_t::NO) {
-            app_t app_cpy = *iter;
-            LogDebug(app_cpy.str() << " has been verified before. Popup should be shown.");
-            call_ui(app_cpy);
-            iter++;
-            continue;
-        }
-#endif
-
-        Certs::ocsp_response_t ret;
-        ret = m_certs.check_ocsp(*iter);
-
-        // If OCSP returns success or OCSP checking fails we should remove application from buffer and database
-        if (ret == Certs::ocsp_response_t::OCSP_APP_OK ||
-                ret == Certs::ocsp_response_t::OCSP_CERT_ERROR) {
-            LogDebug(iter->str() << " OCSP verified (or not available for app's chains)");
-            app_t app_cpy = *iter;
-            iter++;
-            remove_app_from_buffer_and_database(app_cpy);
-        }
-        else if (ret == Certs::ocsp_response_t::OCSP_APP_REVOKED) {
-            LogDebug(iter->str() << " certificate has been revoked. Popup should be shown");
-            iter->verified = app_t::verified_t::NO;
-            app_t app_cpy = *iter;
-            iter++;
-#if POPUP
-// Do not remove app here - just waits for user answer from popup
-// Temporary solution because notification framework doesn't work
-            call_ui(app_cpy);
-#else
-            remove_app_from_buffer_and_database(app_cpy);
-#endif
-        }
-        else {
-            LogDebug(iter->str() << " should be checked again later");
-            // If check_ocsp returns Certs::ocsp_response_t::OCSP_CHECK_AGAIN
-            // app should be checked again later
-            iter++;
-        }
+        bool remove = process_app(*iter);
+        auto prev = *iter;
+        iter++;
+        if (remove)
+            remove_app_from_buffer_and_database(prev);
+        app_processed();
     }
+}
+
+void Logic::push_event(event_t event)
+{
+    std::lock_guard<std::mutex> lock(m_mutex_cv);
+    m_queue.push_event(std::move(event));
+    m_to_process.notify_one();
 }
 
 void Logic::process_all()
 {
-    //Check if should't exit
-    while (!get_should_exit()) {
+    for(;;) {
         std::unique_lock<std::mutex> lock(m_mutex_cv);
+        if (m_should_exit)
+            break;  //lock will be unlocked upon destruction
 
-        if (m_queue.empty()) {
-            // Protection against deadlock
-#if TESTS
-            if (!_m_done && m_do_not_sleep.try_lock()) {
-                notify_(false);
-#else
-            if (m_do_not_sleep.try_lock()) {
-#endif
-                LogDebug("Processing thread: waiting on condition");
-                m_to_process.wait(lock);
+        // don't sleep if there are online/installation/deinstallation events to process
+        if(m_queue.empty() && !m_is_online_enabled)
+            m_to_process.wait(lock); // spurious wakeups do not concern us
 
-                m_do_not_sleep.unlock();
-            }
-#if TESTS
-            else
-                notify_(false);
-#endif
-        }
-        else
-            LogDebug("Processing thread: More events in queue - processing again");
-
-        LogDebug("Processing thread: running");
+        m_is_online_enabled = false;
+        lock.unlock();
 
         process_queue();
-        if (get_online()) {
+        if (get_online())
             process_buffer();
-#if TESTS
-            notify_(true);
-#endif
-        }
-        else {
-#if TESTS
-            notify_(true);
-#endif
+        else
             LogDebug("No network. Buffer won't be processed");
-        }
-
-        LogDebug("Processing done");
     }
-
-    // should process queue just before exit
-    process_queue();
 }
 
 void Logic::process_event(const event_t &event)

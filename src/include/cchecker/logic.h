@@ -98,10 +98,15 @@ class Logic {
                         void *logic_ptr)
                 );
 
+        void push_event(event_t event);
+
         void process_all(void);
         void process_queue(void);
-        void process_event(const event_t &event);
+        virtual void process_event(const event_t &event);
+
+        bool process_app(app_t& app);
         void process_buffer(void);
+        virtual void app_processed() {}; // for tests
 
         bool get_online(void) const;
         void set_online(bool online);
@@ -109,7 +114,7 @@ class Logic {
         bool get_should_exit(void) const;
         void set_should_exit(void);
 
-        void call_ui(const app_t &app);
+        bool call_ui(const app_t &app);
 
         Queue m_queue;
         Certs m_certs;
@@ -118,21 +123,16 @@ class Logic {
         bool m_was_setup_called;
 
         bool m_is_online;
+        // TODO: use m_queue for online events
+        bool m_is_online_enabled;
         std::condition_variable m_to_process;
         std::mutex m_mutex_cv;
         std::thread m_thread;
         bool m_should_exit;
-        std::mutex m_do_not_sleep; // For cleaning purpose only
 
         GDBusProxy *m_proxy_connman;
         GDBusProxy *m_proxy_pkgmgr_install;
         GDBusProxy *m_proxy_pkgmgr_uninstall;
-
-#if TESTS
-        // --- for tests only ---
-        virtual void notify_(bool buffer) {};
-        bool _m_done;
-#endif
 };
 
 } // CCHECKER
