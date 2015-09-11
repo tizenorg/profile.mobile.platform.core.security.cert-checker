@@ -30,9 +30,6 @@
 
 using namespace std;
 
-// FIXME: Popup temporary disabled
-#define POPUP 0
-
 namespace CCHECKER {
 
 namespace {
@@ -40,6 +37,11 @@ const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
 }
 
 Logic::~Logic(void)
+{
+    clean();
+}
+
+void Logic::clean(void)
 {
     LogDebug("Cert-checker cleaning.");
 
@@ -517,6 +519,19 @@ void Logic::add_app_to_buffer_and_database(const app_t &app)
     if(!m_sqlquery->add_app_to_check_list(app)) {
         LogError("Failed to add " << app.str() << "to database");
         // We can do nothing about it. We can only log the error.
+    }
+
+    // Then add app to buffer - skip if already added.
+    // FIXME: What to do if the same app will be installed twice?
+    //        Add it twice to the buffer, or check if apps in buffer are unique?
+    //        At the moment doubled apps are skipped.
+    for (auto &iter : m_buffer) {
+        if (iter.app_id == app.app_id &&
+            iter.pkg_id == app.pkg_id &&
+            iter.uid == app.uid) {
+                LogDebug(app.str() << " already in buffer. Skip.");
+                return;
+        }
     }
 
     // Then add app to buffer

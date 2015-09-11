@@ -58,7 +58,9 @@ class Logic {
     public:
         Logic(void);
         virtual ~Logic(void);
-        error_t  setup();
+        error_t  setup(void);
+        virtual void clean(void);
+
         static void pkgmgr_install_callback(GDBusProxy *proxy,
                 gchar      *sender_name,
                 gchar      *signal_name,
@@ -76,7 +78,7 @@ class Logic {
                 void *logic_ptr);
 
 
-    private:
+    protected:
         error_t setup_db();
         void load_database_to_buffer();
 

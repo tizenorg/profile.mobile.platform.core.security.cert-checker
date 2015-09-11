@@ -36,6 +36,7 @@ class Logic_ : public Logic {
     public:
         Logic_(void);
         virtual ~Logic_(void);
+        virtual void clean(void);
 
         // For tests only
         void connman_callback_manual_(bool state);

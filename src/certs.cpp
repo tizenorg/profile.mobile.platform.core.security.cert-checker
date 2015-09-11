@@ -204,6 +204,8 @@ Certs::ocsp_response_t Certs::check_ocsp_chain (const chain_t &chain)
         // Add handling for different errors codes
         // For these we can try to check ocsp again later:
         switch (ret) {
+        case CKM_API_ERROR_NOT_SUPPORTED:
+            LogDebug("Key-manager OCSP API temporary diabled.");
         case CKM_API_ERROR_SOCKET:
         case CKM_API_ERROR_BAD_REQUEST:
         case CKM_API_ERROR_BAD_RESPONSE:

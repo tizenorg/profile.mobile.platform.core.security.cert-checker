@@ -44,8 +44,23 @@ Logic_::~Logic_(void)
 {
     clean();
 }
+void Logic_::clean(void)
+{
+    LogDebug("Cert-checker cleaning.");
 
-// For tests only
+    // wait and join processing thread
+    if (m_thread.joinable()) {
+        LogDebug("Waiting for join processing thread");
+        {
+            std::lock_guard < std::mutex > lock(m_mutex_cv);
+            set_should_exit();
+            m_to_process.notify_one();
+        }
+        m_thread.join();
+        LogDebug("Processing thread joined");
+    } else
+        LogDebug("No thread to join");
+}
 
 void Logic_::connman_callback_manual_(bool state)
 {
