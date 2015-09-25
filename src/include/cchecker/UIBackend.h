@@ -21,24 +21,21 @@
 
 #pragma once
 
-#include <notification.h>
-
 #include <cchecker/app.h>
 
 namespace CCHECKER {
 namespace UI {
 
-enum response_e {
-    DONT_UNINSTALL,
-    UNINSTALL,
-    ERROR
+enum response_e : int {
+    DONT_UNINSTALL = 0,
+    UNINSTALL      = 1,
+    ERROR          = 2,
+    NO_ERROR       = 3
 };
-
-// FIXME: notification framework is corrupted and it doesn't work as it should
 
 class UIBackend {
 public:
-    explicit UIBackend(int timeout = 60); //timeout in seconds
+    explicit UIBackend(int timeout = 60); //timeout in seconds (zero or less means infinity)
     virtual ~UIBackend();
 
     // Displays popup with question, and - if needed - app_control for removing application.
@@ -48,11 +45,8 @@ public:
     bool call_popup(const app_t &app);
 
 private:
-    response_e run();
-    bool create_ui(const std::string &app_id, const std::string &pkg_id);
-
-    notification_h m_notification;
     const int m_responseTimeout; // seconds
+    response_e run(const app_t &app);
 };
 
 } // UI

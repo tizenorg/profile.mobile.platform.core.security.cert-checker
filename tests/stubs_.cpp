@@ -112,8 +112,7 @@ void DB::SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
 
 // UI
 UI::UIBackend::UIBackend(int timeout) :
-    m_notification(nullptr),
-    m_responseTimeout(timeout)
+        m_responseTimeout(timeout)
 {}
 
 UI::UIBackend::~UIBackend()
