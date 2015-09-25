@@ -40,7 +40,7 @@ namespace DB {
 class SqlQuery;
 }
 
-enum error_t {
+enum error_t : int {
     NO_ERROR,
     REGISTER_CALLBACK_ERROR,
     DBUS_ERROR,

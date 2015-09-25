@@ -1,0 +1,14 @@
+msgid "SID_TITLE_OCSP_VERIFICATION_FAILED"
+msgstr "OCSP verification failed"
+
+msgid "SID_CONTENT_OCSP_VERIFICATION_FAILED"
+msgstr "A certificate of an application %s (%s) was revoked."
+
+msgid "SID_CONTENT_OCSP_PACKAGE VERIFICATION_FAILED"
+msgstr "A certificate of one of applications in package %s was revoked."
+
+msgid "SID_BTN_OCSP_KEEP_APP"
+msgstr "Keep"
+
+msgid "SID_BTN_OCSP_UNINSTALL_APP"
+msgstr "Uninstall"
