@@ -17,7 +17,7 @@
 #
 
 SET(POFILES
-    en.po pl.po
+    en.po en_GB.po en_US.po pl.po
 )
 
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})

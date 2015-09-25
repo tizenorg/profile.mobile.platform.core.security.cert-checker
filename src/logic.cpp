@@ -21,7 +21,6 @@
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
-#include <app_control_internal.h>
 
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
@@ -429,7 +428,6 @@ bool Logic::process_app(app_t& app) {
         app.verified = app_t::verified_t::NO;
 #if POPUP
 // Do not remove app here - just waits for user answer from popup
-// Temporary solution because notification framework doesn't work
         return call_ui(app);
 #else
         return true;
