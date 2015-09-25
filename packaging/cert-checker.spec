@@ -9,13 +9,14 @@ Source1:    %{name}.manifest
 BuildRequires: cmake
 BuildRequires: zip
 BuildRequires: gettext-tools
+BuildRequires: pkgconfig(capi-appfw-application)
+BuildRequires: pkgconfig(cert-svc-vcore)
 BuildRequires: pkgconfig(db-util)
-BuildRequires: pkgconfig(icu-i18n)
-BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(notification)
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)
-BuildRequires: pkgconfig(cert-svc-vcore)
+BuildRequires: pkgconfig(elementary)
+BuildRequires: pkgconfig(glib-2.0)
+BuildRequires: pkgconfig(icu-i18n)
 BuildRequires: pkgconfig(key-manager)
 BuildRequires: pkgconfig(libsystemd-journal)
 BuildRequires: pkgconfig(libtzplatform-config)
@@ -78,7 +79,7 @@ if [ $1 = 2 ]; then
     # update
     systemctl restart cert-checker.service
 fi
-
+chsmack -a System %{TZ_SYS_DB}/.cert-checker.db
 
 %preun
 if [ $1 = 0 ]; then
@@ -95,6 +96,7 @@ fi
 
 %files -f %{name}.lang
 %{_bindir}/cert-checker
+%{_bindir}/cert-checker-popup
 %manifest %{_datadir}/%{name}.manifest
 %{_datadir}/license/%{name}
 %config(noreplace) %attr(0600,root,root) %{TZ_SYS_DB}/.cert-checker.db
