@@ -3,6 +3,9 @@ Description=Start the Cert-Checker
 Requires=dbus.service
 
 [Service]
+EnvironmentFile=/etc/sysconfig/enlightenment
+# Makes popup bigger
+Environment="ELM_SCALE=4.0"
 Type=simple
 ExecStart=/usr/bin/cert-checker
 
