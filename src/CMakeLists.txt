@@ -1,13 +1,14 @@
 PKG_CHECK_MODULES(CERT_CHECKER_DEP
     REQUIRED
+    capi-appfw-application
     cert-svc-vcore
     dbus-1
     dbus-glib-1
     db-util
+    elementary
     glib-2.0
     gio-2.0
     icu-i18n
-    notification
     key-manager
     libsystemd-journal
     libtzplatform-config
@@ -31,6 +32,7 @@ SET(CERT_CHECKER_SOURCES
     ${CERT_CHECKER_SRC_PATH}/dpl/core/src/exception.cpp
     ${CERT_CHECKER_SRC_PATH}/dpl/core/src/noncopyable.cpp
     ${CERT_CHECKER_SRC_PATH}/dpl/core/src/string.cpp
+    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/serialization.cpp
     # dpl DB
     ${CERT_CHECKER_SRC_PATH}/dpl/db/src/sql_connection.cpp
     ${CERT_CHECKER_SRC_PATH}/dpl/db/src/naive_synchronization_object.cpp
@@ -38,6 +40,7 @@ SET(CERT_CHECKER_SOURCES
     ${CERT_CHECKER_SRC_PATH}/db/sql_query.cpp
     # UI
     ${CERT_CHECKER_SRC_PATH}/ui/UIBackend.cpp
+    ${CERT_CHECKER_SRC_PATH}/ui/popup-runner.cpp
     )
 
 INCLUDE_DIRECTORIES(SYSTEM
@@ -56,3 +59,4 @@ TARGET_LINK_LIBRARIES(${TARGET_CERT_CHECKER}
 INSTALL(TARGETS ${TARGET_CERT_CHECKER} DESTINATION ${BINDIR})
 
 ADD_SUBDIRECTORY(po)
+ADD_SUBDIRECTORY(ui)

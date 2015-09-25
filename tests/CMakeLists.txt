@@ -1,13 +1,14 @@
 PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
     REQUIRED
+    capi-appfw-application
     cert-svc-vcore
+    db-util
     dbus-1
     dbus-glib-1
-    db-util
+    elementary
     glib-2.0
     gio-2.0
     icu-i18n
-    notification
     key-manager
     libsystemd-journal
     libtzplatform-config
@@ -76,6 +77,7 @@ SET(CERT_CHECKER_POPUP_TEST_SOURCES
     ${CERT_CHECKER_TESTS_SRC_PATH}/popup_test.cpp
     # cert-checker
     ${CERT_CHECKER_SRC_PATH}/app.cpp
+    ${CERT_CHECKER_SRC_PATH}/ui/popup-runner.cpp
     ${CERT_CHECKER_SRC_PATH}/ui/UIBackend.cpp
     # logs
     ${CERT_CHECKER_SRC_PATH}/log/log.cpp

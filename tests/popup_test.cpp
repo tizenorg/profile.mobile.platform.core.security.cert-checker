@@ -22,16 +22,23 @@
 
 #include <cchecker/UIBackend.h>
 #include <cchecker/log.h>
+#include <cchecker/app.h>
 
 using namespace CCHECKER;
 
-int main(void)
+int main(int argc, char** argv)
 {
-    LogDebug("Cert-checker start!");
+    LogDebug("Cert-checker popup-test start!");
+
+    int timeout = 60;
+    if (argc > 1) {
+        timeout = atoi(argv[1]);
+    }
+    LogDebug("popup-test timeout: " << timeout);
 
     setlocale(LC_ALL, "");
 
-    UI::UIBackend ui(20); // timeout 20 seconds
+    UI::UIBackend ui(timeout); // timeout 20 seconds
 
     app_t app(std::string("test_APP_ID"),
             std::string("test PKG ID"),
@@ -40,6 +47,6 @@ int main(void)
 
     ui.call_popup(app);
 
-    LogDebug("Cert-checker exit!");
+    LogDebug("Cert-checker popup-test exit!");
     return 0;
 }
