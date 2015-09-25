@@ -22,6 +22,7 @@
 
 #include <cchecker/UIBackend.h>
 #include <cchecker/log.h>
+#include <cchecker/app.h>
 
 using namespace CCHECKER;
 
@@ -31,7 +32,7 @@ int main(void)
 
     setlocale(LC_ALL, "");
 
-    UI::UIBackend ui(20); // timeout 20 seconds
+    UI::UIBackend ui(-1); // timeout 20 seconds
 
     app_t app(std::string("test_APP_ID"),
             std::string("test PKG ID"),

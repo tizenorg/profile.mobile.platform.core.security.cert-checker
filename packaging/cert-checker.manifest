@@ -1,8 +1,10 @@
 <manifest>
     <request>
-        <domain name="_"/>
+        <domain name="System"/>
     </request>
     <assign>
-        <filesystem path="/usr/dbspace/.cert-checker.db" label="System"/>
+        <filesystem path="/usr/dbspace/.cert-checker.db" label="System" />
+        <filesystem path="/usr/bin/cert-checker-popup"   label="System" />
+        <filesystem path="/usr/bin/cert-checker"         label="System" />
     </assign>
 </manifest>

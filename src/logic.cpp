@@ -21,7 +21,6 @@
  */
 #include <stdexcept>
 #include <tzplatform_config.h>
-#include <app_control_internal.h>
 
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
@@ -394,7 +393,7 @@ void Logic::process_queue(void)
 
 bool Logic::call_ui(const app_t &app)
 {
-    UI::UIBackend ui;
+    UI::UIBackend ui(60);
 
     if (ui.call_popup(app)) { // If calling popup or app_controll service will fail,
                                 // do not remove application, and ask about it once again later
@@ -429,7 +428,6 @@ bool Logic::process_app(app_t& app) {
         app.verified = app_t::verified_t::NO;
 #if POPUP
 // Do not remove app here - just waits for user answer from popup
-// Temporary solution because notification framework doesn't work
         return call_ui(app);
 #else
         return true;
