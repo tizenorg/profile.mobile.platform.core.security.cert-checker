@@ -197,7 +197,7 @@ Certs::ocsp_response_t Certs::check_ocsp_chain (const chain_t &chain)
         return Certs::ocsp_response_t::OCSP_CERT_ERROR;
     }
 
-    int status;
+    int status = CKM_API_OCSP_STATUS_UNKNOWN;
     int ret = m_ckm->ocspCheck(vect_ckm_chain, status);
     if (ret != CKM_API_SUCCESS) {
         LogError("CKM ckeck OCSP returned " << ret);
