@@ -116,8 +116,8 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
         LogDebug("Checking signature");
         chain_t chain;
         ValidationCore::CertificateList certs;
-        if (ValidationCore::SignatureValidator::makeChainBySignature(iter, false, certs) !=
-                ValidationCore::SignatureValidator::SIGNATURE_VALID) {
+        ValidationCore::SignatureValidator validator(iter);
+        if (validator.makeChainBySignature(false, certs) != ValidationCore::E_SIG_NONE) {
             LogError("Signature: " << iter.getFileName() << " of " << app_path.c_str() << " is invalid");
             continue;
         }
