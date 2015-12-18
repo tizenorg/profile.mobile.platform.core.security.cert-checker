@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_rwxnUNhLEeS9bYmEN__hpg" name="NewModel">
+  <packagedElement xmi:type="uml:StateMachine" xmi:id="_K0G1INhPEeS9bYmEN__hpg" name="Cert-checker state diagram">
+    <region xmi:id="_K0HcMNhPEeS9bYmEN__hpg" name="Starting daemon">
+      <transition xmi:id="_ohPMYNhPEeS9bYmEN__hpg" name="Transition_Initial1ToState2" source="_dD4YQNhPEeS9bYmEN__hpg" target="_OP0HANhPEeS9bYmEN__hpg"/>
+      <transition xmi:id="_XsbV8NhQEeS9bYmEN__hpg" name="Transition_Load certs/app_ids from DB to the bufferToMain loop - waiting for events" source="_OP0HANhPEeS9bYmEN__hpg" target="_Nxd-INhPEeS9bYmEN__hpg"/>
+      <subvertex xmi:type="uml:State" xmi:id="_OP0HANhPEeS9bYmEN__hpg" name="Load certs/app_ids from DB to the buffer"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_dD4YQNhPEeS9bYmEN__hpg" name="Initial1"/>
+    </region>
+    <region xmi:id="_3fqooNhREeS9bYmEN__hpg" name="Main loop">
+      <transition xmi:id="_LcqikNhSEeS9bYmEN__hpg" name="Transition_Main loop - waiting for eventsToApp install event" source="_Nxd-INhPEeS9bYmEN__hpg" target="_brUNYNhQEeS9bYmEN__hpg"/>
+      <transition xmi:id="_L-7iINhSEeS9bYmEN__hpg" name="Transition_App install eventToAdd cert/app_id to the database and to the buffer" source="_brUNYNhQEeS9bYmEN__hpg" target="_MtR8gOjSEeSrC54j_XokBw"/>
+      <transition xmi:id="_NKxqMNhSEeS9bYmEN__hpg" name="Transition_Add cert/app_id to the database and to the bufferToMain loop - waiting for events" source="_yk50QNhQEeS9bYmEN__hpg"/>
+      <transition xmi:id="_n9wkgNhSEeS9bYmEN__hpg" name="Transition_Buffer empty?ToMain loop - waiting for events" guard="_2Ujq8NhSEeS9bYmEN__hpg" target="_ApPKkOjMEeSrC54j_XokBw">
+        <ownedRule xmi:id="_2Ujq8NhSEeS9bYmEN__hpg" name="Transition_Buffer empty?ToMain loop - waiting for events_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_2Ujq8dhSEeS9bYmEN__hpg" name="Transition_Buffer empty?ToMain loop - waiting for events_guard">
+            <body>Yes</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_6LNzcNhSEeS9bYmEN__hpg" name="Transition_Main loop - waiting for eventsToNettwork online event" source="_Nxd-INhPEeS9bYmEN__hpg" target="_HJPlkNhSEeS9bYmEN__hpg"/>
+      <transition xmi:id="_6x6AANhSEeS9bYmEN__hpg" name="Transition_Nettwork online eventToBuffer empty?" source="_HJPlkNhSEeS9bYmEN__hpg"/>
+      <transition xmi:id="_EA44ENhTEeS9bYmEN__hpg" name="Transition_Check the bufferToBuffer empty?"/>
+      <transition xmi:id="_zT9LQNhTEeS9bYmEN__hpg" name="Transition_Remove cert/app_id from the buffer and the databaseToCheck the buffer" source="_Tr4KQNhTEeS9bYmEN__hpg" target="_n9WfoOjLEeSrC54j_XokBw"/>
+      <transition xmi:id="_W7wKINhUEeS9bYmEN__hpg" name="Transition_Check OCSP for cert/app_id from bufferToChoice2" source="_FtlDYNhTEeS9bYmEN__hpg" target="_U2PPINhUEeS9bYmEN__hpg"/>
+      <transition xmi:id="_Xex-sNhUEeS9bYmEN__hpg" name="Transition_Choice2ToRemove cert/app_id from the buffer and the database" guard="_Y4kcINhUEeS9bYmEN__hpg" source="_U2PPINhUEeS9bYmEN__hpg" target="_Tr4KQNhTEeS9bYmEN__hpg">
+        <ownedRule xmi:id="_Y4kcINhUEeS9bYmEN__hpg" name="Transition_Choice2ToRemove cert/app_id from the buffer and the database_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_Y4kcIdhUEeS9bYmEN__hpg" name="Transition_Choice2ToRemove cert/app_id from the buffer and the database_guard">
+            <body>Certificate valid</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_dSx9oNhUEeS9bYmEN__hpg" name="Transition_Choice2ToShow popup with question: &quot;Remove application?&quot;" guard="_fM7WINhUEeS9bYmEN__hpg" source="_U2PPINhUEeS9bYmEN__hpg" target="_5Yb2MNhTEeS9bYmEN__hpg">
+        <ownedRule xmi:id="_fM7WINhUEeS9bYmEN__hpg" name="Transition_Choice2ToShow popup with question: &quot;Remove application?&quot;_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_fM7WIdhUEeS9bYmEN__hpg" name="Transition_Choice2ToShow popup with question: &quot;Remove application?&quot;_guard">
+            <body>Certificate invalid</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_5JJnkNhUEeS9bYmEN__hpg" name="Transition_Show popup with question: &quot;Remove application?&quot;ToChoice3" source="_5Yb2MNhTEeS9bYmEN__hpg" target="_1dU2ENhUEeS9bYmEN__hpg"/>
+      <transition xmi:id="_6c_OANhUEeS9bYmEN__hpg" name="Transition_Choice3ToShow UI to disabling/removing application" guard="_-zUVENhUEeS9bYmEN__hpg" source="_1dU2ENhUEeS9bYmEN__hpg" target="_uT3gENhUEeS9bYmEN__hpg">
+        <ownedRule xmi:id="_-zUVENhUEeS9bYmEN__hpg" name="Transition_Choice3ToShow UI to disabling/removing application_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_-zUVEdhUEeS9bYmEN__hpg" name="Transition_Choice3ToShow UI to disabling/removing application_guard">
+            <body>User choice: Yes</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_FoKtANhVEeS9bYmEN__hpg" name="Transition_User choiceToRemove cert/app_id from the buffer and the database" guard="_I41MgNhVEeS9bYmEN__hpg" source="_1dU2ENhUEeS9bYmEN__hpg" target="_Tr4KQNhTEeS9bYmEN__hpg">
+        <ownedRule xmi:id="_I41MgNhVEeS9bYmEN__hpg" name="Transition_User choiceToRemove cert/app_id from the buffer and the database_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_I41MgdhVEeS9bYmEN__hpg" name="Transition_User choiceToRemove cert/app_id from the buffer and the database_guard">
+            <body>User choice: No</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_NAzXAN0BEeS9bYmEN__hpg" name="Transition_Main loop - waiting for eventsToApp uninstall event" source="_Nxd-INhPEeS9bYmEN__hpg" target="_DSJV0N0AEeS9bYmEN__hpg"/>
+      <transition xmi:id="_O_dcEN0BEeS9bYmEN__hpg" name="Transition_Check if cert/app_id present in the database and the bufferToApp present?" source="_cwIMEN0AEeS9bYmEN__hpg" target="_Ezld8N0BEeS9bYmEN__hpg"/>
+      <transition xmi:id="_PhBRAN0BEeS9bYmEN__hpg" name="Transition_App present?ToRemove cert/app_id from the buffer and the database" guard="_ZtynAN0BEeS9bYmEN__hpg" source="_Ezld8N0BEeS9bYmEN__hpg" target="_8xJRgN0AEeS9bYmEN__hpg">
+        <ownedRule xmi:id="_ZtynAN0BEeS9bYmEN__hpg" name="Transition_App present?ToRemove cert/app_id from the buffer and the database_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_ZtynAd0BEeS9bYmEN__hpg" name="Transition_App present?ToRemove cert/app_id from the buffer and the database_guard">
+            <body>Yes</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_Sp5tgN0BEeS9bYmEN__hpg" name="Transition_App present?ToMain loop - waiting for events" guard="_bKtQ8N0BEeS9bYmEN__hpg" source="_Ezld8N0BEeS9bYmEN__hpg" target="_yfl1sOjTEeSrC54j_XokBw">
+        <ownedRule xmi:id="_bKtQ8N0BEeS9bYmEN__hpg" name="Transition_App present?ToMain loop - waiting for events_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_bKtQ8d0BEeS9bYmEN__hpg" name="Transition_App present?ToMain loop - waiting for events_guard">
+            <body>No</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_PjYkUN0IEeS9bYmEN__hpg" name="Transition_Show UI to disabling/removing applicationToMain loop - waiting for events" source="_uT3gENhUEeS9bYmEN__hpg" target="_Tr4KQNhTEeS9bYmEN__hpg"/>
+      <transition xmi:id="_Jr7vkOjLEeSrC54j_XokBw" name="Transition_Buffer empty?ToFork5" target="_FtlDYNhTEeS9bYmEN__hpg"/>
+      <transition xmi:id="_RY-TwOjLEeSrC54j_XokBw" name="Transition_New threadToMain loop - waiting for events" source="_C_CZwOjLEeSrC54j_XokBw" target="_Nxd-INhPEeS9bYmEN__hpg"/>
+      <transition xmi:id="_-KX7cOjLEeSrC54j_XokBw" name="Transition_Check the bufferToBuffer empty?" source="_n9WfoOjLEeSrC54j_XokBw" target="_4x2-oOjLEeSrC54j_XokBw"/>
+      <transition xmi:id="_-jNSMOjLEeSrC54j_XokBw" name="Transition_Buffer empty?ToCheck OCSP for cert/app_id from buffer" guard="__Z1YMOjLEeSrC54j_XokBw" source="_4x2-oOjLEeSrC54j_XokBw" target="_FtlDYNhTEeS9bYmEN__hpg">
+        <ownedRule xmi:id="__Z1YMOjLEeSrC54j_XokBw" name="Transition_Buffer empty?ToCheck OCSP for cert/app_id from buffer_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="__Z1YMejLEeSrC54j_XokBw" name="Transition_Buffer empty?ToCheck OCSP for cert/app_id from buffer_guard">
+            <body>No</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_BbJIoOjMEeSrC54j_XokBw" name="Transition_Buffer empty?ToTerminate7" guard="_DFRvMOjMEeSrC54j_XokBw" source="_4x2-oOjLEeSrC54j_XokBw" target="_ApPKkOjMEeSrC54j_XokBw">
+        <ownedRule xmi:id="_DFRvMOjMEeSrC54j_XokBw" name="Transition_Buffer empty?ToTerminate7_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_DFRvMejMEeSrC54j_XokBw" name="Transition_Buffer empty?ToTerminate7_guard">
+            <body>Yes</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_lXrPIOjREeSrC54j_XokBw" name="Transition_Network online eventToBuffer empty?" source="_h9Nd8OjSEeSrC54j_XokBw"/>
+      <transition xmi:id="_LCIz4OjTEeSrC54j_XokBw" name="Transition_App uninstall eventToPass uninstall event to queue" source="_DSJV0N0AEeS9bYmEN__hpg" target="_aO_OAOjSEeSrC54j_XokBw"/>
+      <transition xmi:id="_AWUfgOjVEeSrC54j_XokBw" name="Transition_New threadToProcess event queue" source="_C_CZwOjLEeSrC54j_XokBw" target="_h9Nd8OjSEeSrC54j_XokBw"/>
+      <transition xmi:id="_BrKykOjVEeSrC54j_XokBw" name="Transition_Process event queueToQueue empty?" source="_h9Nd8OjSEeSrC54j_XokBw" target="_yfl1sOjTEeSrC54j_XokBw"/>
+      <transition xmi:id="_4BbmQOjWEeSrC54j_XokBw" name="Transition_Network online eventToNew thread" source="_HJPlkNhSEeS9bYmEN__hpg" target="_C_CZwOjLEeSrC54j_XokBw"/>
+      <transition xmi:id="_4_r-QOjWEeSrC54j_XokBw" name="Transition_Pass install event to queueToNew thread" source="_MtR8gOjSEeSrC54j_XokBw" target="_C_CZwOjLEeSrC54j_XokBw"/>
+      <transition xmi:id="_5sdksOjWEeSrC54j_XokBw" name="Transition_Pass uninstall event to queueToNew thread" source="_aO_OAOjSEeSrC54j_XokBw" target="_C_CZwOjLEeSrC54j_XokBw"/>
+      <transition xmi:id="_R6eycOjYEeSrC54j_XokBw" name="Transition_Is network present?ToTerminate thread" guard="_SiKdgOjYEeSrC54j_XokBw" source="_JKVLcOjYEeSrC54j_XokBw" target="_ApPKkOjMEeSrC54j_XokBw">
+        <ownedRule xmi:id="_SiKdgOjYEeSrC54j_XokBw" name="Transition_Is network present?ToTerminate thread_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_SiKdgejYEeSrC54j_XokBw" name="Transition_Is network present?ToTerminate thread_guard">
+            <body>No</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_TBbzcOjYEeSrC54j_XokBw" name="Transition_Is network present?ToCheck the buffer" guard="_Ts_48OjYEeSrC54j_XokBw" source="_JKVLcOjYEeSrC54j_XokBw" target="_n9WfoOjLEeSrC54j_XokBw">
+        <ownedRule xmi:id="_Ts_48OjYEeSrC54j_XokBw" name="Transition_Is network present?ToCheck the buffer_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_Ts_48ejYEeSrC54j_XokBw" name="Transition_Is network present?ToCheck the buffer_guard">
+            <body>Yes</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_ZM1GQOj6EeSrC54j_XokBw" name="Transition_OCSP resultToSkip this app. Check later" guard="_kFstQOj6EeSrC54j_XokBw" source="_U2PPINhUEeS9bYmEN__hpg" target="_RaGJwOj6EeSrC54j_XokBw">
+        <ownedRule xmi:id="_kFstQOj6EeSrC54j_XokBw" name="Transition_OCSP resultToSkip this app. Check later_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_kFstQej6EeSrC54j_XokBw" name="Transition_OCSP resultToSkip this app. Check later_guard">
+            <body>Network error</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_onTQMOj6EeSrC54j_XokBw" name="Transition_Skip this app. Check laterToCheck the buffer" source="_RaGJwOj6EeSrC54j_XokBw" target="_n9WfoOjLEeSrC54j_XokBw"/>
+      <transition xmi:id="_ysjuEP-lEeSULpTfj1IcJg" name="Transition_User choiceToMark app as checked. Ask user later." guard="_1AL9kP-lEeSULpTfj1IcJg" source="_1dU2ENhUEeS9bYmEN__hpg" target="_fZc7IP-kEeSULpTfj1IcJg">
+        <ownedRule xmi:id="_1AL9kP-lEeSULpTfj1IcJg" name="Transition_User choiceToMark app as checked. Ask user later._transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_1AL9kf-lEeSULpTfj1IcJg" name="Transition_User choiceToMark app as checked. Ask user later._guard">
+            <body>Popup error</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_4VLjcP-lEeSULpTfj1IcJg" name="Transition_Mark app as checked. Ask user later.ToCheck the buffer" source="_fZc7IP-kEeSULpTfj1IcJg" target="_n9WfoOjLEeSrC54j_XokBw"/>
+      <subvertex xmi:type="uml:State" xmi:id="_Nxd-INhPEeS9bYmEN__hpg" name="Main loop - waiting for events"/>
+      <subvertex xmi:type="uml:State" xmi:id="_brUNYNhQEeS9bYmEN__hpg" name="App install event"/>
+      <subvertex xmi:type="uml:State" xmi:id="_HJPlkNhSEeS9bYmEN__hpg" name="Network online event"/>
+      <subvertex xmi:type="uml:State" xmi:id="_FtlDYNhTEeS9bYmEN__hpg" name="Check OCSP for cert/app_id from buffer"/>
+      <subvertex xmi:type="uml:State" xmi:id="_Tr4KQNhTEeS9bYmEN__hpg" name="Remove cert/app_id from the buffer and the database"/>
+      <subvertex xmi:type="uml:State" xmi:id="_5Yb2MNhTEeS9bYmEN__hpg" name="Show popup with question: &quot;Remove application?&quot;"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_U2PPINhUEeS9bYmEN__hpg" name="OCSP result" kind="choice"/>
+      <subvertex xmi:type="uml:State" xmi:id="_uT3gENhUEeS9bYmEN__hpg" name="Show UI to disabling/removing application"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_1dU2ENhUEeS9bYmEN__hpg" name="User choice" kind="choice"/>
+      <subvertex xmi:type="uml:State" xmi:id="_DSJV0N0AEeS9bYmEN__hpg" name="App uninstall event"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_C_CZwOjLEeSrC54j_XokBw" name="New thread" kind="fork"/>
+      <subvertex xmi:type="uml:State" xmi:id="_n9WfoOjLEeSrC54j_XokBw" name="Check the buffer"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_4x2-oOjLEeSrC54j_XokBw" name="Buffer empty?" kind="choice"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_ApPKkOjMEeSrC54j_XokBw" name="Terminate thread" kind="terminate"/>
+      <subvertex xmi:type="uml:State" xmi:id="_MtR8gOjSEeSrC54j_XokBw" name="Pass install event to queue"/>
+      <subvertex xmi:type="uml:State" xmi:id="_aO_OAOjSEeSrC54j_XokBw" name="Pass uninstall event to queue"/>
+      <subvertex xmi:type="uml:State" xmi:id="_h9Nd8OjSEeSrC54j_XokBw" name="Process event queue"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_JKVLcOjYEeSrC54j_XokBw" name="Is network present?" kind="choice"/>
+      <subvertex xmi:type="uml:State" xmi:id="_RaGJwOj6EeSrC54j_XokBw" name="Skip this app. Check it later"/>
+      <subvertex xmi:type="uml:State" xmi:id="_fZc7IP-kEeSULpTfj1IcJg" name="Mark app as checked. Ask user later."/>
+    </region>
+    <region xmi:id="_Q0iQUOjTEeSrC54j_XokBw" name="Process event queue">
+      <transition xmi:id="_IItTMOjUEeSrC54j_XokBw" name="Transition_Remove cert/app_id from the buffer and the databaseToQueue empty?" source="_8xJRgN0AEeS9bYmEN__hpg" target="_yfl1sOjTEeSrC54j_XokBw"/>
+      <transition xmi:id="_P6-VoOjUEeSrC54j_XokBw" name="Transition_Add cert/app_id to the database and to the bufferToQueue empty?" source="_yk50QNhQEeS9bYmEN__hpg" target="_yfl1sOjTEeSrC54j_XokBw"/>
+      <transition xmi:id="_YqXusOjUEeSrC54j_XokBw" name="Transition_Event typeToCheck if cert/app_id present in the database and the buffer" guard="_acz8sOjUEeSrC54j_XokBw" source="_cxoUcOjTEeSrC54j_XokBw" target="_cwIMEN0AEeS9bYmEN__hpg">
+        <ownedRule xmi:id="_acz8sOjUEeSrC54j_XokBw" name="Transition_Event typeToCheck if cert/app_id present in the database and the buffer_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_acz8sejUEeSrC54j_XokBw" name="Transition_Event typeToCheck if cert/app_id present in the database and the buffer_guard">
+            <body>App uninstall</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_cB98oOjUEeSrC54j_XokBw" name="Transition_Event typeToAdd cert/app_id to the database and to the buffer" guard="_c0F9IOjUEeSrC54j_XokBw" source="_cxoUcOjTEeSrC54j_XokBw" target="_bwpRMOjWEeSrC54j_XokBw">
+        <ownedRule xmi:id="_c0F9IOjUEeSrC54j_XokBw" name="Transition_Event typeToAdd cert/app_id to the database and to the buffer_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_c0F9IejUEeSrC54j_XokBw" name="Transition_Event typeToAdd cert/app_id to the database and to the buffer_guard">
+            <body>App install</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_fAoGIOjUEeSrC54j_XokBw" name="Transition_Queue empty?ToEvent type" guard="_fZ9MIOjUEeSrC54j_XokBw" source="_yfl1sOjTEeSrC54j_XokBw" target="_cxoUcOjTEeSrC54j_XokBw">
+        <ownedRule xmi:id="_fZ9MIOjUEeSrC54j_XokBw" name="Transition_Queue empty?ToEvent type_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_fZ9MIejUEeSrC54j_XokBw" name="Transition_Queue empty?ToEvent type_guard">
+            <body>No</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <transition xmi:id="_qMzYwOjWEeSrC54j_XokBw" name="Transition_Get certs from signatureToAdd cert/app_id to the database and to the buffer" source="_bwpRMOjWEeSrC54j_XokBw" target="_yk50QNhQEeS9bYmEN__hpg"/>
+      <transition xmi:id="_wwpgQOjWEeSrC54j_XokBw" name="Transition_Queue empty?ToCheck the buffer" guard="_y-QAQOjWEeSrC54j_XokBw" source="_yfl1sOjTEeSrC54j_XokBw" target="_JKVLcOjYEeSrC54j_XokBw">
+        <ownedRule xmi:id="_y-QAQOjWEeSrC54j_XokBw" name="Transition_Queue empty?ToCheck the buffer_transition">
+          <specification xmi:type="uml:OpaqueExpression" xmi:id="_y-QAQejWEeSrC54j_XokBw" name="Transition_Queue empty?ToCheck the buffer_guard">
+            <body>Yes</body>
+          </specification>
+        </ownedRule>
+      </transition>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_cxoUcOjTEeSrC54j_XokBw" name="Event type" kind="choice"/>
+      <subvertex xmi:type="uml:State" xmi:id="_cwIMEN0AEeS9bYmEN__hpg" name="Check if cert/app_id present in the database and the buffer"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_Ezld8N0BEeS9bYmEN__hpg" name="App present?" kind="choice"/>
+      <subvertex xmi:type="uml:State" xmi:id="_8xJRgN0AEeS9bYmEN__hpg" name="Remove cert/app_id from the buffer and the database"/>
+      <subvertex xmi:type="uml:Pseudostate" xmi:id="_yfl1sOjTEeSrC54j_XokBw" name="Queue empty?" kind="choice"/>
+      <subvertex xmi:type="uml:State" xmi:id="_yk50QNhQEeS9bYmEN__hpg" name="Add cert/app_id to the database and to the buffer"/>
+      <subvertex xmi:type="uml:State" xmi:id="_bwpRMOjWEeSrC54j_XokBw" name="Get certs from signature"/>
+    </region>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_Wi5_gN3qEeSrC54j_XokBw" name="Logic">
+    <ownedAttribute xmi:id="_XuCZAN6yEeSrC54j_XokBw" name="buffer" visibility="private" type="_sYiWQOHgEeSrC54j_XokBw">
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_48gkcN-AEeSrC54j_XokBw" value="1"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:id="_IdylQN62EeSrC54j_XokBw" name="database" visibility="private" type="_gLb-sN9YEeSrC54j_XokBw" aggregation="composite"/>
+    <ownedAttribute xmi:id="_RcO08N98EeSrC54j_XokBw" name="ui" visibility="private" type="_UQDKwN9YEeSrC54j_XokBw" aggregation="composite"/>
+    <ownedAttribute xmi:id="_YWoOgCY5EeWTLZg0vlj_ig" name="queue" visibility="private" type="__OwLICY4EeWTLZg0vlj_ig" aggregation="composite"/>
+    <ownedAttribute xmi:id="_VdG8UCY8EeWTLZg0vlj_ig" name="certs" visibility="private" type="_UfAKwCY7EeWTLZg0vlj_ig" aggregation="composite"/>
+    <ownedOperation xmi:id="_eaRs0N-JEeSrC54j_XokBw" name="setup" visibility="public"/>
+    <ownedOperation xmi:id="_pnpREOHiEeSrC54j_XokBw" name="pkgManager_callback" visibility="public" isStatic="true">
+      <ownedParameter xmi:id="_CfjJUOHkEeSrC54j_XokBw" name="logic" type="_Wi5_gN3qEeSrC54j_XokBw"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_vdRAoOHiEeSrC54j_XokBw" name="connman_callback" visibility="public" isStatic="true">
+      <ownedParameter xmi:id="_ADaeEOHkEeSrC54j_XokBw" name="logic" type="_Wi5_gN3qEeSrC54j_XokBw"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_7G258OHiEeSrC54j_XokBw" name="add_OCSP_url" visibility="private">
+      <ownedParameter xmi:id="_B3pRQOHjEeSrC54j_XokBw" name="Issuer"/>
+      <ownedParameter xmi:id="_Cy700OHjEeSrC54j_XokBw" name="url"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_UM_cIOM8EeSrC54j_XokBw" name="load_database_to_buffer" visibility="private"/>
+    <ownedOperation xmi:id="_ZajUMCY6EeWTLZg0vlj_ig" name="process_event">
+      <ownedParameter xmi:id="_bcFuICY6EeWTLZg0vlj_ig" name="event"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_4h8qACY6EeWTLZg0vlj_ig" name="process_all" visibility="private"/>
+    <ownedOperation xmi:id="_dTpssCY6EeWTLZg0vlj_ig" name="process_queue" visibility="private"/>
+    <ownedOperation xmi:id="_f_wGkCY6EeWTLZg0vlj_ig" name="process_buffer" visibility="private"/>
+    <ownedOperation xmi:id="_jcXXYCY6EeWTLZg0vlj_ig" name="get_online" visibility="private">
+      <ownedParameter xmi:id="_mxk_sCY6EeWTLZg0vlj_ig" name="online"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_pS6UACY6EeWTLZg0vlj_ig" name="set_online" visibility="private">
+      <ownedParameter xmi:id="_qwTfECY6EeWTLZg0vlj_ig" name="online" visibility="public" direction="return"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_uKuXgCY6EeWTLZg0vlj_ig" name="get_should_exit" visibility="private">
+      <ownedParameter xmi:id="_vh4XsCY6EeWTLZg0vlj_ig" name="should_exit" direction="return"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_xvT4kCY6EeWTLZg0vlj_ig" name="set_should_exit" visibility="private"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_gLb-sN9YEeSrC54j_XokBw" name="Database">
+    <ownedOperation xmi:id="_NZKTAN96EeSrC54j_XokBw" name="connect" visibility="private">
+      <ownedParameter xmi:id="_OxnTsN96EeSrC54j_XokBw" name="path"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_P6K3MN96EeSrC54j_XokBw" name="execute query" visibility="private">
+      <ownedParameter xmi:id="_SN7pkN96EeSrC54j_XokBw" name="query"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_l7_UIOHhEeSrC54j_XokBw" name="get_url" visibility="public">
+      <ownedParameter xmi:id="_qPGvIOHhEeSrC54j_XokBw" name="Issuer"/>
+      <ownedParameter xmi:id="_qLMbUOHoEeSrC54j_XokBw" name="url" direction="out"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_ucumIOHhEeSrC54j_XokBw" name="set_url" visibility="public">
+      <ownedParameter xmi:id="_v2z-gOHhEeSrC54j_XokBw" name="Issuer"/>
+      <ownedParameter xmi:id="_w3W1gOHhEeSrC54j_XokBw" name="url" visibility="public"/>
+      <ownedParameter xmi:id="_QaZooOKqEeSrC54j_XokBw" name="date"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_049CsOHhEeSrC54j_XokBw" name="get_app_list" visibility="public"/>
+    <ownedOperation xmi:id="_3Ed4AOHhEeSrC54j_XokBw" name="add_app_to_check_list" visibility="public">
+      <ownedParameter xmi:id="_4yTS0OHhEeSrC54j_XokBw" name="app" type="_yWjSIN3VEeSrC54j_XokBw"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_85o7oOHhEeSrC54j_XokBw" name="remove_app_from_check_list" visibility="public">
+      <ownedParameter xmi:id="_BOCwEOHiEeSrC54j_XokBw" name="app" type="_yWjSIN3VEeSrC54j_XokBw"/>
+    </ownedOperation>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_5MpdsOKrEeSrC54j_XokBw" name="logicsToDatabases" memberEnd="_5MqEwOKrEeSrC54j_XokBw _5MtIEOKrEeSrC54j_XokBw" navigableOwnedEnd="_5MtIEOKrEeSrC54j_XokBw">
+    <ownedEnd xmi:id="_5MqEwOKrEeSrC54j_XokBw" name="logics" type="_Wi5_gN3qEeSrC54j_XokBw" aggregation="composite" association="_5MpdsOKrEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_5MrS4OKrEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_5Mr58OKrEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_5MtIEOKrEeSrC54j_XokBw" name="database" type="_gLb-sN9YEeSrC54j_XokBw" association="_5MpdsOKrEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_5MtvIOKrEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_5MuWMOKrEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_UQDKwN9YEeSrC54j_XokBw" name="UIBackend">
+    <ownedAttribute xmi:id="_YQF1wN95EeSrC54j_XokBw" name="m_notification" visibility="private"/>
+    <ownedOperation xmi:id="_Yk5rIN9YEeSrC54j_XokBw" name="create_UI" visibility="public"/>
+    <ownedOperation xmi:id="_aY1G4N9YEeSrC54j_XokBw" name="run" visibility="public"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_ItEeoOKsEeSrC54j_XokBw" name="logicsToUIBackends" memberEnd="_ItFFsOKsEeSrC54j_XokBw _ItIJAOKsEeSrC54j_XokBw" navigableOwnedEnd="_ItIJAOKsEeSrC54j_XokBw">
+    <ownedEnd xmi:id="_ItFFsOKsEeSrC54j_XokBw" name="logics" type="_Wi5_gN3qEeSrC54j_XokBw" aggregation="composite" association="_ItEeoOKsEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ItGT0OKsEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ItG64OKsEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_ItIJAOKsEeSrC54j_XokBw" name="ui" type="_UQDKwN9YEeSrC54j_XokBw" association="_ItEeoOKsEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ItIwEOKsEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ItJ-MOKsEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_yWjSIN3VEeSrC54j_XokBw" name="app">
+    <ownedAttribute xmi:id="_vDx0EP-mEeSULpTfj1IcJg" name="check_id" visibility="public"/>
+    <ownedAttribute xmi:id="__VnZgN3pEeSrC54j_XokBw" name="app_id" visibility="public"/>
+    <ownedAttribute xmi:id="_DgoBYN3qEeSrC54j_XokBw" name="pkg_id" visibility="public"/>
+    <ownedAttribute xmi:id="_FRpTEN3qEeSrC54j_XokBw" name="signatures" visibility="public">
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_XIBhwOKrEeSrC54j_XokBw" value="*"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:id="_zDDtEP-mEeSULpTfj1IcJg" name="uid" visibility="public"/>
+    <ownedAttribute xmi:id="_2wLfEP-mEeSULpTfj1IcJg" name="verified" visibility="public"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_XRACIOKsEeSrC54j_XokBw" name="buffersToApps" memberEnd="_XRACIeKsEeSrC54j_XokBw _XRDFcOKsEeSrC54j_XokBw" navigableOwnedEnd="_XRDFcOKsEeSrC54j_XokBw">
+    <ownedEnd xmi:id="_XRACIeKsEeSrC54j_XokBw" name="buffer" type="_sYiWQOHgEeSrC54j_XokBw" aggregation="composite" association="_XRACIOKsEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_XRB3UOKsEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_XRCeYOKsEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_XRDFcOKsEeSrC54j_XokBw" name="app" type="_yWjSIN3VEeSrC54j_XokBw" association="_XRACIOKsEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_XRETkOKsEeSrC54j_XokBw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_XRE6oOKsEeSrC54j_XokBw" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_sYiWQOHgEeSrC54j_XokBw" name="Buffer">
+    <ownedAttribute xmi:id="_t_GEYOHgEeSrC54j_XokBw" name="list" visibility="public" type="_yWjSIN3VEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_A_kEoOHhEeSrC54j_XokBw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_BatvkOHhEeSrC54j_XokBw" value="*"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_Voi94ONtEeSrC54j_XokBw" name="logicsToBuffers" memberEnd="_Vojk8ONtEeSrC54j_XokBw _VonPUONtEeSrC54j_XokBw" navigableOwnedEnd="_VonPUONtEeSrC54j_XokBw">
+    <ownedEnd xmi:id="_Vojk8ONtEeSrC54j_XokBw" name="logic" type="_Wi5_gN3qEeSrC54j_XokBw" association="_Voi94ONtEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_VolaIONtEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VomBMONtEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_VonPUONtEeSrC54j_XokBw" name="buffer" type="_sYiWQOHgEeSrC54j_XokBw" aggregation="composite" association="_Voi94ONtEeSrC54j_XokBw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Von2YONtEeSrC54j_XokBw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VoodcONtEeSrC54j_XokBw" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_LhHxICY4EeWTLZg0vlj_ig" name="signatures_t">
+    <ownedAttribute xmi:id="_NkkPkCY4EeWTLZg0vlj_ig" name="list&lt;string> certificates" visibility="public"/>
+    <ownedOperation xmi:id="_GYBXECY9EeWTLZg0vlj_ig" name="Operation_1"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_nw29UCY4EeWTLZg0vlj_ig" name="appsToSignatures_ts" memberEnd="_nw29USY4EeWTLZg0vlj_ig _nw3kYiY4EeWTLZg0vlj_ig" navigableOwnedEnd="_nw3kYiY4EeWTLZg0vlj_ig">
+    <ownedEnd xmi:id="_nw29USY4EeWTLZg0vlj_ig" name="apps" type="_yWjSIN3VEeSrC54j_XokBw" aggregation="composite" association="_nw29UCY4EeWTLZg0vlj_ig">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_nw3kYCY4EeWTLZg0vlj_ig" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_nw3kYSY4EeWTLZg0vlj_ig" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_nw3kYiY4EeWTLZg0vlj_ig" name="signatures_t" type="_LhHxICY4EeWTLZg0vlj_ig" aggregation="composite" association="_nw29UCY4EeWTLZg0vlj_ig">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_nw4LcCY4EeWTLZg0vlj_ig" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_nw4LcSY4EeWTLZg0vlj_ig" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="__OwLICY4EeWTLZg0vlj_ig" name="Queue">
+    <ownedAttribute xmi:id="_AQD3ICY5EeWTLZg0vlj_ig" name="queue&lt;event_t> event_list" visibility="private">
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Fm7OICY5EeWTLZg0vlj_ig" value="1"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:id="_ndQ2cCY5EeWTLZg0vlj_ig" name="mutex" visibility="private"/>
+    <ownedOperation xmi:id="_H_YTQCY5EeWTLZg0vlj_ig" name="push_event" visibility="public">
+      <ownedParameter xmi:id="_J9Wb0CY5EeWTLZg0vlj_ig" name="event"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_MXEFMCY5EeWTLZg0vlj_ig" name="pop_event" visibility="public">
+      <ownedParameter xmi:id="_N9X7sCY5EeWTLZg0vlj_ig" name="event" direction="out"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_QiC34CY5EeWTLZg0vlj_ig" name="empty" visibility="public"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_bg5yICY5EeWTLZg0vlj_ig" name="logicsToQueues" memberEnd="_bg5yISY5EeWTLZg0vlj_ig _bg7AQSY5EeWTLZg0vlj_ig" navigableOwnedEnd="_bg7AQSY5EeWTLZg0vlj_ig">
+    <ownedEnd xmi:id="_bg5yISY5EeWTLZg0vlj_ig" name="logics" type="_Wi5_gN3qEeSrC54j_XokBw" association="_bg5yICY5EeWTLZg0vlj_ig">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_bg6ZMCY5EeWTLZg0vlj_ig" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_bg7AQCY5EeWTLZg0vlj_ig" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_bg7AQSY5EeWTLZg0vlj_ig" name="queues" type="__OwLICY4EeWTLZg0vlj_ig" aggregation="composite" association="_bg5yICY5EeWTLZg0vlj_ig">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_bg7nUCY5EeWTLZg0vlj_ig" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_bg7nUSY5EeWTLZg0vlj_ig" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_UfAKwCY7EeWTLZg0vlj_ig" name="Certs">
+    <ownedOperation xmi:id="_az-v0CY7EeWTLZg0vlj_ig" name="get_certificates" visibility="public">
+      <ownedParameter xmi:id="_bdLd0CY7EeWTLZg0vlj_ig" name="app" direction="inout"/>
+      <ownedParameter xmi:id="_c9wfwCY7EeWTLZg0vlj_ig" name="ocsl_urls" direction="out"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_hhhl4CY7EeWTLZg0vlj_ig" name="check_ocsp" visibility="public">
+      <ownedParameter xmi:id="_jumhcCY7EeWTLZg0vlj_ig" name="app"/>
+      <ownedParameter xmi:id="_luNBsCY7EeWTLZg0vlj_ig" name="reponse" direction="return"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_ooPJ4CY7EeWTLZg0vlj_ig" name="check_ocsp_chain" visibility="private">
+      <ownedParameter xmi:id="_st_eUCY7EeWTLZg0vlj_ig" name="chain"/>
+      <ownedParameter xmi:id="_rI6W4CY7EeWTLZg0vlj_ig" name="response" direction="return"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_unaeECY7EeWTLZg0vlj_ig" name="find_app_signatures" visibility="private">
+      <ownedParameter xmi:id="_w5kt8CY7EeWTLZg0vlj_ig" name="app" direction="inout"/>
+      <ownedParameter xmi:id="_yuavsCY7EeWTLZg0vlj_ig" name="app_path"/>
+      <ownedParameter xmi:id="_0St0ACY7EeWTLZg0vlj_ig" name="ocsp_urls" direction="out"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_40kOkCY7EeWTLZg0vlj_ig" name="search_app" visibility="private">
+      <ownedParameter xmi:id="_60_1QCY7EeWTLZg0vlj_ig" name="app" direction="inout"/>
+      <ownedParameter xmi:id="_8vGKcCY7EeWTLZg0vlj_ig" name="ocsp_urls" direction="inout"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_EWEi4CY8EeWTLZg0vlj_ig" name="ocsp_create_list" visibility="private">
+      <ownedParameter xmi:id="_FgZA8CY8EeWTLZg0vlj_ig" name="chain"/>
+      <ownedParameter xmi:id="_GYUHcCY8EeWTLZg0vlj_ig" name="cert_list" direction="inout"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_LYKsoCY8EeWTLZg0vlj_ig" name="ocsp_build_chain" visibility="private">
+      <ownedParameter xmi:id="_MFGrICY8EeWTLZg0vlj_ig" name="cert_list" direction="inout"/>
+      <ownedParameter xmi:id="_QkxUYCY8EeWTLZg0vlj_ig" name="ckm_chain"/>
+    </ownedOperation>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_dlLPoCY8EeWTLZg0vlj_ig" name="certssToLogics" memberEnd="_dlLPoSY8EeWTLZg0vlj_ig _dlMdwSY8EeWTLZg0vlj_ig" navigableOwnedEnd="_dlMdwSY8EeWTLZg0vlj_ig">
+    <ownedEnd xmi:id="_dlLPoSY8EeWTLZg0vlj_ig" name="certs" type="_UfAKwCY7EeWTLZg0vlj_ig" aggregation="composite" association="_dlLPoCY8EeWTLZg0vlj_ig">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_dlL2sCY8EeWTLZg0vlj_ig" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_dlMdwCY8EeWTLZg0vlj_ig" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_dlMdwSY8EeWTLZg0vlj_ig" name="logics" type="_Wi5_gN3qEeSrC54j_XokBw" association="_dlLPoCY8EeWTLZg0vlj_ig">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_dlNE0CY8EeWTLZg0vlj_ig" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_dlNr4CY8EeWTLZg0vlj_ig" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_seT-sI3lEeWGrKm2idOCMw" name="Class9"/>
+</uml:Model>
