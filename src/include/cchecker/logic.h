@@ -29,10 +29,14 @@
 #include <vector>
 #include <list>
 #include <thread>
+#include <memory>
 
 #include <cchecker/app.h>
 #include <cchecker/certs.h>
 #include <cchecker/queue.h>
+
+#include <package-manager.h>
+#include <pkgmgr-info.h>
 
 namespace CCHECKER {
 
@@ -61,22 +65,11 @@ class Logic {
         error_t  setup(void);
         virtual void clean(void);
 
-        static void pkgmgr_install_callback(GDBusProxy *proxy,
-                gchar      *sender_name,
-                gchar      *signal_name,
-                GVariant   *parameters,
-                void *logic_ptr);
-        static void pkgmgr_uninstall_callback(GDBusProxy *proxy,
-                gchar      *sender_name,
-                gchar      *signal_name,
-                GVariant   *parameters,
-                void *logic_ptr);
         static void connman_callback(GDBusProxy *proxy,
                 gchar      *sender_name,
                 gchar      *signal_name,
                 GVariant   *parameters,
                 void *logic_ptr);
-
 
     protected:
         error_t setup_db();
@@ -87,7 +80,6 @@ class Logic {
         void remove_app_from_buffer_and_database(const app_t &app);
 
         void set_connman_online_state();
-        void pkgmgr_callback_internal(GVariant *parameters, pkgmgr_event_t event);
         error_t register_dbus_signal_handler(GDBusProxy **proxy,
                 const char *name,
                 const char *object_path,
@@ -98,6 +90,28 @@ class Logic {
                         GVariant   *parameters,
                         void *logic_ptr)
                 );
+
+        static int pkgmgrinfo_event_handler_static(
+            uid_t uid,
+            int reqid,
+            const char *pkgtype,
+            const char *pkgid,
+            const char *key,
+            const char *val,
+            const void *pmsg,
+            void *data);
+
+        int pkgmgrinfo_event_handler(
+            uid_t uid,
+            int reqid,
+            const char *pkgtype,
+            const char *pkgid,
+            const char *key,
+            const char *val,
+            const void *pmsg,
+            void *data);
+
+        int push_pkgmgrinfo_event(uid_t uid, const char *pkgid);
 
         void push_event(event_t event);
 
@@ -132,8 +146,11 @@ class Logic {
         bool m_should_exit;
 
         GDBusProxy *m_proxy_connman;
-        GDBusProxy *m_proxy_pkgmgr_install;
-        GDBusProxy *m_proxy_pkgmgr_uninstall;
+
+        int m_reqid_install;
+        int m_reqid_uninstall;
+        std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)> m_pc_install;
+        std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)> m_pc_uninstall;
 };
 
 } // CCHECKER
