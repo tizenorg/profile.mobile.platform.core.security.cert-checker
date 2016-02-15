@@ -1,6 +1,6 @@
 Name:       cert-checker
 Summary:    OCSP checking on application installation
-Version:    0.0.1
+Version:    0.0.2
 Release:    1
 Group:      System/Security
 License:    Apache-2.0
@@ -21,6 +21,8 @@ BuildRequires: pkgconfig(key-manager)
 BuildRequires: pkgconfig(libsystemd-journal)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: pkgconfig(sqlite3)
+BuildRequires: pkgconfig(pkgmgr)
+BuildRequires: pkgconfig(pkgmgr-info)
 BuildRequires: boost-devel
 
 %description

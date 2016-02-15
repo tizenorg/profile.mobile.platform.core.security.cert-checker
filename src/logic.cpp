@@ -27,11 +27,50 @@
 #include <cchecker/sql_query.h>
 #include <cchecker/UIBackend.h>
 
+#include <set>
+
 using namespace std;
 
 namespace CCHECKER {
 
 namespace {
+struct PkgmgrinfoEvent {
+	PkgmgrinfoEvent(uid_t _uid, const char *_pkgid)
+		: uid(_uid)
+		, pkgid(_pkgid) {}
+
+	inline bool operator==(const PkgmgrinfoEvent &rhs) const
+	{
+		return uid == rhs.uid && pkgid.compare(rhs.pkgid) == 0;
+	}
+
+	inline bool operator<(const PkgmgrinfoEvent &rhs) const
+	{
+		if (uid < rhs.uid)
+			return true;
+		else if (uid < rhs.uid)
+			return false;
+		else
+			return pkgid.compare(rhs.pkgid) < 0;
+	}
+
+	inline bool operator>(const PkgmgrinfoEvent &rhs) const
+	{
+		if (uid > rhs.uid)
+			return true;
+		else if (uid < rhs.uid)
+			return false;
+		else
+			return pkgid.compare(rhs.pkgid) > 0;
+	}
+
+	uid_t uid;
+	std::string pkgid;
+	pkgmgr_event_t type;
+};
+
+std::set<PkgmgrinfoEvent> pkgmgrinfoEventSet;
+std::set<PkgmgrinfoEvent>::iterator pkgmgrinfoEventIter;
 const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
 }
 
@@ -60,10 +99,16 @@ void Logic::clean(void)
 
     if (m_proxy_connman)
         g_object_unref(m_proxy_connman);
-    if (m_proxy_pkgmgr_install)
-        g_object_unref(m_proxy_pkgmgr_install);
-    if (m_proxy_pkgmgr_uninstall)
-        g_object_unref(m_proxy_pkgmgr_uninstall);
+
+	if (__pcInstall != nullptr) {
+		pkgmgrinfo_client_free(__pcInstall);
+		__pcInstall = nullptr;
+	}
+	if (__pcUninstall != nullptr) {
+		pkgmgrinfo_client_free(__pcUninstall);
+		__pcUninstall = nullptr;
+	}
+
     delete m_sqlquery;
 }
 
@@ -73,9 +118,7 @@ Logic::Logic(void) :
         m_is_online(false),
         m_is_online_enabled(false),
         m_should_exit(false),
-        m_proxy_connman(NULL),
-        m_proxy_pkgmgr_install(NULL),
-        m_proxy_pkgmgr_uninstall(NULL)
+        m_proxy_connman(NULL)
 {}
 
 bool Logic::get_online() const
@@ -134,33 +177,6 @@ error_t  Logic::setup()
     // run process thread - thread will be waiting on condition variable
     m_thread = std::thread(&Logic::process_all, this);
 
-    // FIXME: pkgmanager API signal handling was temporarily replaced
-    //        by dbus API
-
-    // Add pkgmgr install callback
-    LogDebug("register pkgmgr install event callback start");
-    if (register_dbus_signal_handler(&m_proxy_pkgmgr_install,
-            "org.tizen.slp.pkgmgr_status",
-            "/org/tizen/slp/pkgmgr/install",
-            "org.tizen.slp.pkgmgr.install",
-            pkgmgr_install_callback) != NO_ERROR) {
-        LogError("Error in register_pkgmgr_install_signal_handler");
-        return REGISTER_CALLBACK_ERROR;
-    }
-    LogDebug("register pkgmgr install event callback success");
-
-    // Add pkgmgr uninstall callback
-    LogDebug("register pkgmgr uninstall event callback start");
-    if (register_dbus_signal_handler(&m_proxy_pkgmgr_uninstall,
-            "org.tizen.slp.pkgmgr_status",
-            "/org/tizen/slp/pkgmgr/uninstall",
-            "org.tizen.slp.pkgmgr.uninstall",
-            pkgmgr_uninstall_callback) != NO_ERROR) {
-        LogError("Error in register_pkgmgr_uninstall_signal_handler");
-        return REGISTER_CALLBACK_ERROR;
-    }
-    LogDebug("register pkgmgr uninstall event callback success");
-
     // Add connman callback
     LogDebug("register connman event callback start");
     if (register_dbus_signal_handler(&m_proxy_connman,
@@ -175,7 +191,139 @@ error_t  Logic::setup()
 
     set_connman_online_state();
 
-    return NO_ERROR;
+	// Add pkgmgrinfo callback
+	LogDebug("Register package event handler start");
+
+	__pcInstall = pkgmgrinfo_client_new(PMINFO_LISTENING);
+	__pcUninstall = pkgmgrinfo_client_new(PMINFO_LISTENING);
+
+	if (__pcInstall == nullptr || __pcUninstall == nullptr) {
+		LogError("Get pkgmgr client failed");
+		goto register_error;
+	}
+
+	pkgmgrinfo_client_set_status_type(__pcInstall, PKGMGR_CLIENT_STATUS_INSTALL);
+	pkgmgrinfo_client_set_status_type(__pcUninstall, PKGMGR_CLIENT_STATUS_UNINSTALL);
+	__reqidInstall = pkgmgrinfo_client_listen_status(__pcInstall, __pkgmgrinfo_event_handler, this);
+	__reqidUninstall = pkgmgrinfo_client_listen_status(__pcUninstall, __pkgmgrinfo_event_handler, this);
+
+	if (__reqidInstall < 0 || __reqidUninstall < 0) {
+		LogError("Register pacakge install event handler fail");
+		goto register_error;
+	}
+
+	LogDebug("Register package event handler success");
+
+	return NO_ERROR;
+
+register_error:
+	if (__pcInstall != nullptr) {
+		pkgmgrinfo_client_free(__pcInstall);
+		__pcInstall = nullptr;
+	}
+	if (__pcUninstall != nullptr) {
+		pkgmgrinfo_client_free(__pcUninstall);
+		__pcUninstall = nullptr;
+	}
+
+    return REGISTER_CALLBACK_ERROR;
+}
+
+int Logic::__pkgmgrinfo_event_handler(
+		uid_t uid,
+		int reqid,
+		const char *pkgtype,
+		const char *pkgid,
+		const char *key,
+		const char *val,
+		const void *pmsg,
+		void *data)
+{
+	if (data == nullptr)
+		return -1;
+
+	std::string keyStr(key);
+	std::string valStr(val);
+	LogDebug("pkgmgrinfo event was caught. type : " << valStr << ", status : " << keyStr);
+
+	if ((valStr.compare("install") == 0 || valStr.compare("uninstall") == 0)
+		&& keyStr.compare("start") == 0)  {
+		return static_cast<Logic *>(data)->pkgmgrinfoEventHandler(
+				uid, reqid, pkgtype, pkgid, key, val, pmsg, data);
+	} else if (keyStr.compare("end") == 0 && valStr.compare("ok") == 0) {
+		return static_cast<Logic *>(data)->pushPkgmgrinfoEvent(uid, pkgid);
+	} else {
+		LogDebug("Untreated event was caught : " << val);
+		return -1;
+	}
+}
+
+int Logic::pkgmgrinfoEventHandler(
+		uid_t uid,
+		int reqid,
+		const char */*pkgtype*/,
+		const char *pkgid,
+		const char *key,
+		const char *val,
+		const void */*pmsg*/,
+		void */*data*/)
+{
+	if (pkgid == nullptr || key == nullptr || val == nullptr) {
+		LogError("Invalid parameter.");
+		return -1;
+	}
+
+	std::string keyStr(key);
+	std::string valStr(val);
+
+	LogDebug("uid: " << uid << " pkgid: " << pkgid << " key: " << keyStr << " val: " << valStr);
+
+	PkgmgrinfoEvent event(uid, pkgid);
+
+	if(valStr.compare("install") == 0) {
+		if (reqid != __reqidInstall) {
+			LogError("pkgmgrinfo event reqid unmatched");
+			return -1;
+		}
+		event.type = EVENT_INSTALL;
+	} else if(valStr.compare("uninstall") == 0) {
+		if (reqid != __reqidUninstall) {
+			LogError("pkgmgrinfo event reqid unmatched");
+			return -1;
+		}
+		event.type = EVENT_UNINSTALL;
+	}
+
+	pkgmgrinfoEventSet.insert(event);
+
+	return 0;
+}
+
+int Logic::pushPkgmgrinfoEvent(uid_t uid, const char *pkgid)
+{
+	PkgmgrinfoEvent event(uid, pkgid);
+	pkgmgrinfoEventIter = pkgmgrinfoEventSet.find(event);
+
+	if (pkgmgrinfoEventIter != pkgmgrinfoEventSet.end()) {
+		// FIXME: No information about app_id in the signal. Use stub.
+		app_t app(TEMP_APP_ID, pkgid, uid, {});
+
+		if (pkgmgrinfoEventIter->type == EVENT_INSTALL) {
+			LogDebug("Successfully Installed. uid: " << uid << ", pkgid: " << pkgid);
+			push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
+		} else if (pkgmgrinfoEventIter->type == EVENT_UNINSTALL) {
+			LogDebug("Successfully Uninstalled. uid: " << uid << ", pkgid: " << pkgid);
+			push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
+		}
+
+		LogDebug("push pkgmgrifo success. pkgid: " << pkgid << ", uid: " << uid);
+		pkgmgrinfoEventSet.erase(event);
+		return 0;
+	} else {
+		// if update status, return fail
+		LogDebug("push pkgmgrifo fail. pkgid: " << pkgid << ", uid: " << uid);
+		return -1;
+	}
 }
 
 error_t Logic::register_dbus_signal_handler(GDBusProxy **proxy,
@@ -264,80 +412,6 @@ void Logic::set_connman_online_state()
 
     // free memory
     g_variant_unref(response);
-}
-
-// FIXME: pkgmgr callback doesn't receive signals with successful installation/uninstallation.
-//        For now it will be replaced by low-level signal handling from DBUS.
-void Logic::pkgmgr_install_callback(GDBusProxy */*proxy*/,
-                                    gchar      */*sender_name*/,
-                                    gchar      */*signal_name*/,
-                                    GVariant   *parameters,
-                                    void       *logic_ptr)
-{
-    LogDebug("----------------- pkgmgr_install_callback -----------------\n");
-
-    Logic *logic = static_cast<Logic*> (logic_ptr);
-    logic->pkgmgr_callback_internal(parameters, EVENT_INSTALL);
-}
-
-void Logic::pkgmgr_uninstall_callback(GDBusProxy */*proxy*/,
-                                      gchar      */*sender_name*/,
-                                      gchar      */*signal_name*/,
-                                      GVariant   *parameters,
-                                      void       *logic_ptr)
-{
-    LogDebug("----------------- pkgmgr_uninstall_callback -----------------\n");
-
-    Logic *logic = static_cast<Logic*> (logic_ptr);
-    logic->pkgmgr_callback_internal(parameters, EVENT_UNINSTALL);
-}
-
-void Logic::pkgmgr_callback_internal(GVariant       *parameters,
-                                     pkgmgr_event_t event)
-{
-    gchar *parameters_g = g_variant_print(parameters, TRUE);
-    std::string params_str = std::string(parameters_g);
-    LogDebug("params: " << params_str);
-    g_free (parameters_g);
-
-    /* DBus message format from pkgmgr:
-     * uint32 5001
-     * string "/usr/share/widget_demo/mancala.wgt_-427832739"
-     * string "wgt"
-     * string "yKrWwxz1KX"
-     * string "end"
-     * string "ok"
-     *
-     * Check if numbers of children (vaules) fits - should be 6:
-     */
-    int num = g_variant_n_children(parameters);
-    if (num != 6) {
-        LogError("Wrong number of children in g_variant: " << num << ", but should be 6.");
-        return;
-    }
-
-    guint32 uid = g_variant_get_uint32(g_variant_get_child_value(parameters, 0));
-    const gchar *pkgid = g_variant_get_string(g_variant_get_child_value(parameters, 3), NULL);
-    const gchar *state = g_variant_get_string(g_variant_get_child_value(parameters, 4), NULL);
-    const gchar *status = g_variant_get_string(g_variant_get_child_value(parameters, 5), NULL);
-
-    // FIXME: No information about app_id in the signal. Use stub.
-    app_t app(TEMP_APP_ID, pkgid, uid, {});
-
-    if (std::string(state) == "end" && std::string(status) == "ok") {
-        if (event == EVENT_INSTALL) {
-            LogDebug("Install: uid : " << uid << ", pkgid: " << pkgid <<
-                    ", state: " << state << ", status: " << status);
-            push_event(event_t(app, event_t::event_type_t::APP_INSTALL));
-        }
-        else if (event == EVENT_UNINSTALL) {
-            LogDebug("Uninstall: uid : " << uid << ", pkgid: " << pkgid <<
-                    ", state: " << state << ", status: " << status);
-            push_event(event_t(app, event_t::event_type_t::APP_UNINSTALL));
-        }
-    }
-    else
-        LogDebug("Wrong state (" << std::string(state) << ") or status (" << std::string(status) << ")");
 }
 
 void Logic::connman_callback(GDBusProxy */*proxy*/,
