@@ -13,6 +13,8 @@ PKG_CHECK_MODULES(CERT_CHECKER_DEP
     libsystemd-journal
     libtzplatform-config
     sqlite3
+    pkgmgr
+    pkgmgr-info
     )
 
 SET(CERT_CHECKER_SRC_PATH ${PROJECT_SOURCE_DIR}/src)
