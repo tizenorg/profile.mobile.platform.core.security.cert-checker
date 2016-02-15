@@ -13,6 +13,8 @@ PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
     libsystemd-journal
     libtzplatform-config
     sqlite3
+    pkgmgr
+    pkgmgr-info
     )
 
 FIND_PACKAGE(Threads REQUIRED)
