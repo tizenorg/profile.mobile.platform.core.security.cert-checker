@@ -27,11 +27,18 @@
 
 #include <ckm/ckm-certificate.h>
 #include <vcore/Certificate.h>
+#include <pkgmgr-info.h>
 
 #include <cchecker/app.h>
 #include <ckm/ckm-manager.h>
 
 namespace CCHECKER {
+
+enum sig_t {
+    AUTHOR_SIG = PMINFO_AUTHOR_SIGNER_CERT,
+    DISTRIBUTOR_SIG = PMINFO_DISTRIBUTOR_SIGNER_CERT,
+    DISTRIBUTOR2_SIG = PMINFO_DISTRIBUTOR2_SIGNER_CERT
+};
 
 class Certs {
     public:
@@ -49,7 +56,6 @@ class Certs {
         ocsp_response_t check_ocsp_chain (const chain_t &chain);
         void find_app_signatures (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls);
         void search_app (app_t &app, ocsp_urls_t &ocsp_urls);
-        bool ocsp_build_chain (const chain_t &chain, CKM::CertificateShPtrVector &vect_ckm_chain);
 
     //private:
         CKM::ManagerShPtr m_ckm;
