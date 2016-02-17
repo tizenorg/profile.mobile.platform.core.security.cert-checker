@@ -39,6 +39,67 @@
 
 namespace CCHECKER {
 
+namespace {
+struct PkgmgrinfoCertInfo {
+    PkgmgrinfoCertInfo()
+    {
+        ret = pkgmgrinfo_pkginfo_create_certinfo(&handle);
+    }
+    ~PkgmgrinfoCertInfo()
+    {
+        pkgmgrinfo_pkginfo_destroy_certinfo(handle);
+    }
+
+    pkgmgrinfo_certinfo_h handle;
+    int ret;
+};
+
+static void get_cert_chain(const char *pkgid, uid_t uid, sig_t sig_type, chain_t &chain)
+{
+    LogDebug("Get cert chain start. pkgid : " << pkgid << ", uid : " << uid);
+    int ret;
+    int cert_type;
+    const char *cert_value;
+
+    std::unique_ptr<PkgmgrinfoCertInfo> pm_certinfo =
+            std::unique_ptr<PkgmgrinfoCertInfo>(new PkgmgrinfoCertInfo);
+
+    if (pm_certinfo.get()->ret != PMINFO_R_OK) {
+        LogError("Get pkgmgrinfo certinfo failed. ret : " << ret);
+        return;
+    }
+
+    ret = pkgmgrinfo_pkginfo_load_certinfo(pkgid, pm_certinfo.get()->handle, uid);
+    if (ret != PMINFO_R_OK) {
+        LogError("Load pkgmgrinfo certinfo failed. ret : " << ret);
+        return;
+    }
+
+    // add signer, intermediate, root certificates.
+    for (int cert_cnt = 0; cert_cnt < 3; cert_cnt++) {
+        cert_type = sig_type - cert_cnt;
+        ret = pkgmgrinfo_pkginfo_get_cert_value(pm_certinfo.get()->handle,
+                static_cast<pkgmgrinfo_cert_type>(cert_type), &cert_value);
+
+        if (ret != PMINFO_R_OK) {
+            LogError("Get cert value from certinfo failed. ret : " << ret);
+            return;
+        }
+
+        if (cert_value == NULL) {
+            LogDebug("cert_type[" << cert_type <<"] is null");
+        } else {
+            std::string app_cert(cert_value);
+            LogDebug("cert_type[" << cert_type
+                << "] has been added. data :  " << app_cert);
+            chain.push_back(app_cert);
+        }
+    }
+
+    return;
+}
+}
+
 Certs::Certs()
 {
     m_ckm = CKM::Manager::create();
@@ -52,6 +113,20 @@ void Certs::get_certificates (app_t &app, ocsp_urls_t &ocsp_urls)
     std::vector<std::string> signatures;
     (void) signatures;
 
+    // build chain using pkgmgr-info
+    const sig_t SIG_TYPE_ALL[] = {AUTHOR_SIG, DISTRIBUTOR_SIG, DISTRIBUTOR2_SIG};
+
+    for (const auto sig_type : SIG_TYPE_ALL) {
+        chain_t chain;
+        get_cert_chain(app.pkg_id.c_str(), app.uid, sig_type, chain);
+
+        if(!chain.empty()) {
+            LogDebug("Add certificates chain to app. Size of chain : " << chain.size());
+            app.signatures.push_back(chain);
+        }
+    }
+
+    // get ocsp urls using cert-svc
     if (0 != tzplatform_set_user(app.uid)) {
         LogError("Cannot set user: tzplatform_set_user has failed");
         return;
@@ -66,7 +141,6 @@ void Certs::get_certificates (app_t &app, ocsp_urls_t &ocsp_urls)
         std::string app_path = std::string(pkg_path) + std::string("/") + app.app_id;
         find_app_signatures (app, app_path, ocsp_urls);
     }
-
 }
 
 /* Since there's no information about application in signal,
@@ -101,6 +175,9 @@ void Certs::search_app (app_t &app, ocsp_urls_t &ocsp_urls)
 // Together with certificates we can pull out OCSP URLs
 void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls)
 {
+    // FIXME : delete unuse parameter
+    (void) app;
+
     ValidationCore::SignatureFinder signature_finder(app_path);
     ValidationCore::SignatureFileInfoSet signature_files;
 
@@ -114,19 +191,10 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
     LogDebug("Searching for certificates");
     for (auto &iter : signature_files) {
         LogDebug("Checking signature");
-        chain_t chain;
         ValidationCore::CertificateList certs;
         ValidationCore::SignatureValidator validator(iter);
-        if (validator.makeChainBySignature(false, certs) != ValidationCore::E_SIG_NONE) {
-            LogError("Signature: " << iter.getFileName() << " of " << app_path.c_str() << " is invalid");
-            continue;
-        }
 
         for (auto &cert_iter : certs) {
-            std::string app_cert = (*cert_iter).getBase64();
-            chain.push_back(app_cert);
-            LogDebug("Certificate: " << app_cert << " has been added");
-
             // check OCSP URL
             std::string ocsp_url = (*cert_iter).getOCSPURL();
             if (!ocsp_url.empty()) {
@@ -135,66 +203,21 @@ void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_u
                 url_t url(issuer, ocsp_url, time);
                 ocsp_urls.push_back(url);
                 LogDebug("Found OCSP URL: " << ocsp_url << " for issuer: " << issuer << ", time: " << time);
-
             }
         }
-        if (!chain.empty()) {
-            app.signatures.push_back(chain);
-            LogDebug("Certificates chain added to the app");
-        }
     }
-}
-
-// We assume that chain is sorted - first element is an end entity
-bool Certs::ocsp_build_chain (const chain_t &chain, CKM::CertificateShPtrVector &vect_ckm_chain)
-{
-    bool first = true;
-    CKM::CertificateShPtr cert_end_entity;
-    CKM::CertificateShPtrVector vect_untrusted;
-
-    LogDebug("Size of chain: " << chain.size());
-
-    for (auto &iter : chain) {
-        CKM::RawBuffer buff(iter.begin(), iter.end());
-        CKM::CertificateShPtr cert = CKM::Certificate::create(buff, CKM::DataFormat::FORM_DER_BASE64);
-
-        if (!cert) {
-            LogError("CKM failed to create certificate");
-            return false;
-        }
-        if (first) {
-            first = false;
-            cert_end_entity = cert;
-            LogDebug("Found end entity certificate");
-        }
-        else {
-            vect_untrusted.push_back(cert);
-            LogDebug("Found untrusted certificate");
-        }
-    }
-
-    int ret = m_ckm->getCertificateChain(
-            cert_end_entity,
-            vect_untrusted,
-            CKM::CertificateShPtrVector(),
-            true, // useTrustedSystemCertificates
-            vect_ckm_chain);
-    if (ret != CKM_API_SUCCESS) {
-        LogError("CKM getCertificateChain returned: " << ret);
-        // TODO: Add handling for different errors codes?
-        return false;
-    }
-
-    return true;
 }
 
 Certs::ocsp_response_t Certs::check_ocsp_chain (const chain_t &chain)
 {
     CKM::CertificateShPtrVector vect_ckm_chain;
 
-    if (!ocsp_build_chain(chain, vect_ckm_chain)) {
-        LogError("Error while build chain of certificates");
-        return Certs::ocsp_response_t::OCSP_CERT_ERROR;
+    LogDebug("Size of chain: " << chain.size());
+    for (auto &iter : chain) {
+        CKM::RawBuffer buff(iter.begin(), iter.end());
+        CKM::CertificateShPtr cert =
+                CKM::Certificate::create(buff, CKM::DataFormat::FORM_DER_BASE64);
+        vect_ckm_chain.push_back(cert);
     }
 
     int status = CKM_API_OCSP_STATUS_UNKNOWN;
