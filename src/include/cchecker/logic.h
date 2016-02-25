@@ -75,7 +75,6 @@ class Logic {
         error_t setup_db();
         void load_database_to_buffer();
 
-        void add_ocsp_url(const std::string &issuer, const std::string &url, int64_t date);
         void add_app_to_buffer_and_database(const app_t &app);
         void remove_app_from_buffer_and_database(const app_t &app);
 
