@@ -57,22 +57,6 @@ struct app_t {
     std::string str_certs(void) const;
 };
 
-struct url_t {
-    std::string issuer;
-    std::string url;
-    int64_t     date;
-
-    url_t(const std::string &_issuer,
-          const std::string &_url,
-          int64_t _date):
-              issuer(_issuer),
-              url(_url),
-              date(_date)
-    {};
-};
-
-typedef std::list<url_t> ocsp_urls_t;
-
 } //CCHECKER
 
 #endif //CCHECKER_APP_H

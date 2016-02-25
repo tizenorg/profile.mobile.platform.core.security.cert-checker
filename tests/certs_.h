@@ -31,7 +31,6 @@ class Certs_ : public Certs {
     public:
         virtual ~Certs_();
         ocsp_response_t check_ocsp_chain_ (const chain_t &chain);
-        void find_app_signatures_ (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls);
 };
 
 #endif //CCHECKER_DBFIXTURE_H
