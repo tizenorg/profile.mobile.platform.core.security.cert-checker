@@ -56,21 +56,6 @@
 <part>check_id</part>
 </key>
 </table>
-<table x="1222" y="211" name="ocsp_urls">
-<row name="issuer" null="0" autoincrement="0">
-<datatype>MEDIUMTEXT</datatype>
-</row>
-<row name="url" null="0" autoincrement="0">
-<datatype>MEDIUMTEXT</datatype>
-</row>
-<row name="date" null="0" autoincrement="0">
-<datatype>INT</datatype>
-</row>
-<key type="PRIMARY" name="">
-<part>issuer</part>
-<part>url</part>
-</key>
-</table>
 <table x="897" y="211" name="certs_to_check">
 <row name="check_id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>

@@ -106,7 +106,7 @@ Certs::Certs()
 Certs::~Certs()
 {}
 
-void Certs::get_certificates (app_t &app, ocsp_urls_t &ocsp_urls)
+void Certs::get_certificates (app_t &app)
 {
     // build chain using pkgmgr-info
     std::map<int, int> sig_type;
@@ -121,87 +121,6 @@ void Certs::get_certificates (app_t &app, ocsp_urls_t &ocsp_urls)
         if(!chain.empty()) {
             LogDebug("Add certificates chain to app. Size of chain : " << chain.size());
             app.signatures.emplace_back(std::move(chain));
-        }
-    }
-
-    // get ocsp urls using cert-svc
-    if (0 != tzplatform_set_user(app.uid)) {
-        LogError("Cannot set user: tzplatform_set_user has failed");
-        return;
-    }
-
-    if (app.app_id == TEMP_APP_ID) {
-        LogDebug("Temporary app_id. Searching for apps in package.");
-        search_app(app, ocsp_urls);
-    }
-    else {
-        const char *pkg_path = tzplatform_mkpath(TZ_USER_APP, app.pkg_id.c_str());
-        std::string app_path = std::string(pkg_path) + std::string("/") + app.app_id;
-        find_app_signatures (app, app_path, ocsp_urls);
-    }
-}
-
-/* Since there's no information about application in signal,
- * and we've got information only about package, we have to check
- * all applications that belongs to that package
- */
-void Certs::search_app (app_t &app, ocsp_urls_t &ocsp_urls)
-{
-    DIR *dp;
-    struct dirent *entry;
-    const char *pkg_path = tzplatform_mkpath(TZ_USER_APP, app.pkg_id.c_str());
-    if (!pkg_path) {
-        LogError("tzplatform_mkpath has returned NULL for TZ_USER_APP");
-        return;
-    }
-
-    dp = opendir(pkg_path);
-    if (dp != NULL) {
-        while ((entry = readdir(dp))) {
-            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && entry->d_type == DT_DIR) {
-                LogDebug("Found app: " << entry->d_name);
-                std::string app_path = std::string(pkg_path) + std::string("/") + std::string(entry->d_name);
-                find_app_signatures(app, app_path, ocsp_urls);
-            }
-        }
-        closedir(dp); //close directory
-    }
-    else
-        LogError("Couldn't open the package directory.");
-}
-
-// Together with certificates we can pull out OCSP URLs
-void Certs::find_app_signatures (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls)
-{
-    // FIXME : delete unuse parameter
-    (void) app;
-
-    ValidationCore::SignatureFinder signature_finder(app_path);
-    ValidationCore::SignatureFileInfoSet signature_files;
-
-    if (signature_finder.find(signature_files) !=
-            ValidationCore::SignatureFinder::NO_ERROR) {
-           LogError("Error while searching for signatures in " << app_path.c_str());
-           return;
-    }
-    LogDebug("Number of signature files: " << signature_files.size());
-
-    LogDebug("Searching for certificates");
-    for (auto &iter : signature_files) {
-        LogDebug("Checking signature");
-        ValidationCore::CertificateList certs;
-        ValidationCore::SignatureValidator validator(iter);
-
-        for (auto &cert_iter : certs) {
-            // check OCSP URL
-            std::string ocsp_url = (*cert_iter).getOCSPURL();
-            if (!ocsp_url.empty()) {
-                std::string issuer = (*cert_iter).getCommonName(ValidationCore::Certificate::FIELD_ISSUER);
-                int64_t time = (*cert_iter).getNotBefore();
-                url_t url(issuer, ocsp_url, time);
-                ocsp_urls.push_back(url);
-                LogDebug("Found OCSP URL: " << ocsp_url << " for issuer: " << issuer << ", time: " << time);
-            }
         }
     }
 }

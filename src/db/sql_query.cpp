@@ -27,7 +27,6 @@
 namespace {
 
     #define DB_ISSUER      101
-    #define DB_URL         102
     #define DB_DATE        103
     #define DB_APP_ID      104
     #define DB_PKG_ID      105
@@ -47,16 +46,6 @@ namespace {
     const char *DB_CMD_SETUP = "VACUUM; PRAGMA foregin_keys=ON;";
 
     const char *DB_CMD_GET_LAST_INSERTED_ROW = "SELECT last_insert_rowid();";
-
-    // urls
-    const char *DB_CMD_GET_URL =
-            "SELECT url, date FROM ocsp_urls WHERE issuer = " _(DB_ISSUER) ";";
-
-    const char *DB_CMD_SET_URL =
-            "INSERT INTO  ocsp_urls(issuer, url, date) VALUES(" _(DB_ISSUER) ", " _(DB_URL) ", " _(DB_DATE) ");";
-
-    const char *DB_CMD_UPDATE_URL =
-            "UPDATE ocsp_urls SET url=" _(DB_URL) ", date=" _(DB_DATE) " WHERE issuer=" _(DB_ISSUER) ";"; // Issuer should be unique
 
     // apps
     const char *DB_CMD_ADD_APP =
@@ -128,57 +117,6 @@ bool SqlQuery::connect(const std::string& path)
 SqlQuery::~SqlQuery()
 {
     delete m_connection;
-}
-
-bool SqlQuery::get_url(const std::string &issuer, std::string &url)
-{
-    SqlConnection::DataCommandAutoPtr getUrlCommand =
-                    m_connection->PrepareDataCommand(DB_CMD_GET_URL);
-    getUrlCommand->BindString(DB_ISSUER, issuer.c_str());
-
-    if (getUrlCommand->Step()) {
-        url = getUrlCommand->GetColumnString(0);
-        LogDebug("Url for " << issuer << " found in databse: " << url);
-        return true;
-    }
-
-    LogDebug("No url for " << issuer << " in databse.");
-    return false;
-}
-
-void SqlQuery::set_url(const std::string &issuer, const std::string &url, const int64_t &date)
-{
-    m_connection->BeginTransaction();
-    SqlConnection::DataCommandAutoPtr getUrlCommand =
-                    m_connection->PrepareDataCommand(DB_CMD_GET_URL);
-    getUrlCommand->BindString(DB_ISSUER, issuer.c_str());
-
-    if (getUrlCommand->Step()) { // This means that url already exists in database for this issuer
-                                 // There's need to check the date
-        LogDebug("Url for " << issuer << " already exists. Checking the date");
-        int64_t db_date = getUrlCommand->GetColumnInt64(1);
-        if (db_date < date) {
-            LogDebug("Url for " << issuer << " in database is older. Update is needed");
-            // Url in DB is older - update is needed
-            SqlConnection::DataCommandAutoPtr updateUrlCommand =
-                            m_connection->PrepareDataCommand(DB_CMD_UPDATE_URL);
-            updateUrlCommand->BindString(DB_ISSUER, issuer.c_str());
-            updateUrlCommand->BindString(DB_URL, url.c_str());
-            updateUrlCommand->BindInt64(DB_DATE, date);
-            updateUrlCommand->Step();
-        } else // Url in DB is up-to-date, no need for update
-            LogDebug("Url for " << issuer << " in databse is up-to-date. No update needed");
-
-    } else { // No url in database for this issuer, add the new one
-        LogDebug("No url for "<< issuer << " in databse. Adding the new one.");
-        SqlConnection::DataCommandAutoPtr setUrlCommand =
-                        m_connection->PrepareDataCommand(DB_CMD_SET_URL);
-        setUrlCommand->BindString(DB_ISSUER, issuer.c_str());
-        setUrlCommand->BindString(DB_URL, url.c_str());
-        setUrlCommand->BindInt64(DB_DATE, date);
-        setUrlCommand->Step();
-    }
-    m_connection->CommitTransaction();
 }
 
 bool SqlQuery::check_if_app_exists(const app_t &app)

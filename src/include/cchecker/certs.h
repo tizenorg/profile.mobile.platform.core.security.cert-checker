@@ -50,12 +50,10 @@ class Certs {
         };
         Certs();
         virtual ~Certs();
-        void get_certificates (app_t &app, ocsp_urls_t &ocsp_urls);
-        ocsp_response_t check_ocsp (const app_t &app); // TODO: add custom url support
-    protected: // Needed for tests
+        void get_certificates (app_t &app);
+        ocsp_response_t check_ocsp (const app_t &app);
+        protected: // Needed for tests
         ocsp_response_t check_ocsp_chain (const chain_t &chain);
-        void find_app_signatures (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls);
-        void search_app (app_t &app, ocsp_urls_t &ocsp_urls);
 
     //private:
         CKM::ManagerShPtr m_ckm;
