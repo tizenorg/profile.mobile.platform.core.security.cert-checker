@@ -35,14 +35,13 @@ Certs::Certs()
 Certs::~Certs()
 {}
 
-void Certs::get_certificates (app_t &app, ocsp_urls_t &ocsp_urls)
+void Certs::get_certificates(app_t &app)
 {
     (void)app;
-    (void)ocsp_urls;
 }
 
 // Only the public functions need to be stubbed for testing all possibilities
-Certs::ocsp_response_t Certs::check_ocsp (const app_t &app)
+Certs::ocsp_response_t Certs::check_ocsp(const app_t &app)
 {
     if (app.signatures.empty())
         return ocsp_response_t::OCSP_APP_OK;
@@ -73,20 +72,6 @@ DB::SqlQuery::SqlQuery(const std::string &path)
 
 DB::SqlQuery::~SqlQuery()
 {}
-
-bool DB::SqlQuery::get_url(const std::string &issuer, std::string &url)
-{
-    (void)issuer;
-    (void)url;
-    return false;
-}
-
-void DB::SqlQuery::set_url(const std::string &issuer, const std::string &url, const int64_t &date)
-{
-    (void)issuer;
-    (void)url;
-    (void)date;
-}
 
 bool DB::SqlQuery::add_app_to_check_list(const app_t &app)
 {

@@ -31,8 +31,3 @@ Certs_::ocsp_response_t Certs_::check_ocsp_chain_ (const chain_t &chain)
 {
     return this->check_ocsp_chain(chain);
 }
-
-void Certs_::find_app_signatures_ (app_t &app, const std::string &app_path, ocsp_urls_t &ocsp_urls)
-{
-    return this->find_app_signatures(app, app_path, ocsp_urls);
-}

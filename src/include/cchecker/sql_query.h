@@ -46,14 +46,6 @@ class SqlQuery {
         // Connecting outside the constructor
         bool connect(const std::string& path);
 
-        // OCSP urls
-        /**
-         * Returns true if url has been found in database,
-         * or false in other case.
-         */
-        bool get_url(const std::string &issuer, std::string &url);
-        void set_url(const std::string &issuer, const std::string &url, const int64_t &date);
-
         // Apps
         bool add_app_to_check_list(const app_t &app);
         void remove_app_from_check_list(const app_t &app);

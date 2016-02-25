@@ -439,11 +439,6 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
     }
 }
 
-void Logic::add_ocsp_url(const string &issuer, const string &url, int64_t date)
-{
-    m_sqlquery->set_url(issuer, url, date);
-}
-
 void Logic::load_database_to_buffer()
 {
     LogDebug("Loading database to the buffer");
@@ -562,17 +557,8 @@ void Logic::process_event(const event_t &event)
     if (event.event_type == event_t::event_type_t::APP_INSTALL) {
         // pulling out certificates from signatures
         app_t app = event.app;
-        ocsp_urls_t ocsp_urls;
-        m_certs.get_certificates(app, ocsp_urls);
+        m_certs.get_certificates(app);
         add_app_to_buffer_and_database(app);
-
-        // Adding OCSP URLs - if found any
-        if (!ocsp_urls.empty()){
-            LogDebug("Some OCSP url has been found. Adding to database");
-            for (auto iter = ocsp_urls.begin(); iter != ocsp_urls.end(); iter++){
-                m_sqlquery->set_url(iter->issuer, iter->url, iter->date);
-            }
-        }
     }
     else if (event.event_type == event_t::event_type_t::APP_UNINSTALL) {
         remove_app_from_buffer_and_database(event.app);

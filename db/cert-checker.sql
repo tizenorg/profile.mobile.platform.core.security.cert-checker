@@ -14,13 +14,6 @@ CREATE TABLE IF NOT EXISTS to_check (
   UNIQUE (app_id, pkg_id, uid) ON CONFLICT REPLACE
 );
 
--- Table 'ocsp_urls'
-CREATE TABLE IF NOT EXISTS ocsp_urls (
-  issuer TEXT NOT NULL PRIMARY KEY,
-  url    TEXT NOT NULL,
-  date   INTEGER NOT NULL
-);
-
 -- Table 'chains_to_check'
 CREATE TABLE IF NOT EXISTS chains_to_check (
   chain_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
