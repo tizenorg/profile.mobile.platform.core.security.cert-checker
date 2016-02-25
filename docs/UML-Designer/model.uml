@@ -194,15 +194,11 @@
     <ownedAttribute xmi:id="_YWoOgCY5EeWTLZg0vlj_ig" name="queue" visibility="private" type="__OwLICY4EeWTLZg0vlj_ig" aggregation="composite"/>
     <ownedAttribute xmi:id="_VdG8UCY8EeWTLZg0vlj_ig" name="certs" visibility="private" type="_UfAKwCY7EeWTLZg0vlj_ig" aggregation="composite"/>
     <ownedOperation xmi:id="_eaRs0N-JEeSrC54j_XokBw" name="setup" visibility="public"/>
-    <ownedOperation xmi:id="_pnpREOHiEeSrC54j_XokBw" name="pkgManager_callback" visibility="public" isStatic="true">
+    <ownedOperation xmi:id="_pnpREOHiEeSrC54j_XokBw" name="pkgManager_callback" visibility="protected" isStatic="true">
       <ownedParameter xmi:id="_CfjJUOHkEeSrC54j_XokBw" name="logic" type="_Wi5_gN3qEeSrC54j_XokBw"/>
     </ownedOperation>
     <ownedOperation xmi:id="_vdRAoOHiEeSrC54j_XokBw" name="connman_callback" visibility="public" isStatic="true">
       <ownedParameter xmi:id="_ADaeEOHkEeSrC54j_XokBw" name="logic" type="_Wi5_gN3qEeSrC54j_XokBw"/>
-    </ownedOperation>
-    <ownedOperation xmi:id="_7G258OHiEeSrC54j_XokBw" name="add_OCSP_url" visibility="private">
-      <ownedParameter xmi:id="_B3pRQOHjEeSrC54j_XokBw" name="Issuer"/>
-      <ownedParameter xmi:id="_Cy700OHjEeSrC54j_XokBw" name="url"/>
     </ownedOperation>
     <ownedOperation xmi:id="_UM_cIOM8EeSrC54j_XokBw" name="load_database_to_buffer" visibility="private"/>
     <ownedOperation xmi:id="_ZajUMCY6EeWTLZg0vlj_ig" name="process_event">
@@ -228,15 +224,6 @@
     </ownedOperation>
     <ownedOperation xmi:id="_P6K3MN96EeSrC54j_XokBw" name="execute query" visibility="private">
       <ownedParameter xmi:id="_SN7pkN96EeSrC54j_XokBw" name="query"/>
-    </ownedOperation>
-    <ownedOperation xmi:id="_l7_UIOHhEeSrC54j_XokBw" name="get_url" visibility="public">
-      <ownedParameter xmi:id="_qPGvIOHhEeSrC54j_XokBw" name="Issuer"/>
-      <ownedParameter xmi:id="_qLMbUOHoEeSrC54j_XokBw" name="url" direction="out"/>
-    </ownedOperation>
-    <ownedOperation xmi:id="_ucumIOHhEeSrC54j_XokBw" name="set_url" visibility="public">
-      <ownedParameter xmi:id="_v2z-gOHhEeSrC54j_XokBw" name="Issuer"/>
-      <ownedParameter xmi:id="_w3W1gOHhEeSrC54j_XokBw" name="url" visibility="public"/>
-      <ownedParameter xmi:id="_QaZooOKqEeSrC54j_XokBw" name="date"/>
     </ownedOperation>
     <ownedOperation xmi:id="_049CsOHhEeSrC54j_XokBw" name="get_app_list" visibility="public"/>
     <ownedOperation xmi:id="_3Ed4AOHhEeSrC54j_XokBw" name="add_app_to_check_list" visibility="public">
@@ -347,7 +334,6 @@
   <packagedElement xmi:type="uml:Class" xmi:id="_UfAKwCY7EeWTLZg0vlj_ig" name="Certs">
     <ownedOperation xmi:id="_az-v0CY7EeWTLZg0vlj_ig" name="get_certificates" visibility="public">
       <ownedParameter xmi:id="_bdLd0CY7EeWTLZg0vlj_ig" name="app" direction="inout"/>
-      <ownedParameter xmi:id="_c9wfwCY7EeWTLZg0vlj_ig" name="ocsl_urls" direction="out"/>
     </ownedOperation>
     <ownedOperation xmi:id="_hhhl4CY7EeWTLZg0vlj_ig" name="check_ocsp" visibility="public">
       <ownedParameter xmi:id="_jumhcCY7EeWTLZg0vlj_ig" name="app"/>
@@ -357,22 +343,9 @@
       <ownedParameter xmi:id="_st_eUCY7EeWTLZg0vlj_ig" name="chain"/>
       <ownedParameter xmi:id="_rI6W4CY7EeWTLZg0vlj_ig" name="response" direction="return"/>
     </ownedOperation>
-    <ownedOperation xmi:id="_unaeECY7EeWTLZg0vlj_ig" name="find_app_signatures" visibility="private">
-      <ownedParameter xmi:id="_w5kt8CY7EeWTLZg0vlj_ig" name="app" direction="inout"/>
-      <ownedParameter xmi:id="_yuavsCY7EeWTLZg0vlj_ig" name="app_path"/>
-      <ownedParameter xmi:id="_0St0ACY7EeWTLZg0vlj_ig" name="ocsp_urls" direction="out"/>
-    </ownedOperation>
-    <ownedOperation xmi:id="_40kOkCY7EeWTLZg0vlj_ig" name="search_app" visibility="private">
-      <ownedParameter xmi:id="_60_1QCY7EeWTLZg0vlj_ig" name="app" direction="inout"/>
-      <ownedParameter xmi:id="_8vGKcCY7EeWTLZg0vlj_ig" name="ocsp_urls" direction="inout"/>
-    </ownedOperation>
     <ownedOperation xmi:id="_EWEi4CY8EeWTLZg0vlj_ig" name="ocsp_create_list" visibility="private">
       <ownedParameter xmi:id="_FgZA8CY8EeWTLZg0vlj_ig" name="chain"/>
       <ownedParameter xmi:id="_GYUHcCY8EeWTLZg0vlj_ig" name="cert_list" direction="inout"/>
-    </ownedOperation>
-    <ownedOperation xmi:id="_LYKsoCY8EeWTLZg0vlj_ig" name="ocsp_build_chain" visibility="private">
-      <ownedParameter xmi:id="_MFGrICY8EeWTLZg0vlj_ig" name="cert_list" direction="inout"/>
-      <ownedParameter xmi:id="_QkxUYCY8EeWTLZg0vlj_ig" name="ckm_chain"/>
     </ownedOperation>
   </packagedElement>
   <packagedElement xmi:type="uml:Association" xmi:id="_dlLPoCY8EeWTLZg0vlj_ig" name="certssToLogics" memberEnd="_dlLPoSY8EeWTLZg0vlj_ig _dlMdwSY8EeWTLZg0vlj_ig" navigableOwnedEnd="_dlMdwSY8EeWTLZg0vlj_ig">
