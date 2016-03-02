@@ -50,15 +50,15 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
         -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
         -DCMAKE_BUILD_TYPE=%{?build_type:%build_type}%{!?build_type:RELEASE} \
         -DCMAKE_VERBOSE_MAKEFILE=ON \
-        -DTEST_APP_SIGNATURES_DIR="/root/cert-checker-test" \
+        -DTEST_APP_SIGNATURES_DIR="%{TZ_SYS_ROOT}/cert-checker-test" \
         -DSYSTEMD_UNIT_DIR=%{_unitdir}
 
 make %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}/usr/share/license
-cp LICENSE %{buildroot}/usr/share/license/%{name}
+mkdir -p %{buildroot}/%{_datadir}/license
+cp LICENSE %{buildroot}/%{_datadir}/license/%{name}
 %make_install
 cp -a %{SOURCE1} %{buildroot}%{_datadir}/
 %find_lang %{name}
@@ -111,4 +111,4 @@ fi
 %{_bindir}/cert-checker-tests-logic
 %{_bindir}/cert-checker-popup-test
 %{TZ_SYS_DB}/.cert-checker-test.db
-/root/cert-checker-test/*/*.xml
+%{TZ_SYS_ROOT}/cert-checker-test/*/*.xml
