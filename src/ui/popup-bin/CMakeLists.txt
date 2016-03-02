@@ -22,6 +22,7 @@
 PKG_CHECK_MODULES(CERT_CHECKER_POPUP_DEP
     elementary
     libsystemd-journal
+    libtzplatform-config
     REQUIRED)
 
 set(CERT_CHECKER_POPUP_SRC_DIR ${PROJECT_SOURCE_DIR}/src/ui/popup-bin)

@@ -50,17 +50,17 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
         -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
         -DCMAKE_BUILD_TYPE=%{?build_type:%build_type}%{!?build_type:RELEASE} \
         -DCMAKE_VERBOSE_MAKEFILE=ON \
-        -DTEST_APP_SIGNATURES_DIR="/root/cert-checker-test" \
+        -DTEST_APP_SIGNATURES_DIR="%{TZ_SYS_ROOT}/cert-checker-test" \
         -DSYSTEMD_UNIT_DIR=%{_unitdir}
 
 make %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}/usr/share/license
-cp LICENSE %{buildroot}/usr/share/license/%{name}
+mkdir -p %{buildroot}/%{TZ_SYS_RO_SHARE}/license
+cp LICENSE %{buildroot}/%{TZ_SYS_RO_SHARE}/license/%{name}
 %make_install
-cp -a %{SOURCE1} %{buildroot}%{_datadir}/
+cp -a %{SOURCE1} %{buildroot}%{TZ_SYS_RO_SHARE}/
 %find_lang %{name}
 
 %make_install
@@ -97,18 +97,18 @@ fi
 
 
 %files -f %{name}.lang
-%{_bindir}/cert-checker
-%{_bindir}/cert-checker-popup
-%manifest %{_datadir}/%{name}.manifest
-%{_datadir}/license/%{name}
+%{TZ_SYS_BIN}/cert-checker
+%{TZ_SYS_BIN}/cert-checker-popup
+%manifest %{TZ_SYS_RO_SHARE}/%{name}.manifest
+%{TZ_SYS_RO_SHARE}/license/%{name}
 %config(noreplace) %attr(0600,root,root) %{TZ_SYS_DB}/.cert-checker.db
 %{_unitdir}/cert-checker.service
 %{_unitdir}/multi-user.target.wants/cert-checker.service
 
 %files -n cert-checker-tests
 %defattr(-,root,root,-)
-%{_bindir}/cert-checker-tests
-%{_bindir}/cert-checker-tests-logic
-%{_bindir}/cert-checker-popup-test
+%{TZ_SYS_BIN}/cert-checker-tests
+%{TZ_SYS_BIN}/cert-checker-tests-logic
+%{TZ_SYS_BIN}/cert-checker-popup-test
 %{TZ_SYS_DB}/.cert-checker-test.db
-/root/cert-checker-test/*/*.xml
+%{TZ_SYS_ROOT}/cert-checker-test/*/*.xml

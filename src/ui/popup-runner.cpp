@@ -27,6 +27,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <tzplatform_config.h>
+
 #include <cchecker/app.h>
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
@@ -37,7 +39,7 @@ namespace { // anonymous
 
 using namespace CCHECKER::UI;
 
-const char *POPUP_EXEC = "/usr/bin/cert-checker-popup"; // check-checker-popup binary
+const char *POPUP_EXEC = tzplatform_mkpath(TZ_SYS_BIN, "cert-checker-popup"); // check-checker-popup binary
 
 std::string response_to_str (response_e response)
 {
