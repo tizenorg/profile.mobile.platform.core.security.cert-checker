@@ -46,14 +46,14 @@ class ASCIIValidator
   public:
     ASCIIValidator(const std::string& aTestedString);
 
-    void operator()(char aCharacter) const;
+    void operator()(signed char aCharacter) const;
 };
 
 ASCIIValidator::ASCIIValidator(const std::string& aTestedString) :
     m_TestedString(aTestedString)
 {}
 
-void ASCIIValidator::operator()(char aCharacter) const
+void ASCIIValidator::operator()(signed char aCharacter) const
 {
     // Check for ASCII data range
     if (aCharacter <= 0) {
