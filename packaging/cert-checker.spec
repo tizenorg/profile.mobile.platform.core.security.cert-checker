@@ -1,6 +1,6 @@
 Name:       cert-checker
 Summary:    OCSP checking on application installation
-Version:    0.0.3
+Version:    0.0.4
 Release:    1
 Group:      System/Security
 License:    Apache-2.0
@@ -24,6 +24,11 @@ BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(pkgmgr)
 BuildRequires: pkgconfig(pkgmgr-info)
 BuildRequires: boost-devel
+
+%global TZ_SYS_DB        %{?TZ_SYS_DB:%TZ_SYS_DB}%{!?TZ_SYS_DB:/opt/dbspace}
+%global TZ_SYS_ROOT      %{?TZ_SYS_ROOT:%TZ_SYS_ROOT}%{!?TZ_SYS_ROOT:/root}
+%global TZ_SYS_RO_SHARE  %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:/usr/share}
+%global TZ_SYS_BIN       %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:/usr/bin}
 
 %description
 Cert-checker
