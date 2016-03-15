@@ -10,7 +10,6 @@ BuildRequires: cmake
 BuildRequires: zip
 BuildRequires: gettext-tools
 BuildRequires: pkgconfig(capi-appfw-application)
-BuildRequires: pkgconfig(cert-svc-vcore)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)

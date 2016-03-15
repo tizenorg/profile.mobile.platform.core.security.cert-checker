@@ -26,7 +26,6 @@
 #define CCHECKER_CERTS_H
 
 #include <ckm/ckm-certificate.h>
-#include <vcore/Certificate.h>
 #include <pkgmgr-info.h>
 
 #include <cchecker/app.h>

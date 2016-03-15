@@ -1,7 +1,6 @@
 PKG_CHECK_MODULES(CERT_CHECKER_DEP
     REQUIRED
     capi-appfw-application
-    cert-svc-vcore
     dbus-1
     dbus-glib-1
     db-util

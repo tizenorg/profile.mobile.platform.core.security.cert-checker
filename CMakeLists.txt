@@ -48,6 +48,10 @@ ADD_DEFINITIONS("-Wall")                        # Generate all warnings
 ADD_DEFINITIONS("-Wextra")                      # Generate even more extra warnings
 ADD_DEFINITIONS("-fvisibility=hidden -fPIE")    # Hide symbols by default
 
+# Set linker flag
+SET(CMAKE_SHARED_LINKER_FLAGS  "-Wl,--as-needed")
+SET(CMAKE_EXE_LINKER_FLAGS     "-Wl,--as-needed")
+
 # Pass project name to sources
 ADD_DEFINITIONS("-DPROJECT_NAME=\"${PROJECT_NAME}\"")
 

@@ -28,9 +28,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <vcore/SignatureValidator.h>
-#include <vcore/SignatureFinder.h>
-#include <vcore/Certificate.h>
 #include <ckm/ckm-type.h>
 #include <ckm/ckm-raw-buffer.h>
 
