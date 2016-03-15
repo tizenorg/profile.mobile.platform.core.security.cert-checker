@@ -35,6 +35,7 @@
 #include <cchecker/UIBackend.h>
 #include <cchecker/popup-runner.h>
 #include <cchecker/dpl/serialization.h>
+#include <cchecker/dpl/errno_string.h>
 
 using namespace CCHECKER::UI;
 
@@ -172,7 +173,9 @@ static int wait_for_parent_info (int pipe_in)
 
     int sel = select(pipe_in + 1, &readfds, NULL, NULL, &timeout);
     if (sel == -1) {
-        LogError("Cannot get info from parent. Exit popup - ERROR (" << errno << ")");
+        int error = errno;
+        LogError("Cannot get info from parent. Exit popup");
+        LogError("Error: " << CCHECKER::GetErrnoString(error));
         close(pipe_in);
         return -1;
     }
@@ -260,10 +263,11 @@ elm_main(int argc, char **argv)
         count = TEMP_FAILURE_RETRY(read(pipe_in, line, buff_size));
     } while (0 == count);
     if(count < 0){
+        int error = errno;
         close(pipe_in);
         close(pipe_out);
         LogError("read returned a negative value (" << count <<")");
-        LogError("errno: " << strerror( errno ) );
+        LogError("error: " << CCHECKER::GetErrnoString(error));
         LogError("Exit popup - ERROR");
         return popup_status::EXIT_ERROR;
     }

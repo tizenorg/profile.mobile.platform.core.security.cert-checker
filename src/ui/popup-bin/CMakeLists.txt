@@ -34,7 +34,11 @@ set(CERT_CHECKER_POPUP_SOURCES
     # logs
     ${CERT_CHECKER_SRC_PATH}/log/log.cpp
     # dpl
+    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/assert.cpp
+    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/exception.cpp
     ${CERT_CHECKER_SRC_PATH}/dpl/core/src/serialization.cpp
+    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/errno_string.cpp
+    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/noncopyable.cpp
 )
 
 ADD_DEFINITIONS(${CERT_CHECKER_POPUP_DEP_CFLAGS})
@@ -43,6 +47,7 @@ INCLUDE_DIRECTORIES(
     ${CERT_CHECKER_POPUP_SRC_DIR}
     ${CERT_CHECKER_POPUP_DEP_INCLUDE_DIRS}
     ${CERT_CHECKER_SRC_PATH}/include/
+    ${CERT_CHECKER_SRC_PATH}/dpl/core/include/
 )
 
 ADD_EXECUTABLE(${TARGET_CERT_CHECKER_POPUP}
