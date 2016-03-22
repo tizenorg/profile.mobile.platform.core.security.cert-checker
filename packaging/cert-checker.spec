@@ -3,7 +3,7 @@ Summary:    OCSP checking on application installation
 Version:    0.0.4
 Release:    1
 Group:      Security/Certificate Management
-License:    Apache-2.0
+License:    Apache-2.0 and BSL-1.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.manifest
 BuildRequires: cmake
@@ -110,6 +110,7 @@ fi
 %{_unitdir}/multi-user.target.wants/cert-checker.service
 
 %files -n cert-checker-tests
+%license LICENSE.BSL-1.0
 %defattr(-,root,root,-)
 %{TZ_SYS_BIN}/cert-checker-tests
 %{TZ_SYS_BIN}/cert-checker-tests-logic
