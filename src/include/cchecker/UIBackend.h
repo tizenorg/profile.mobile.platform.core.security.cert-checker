@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <cchecker/app.h>
+#include "service/app.h"
 
 namespace CCHECKER {
 namespace UI {

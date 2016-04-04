@@ -29,16 +29,16 @@ set(CERT_CHECKER_POPUP_SRC_DIR ${PROJECT_SOURCE_DIR}/src/ui/popup-bin)
 
 set(CERT_CHECKER_POPUP_SOURCES
     ${CERT_CHECKER_POPUP_SRC_DIR}/popup.cpp
-    ${CERT_CHECKER_SRC_PATH}/ui/popup-runner.cpp
-    ${CERT_CHECKER_SRC_PATH}/app.cpp
+    ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
+    ${CERT_CHECKER_SERVICE_PATH}/app.cpp
     # logs
-    ${CERT_CHECKER_SRC_PATH}/log/log.cpp
+    ${CERT_CHECKER_LOG_PATH}/log.cpp
     # dpl
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/assert.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/exception.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/serialization.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/errno_string.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/noncopyable.cpp
+    ${DPL_CORE_SRC_PATH}/assert.cpp
+    ${DPL_CORE_SRC_PATH}/exception.cpp
+    ${DPL_CORE_SRC_PATH}/serialization.cpp
+    ${DPL_CORE_SRC_PATH}/errno_string.cpp
+    ${DPL_CORE_SRC_PATH}/noncopyable.cpp
 )
 
 ADD_DEFINITIONS(${CERT_CHECKER_POPUP_DEP_CFLAGS})
@@ -47,7 +47,7 @@ INCLUDE_DIRECTORIES(
     ${CERT_CHECKER_POPUP_SRC_DIR}
     ${CERT_CHECKER_POPUP_DEP_INCLUDE_DIRS}
     ${CERT_CHECKER_SRC_PATH}/include/
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/include/
+    ${DPL_CORE_SRC_PATH}/include/
 )
 
 ADD_EXECUTABLE(${TARGET_CERT_CHECKER_POPUP}
@@ -64,4 +64,4 @@ TARGET_LINK_LIBRARIES(${TARGET_CERT_CHECKER_POPUP}
     -pie
 )
 
-INSTALL(TARGETS ${TARGET_CERT_CHECKER_POPUP} DESTINATION ${BINDIR})
+INSTALL(TARGETS ${TARGET_CERT_CHECKER_POPUP} DESTINATION ${BIN_DIR})
