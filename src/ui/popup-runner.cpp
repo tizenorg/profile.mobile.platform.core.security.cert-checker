@@ -29,8 +29,8 @@
 
 #include <tzplatform_config.h>
 
-#include <cchecker/app.h>
-#include <cchecker/logic.h>
+#include "service/app.h"
+#include "service/logic.h"
 #include <cchecker/log.h>
 #include <cchecker/UIBackend.h>
 #include <cchecker/popup-runner.h>

@@ -23,26 +23,33 @@
 #include <glib.h>
 
 #include <cchecker/log.h>
-#include <cchecker/logic.h>
+
+#include "service/logic.h"
+#include "service/ocsp-service.h"
 
 using namespace CCHECKER;
 
 int main(void)
 {
-    LogDebug("Cert-checker start!");
+	try {
+		LogInfo("Cert-checker start!");
 
-    setlocale(LC_ALL, "");
-    GMainLoop *main_loop = g_main_loop_new(NULL, FALSE);
+		CCHECKER::OcspService service(SERVICE_STREAM);
 
-    Logic logic;
-    if (logic.setup() != NO_ERROR) {
-        LogError("Cannot setup logic. Exit cert-checker!");
-        return -1;
-    }
+		setlocale(LC_ALL, "");
 
-    LogDebug("Running the main loop");
-    g_main_loop_run(main_loop);
+		// Set timeout about socket read event.
+		service.setTimeout(50);
+		service.start();
 
-    LogDebug("Cert-checker exit!");
-    return 0;
+		LogInfo("Cert-checker exit!");
+		return 0;
+
+	} catch (const std::exception &e) {
+		LogError("Exception occured in cert-checker main : " << e.what());
+		return -1;
+	} catch (...) {
+		LogError("Unhandled exception occured in cert-checker main.");
+		return -1;
+	}
 }

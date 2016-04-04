@@ -16,17 +16,20 @@
 /*
  * @file        logic.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
  * @brief       This file is the implementation of SQL queries
  */
-#include <stdexcept>
+#include "logic.h"
 
-#include <cchecker/logic.h>
+#include <stdexcept>
+#include <set>
+
 #include <cchecker/log.h>
 #include <cchecker/sql_query.h>
 #include <cchecker/UIBackend.h>
 
-#include <set>
+#include "common/binary-queue.h"
 
 using namespace std;
 
@@ -70,7 +73,8 @@ struct PkgmgrinfoEvent {
 
 std::set<PkgmgrinfoEvent> pkgmgrinfo_event_set;
 const char *const DB_PATH = DB_INSTALL_DIR"/.cert-checker.db";
-}
+
+} // namespace Anonymous
 
 Logic::~Logic(void)
 {
@@ -79,7 +83,7 @@ Logic::~Logic(void)
 
 void Logic::clean(void)
 {
-    LogDebug("Cert-checker cleaning.");
+    LogDebug("Cert-checker cleaning start.");
 
     // wait and join processing thread
     if (m_thread.joinable()) {
@@ -87,6 +91,7 @@ void Logic::clean(void)
         {
             std::lock_guard<std::mutex> lock(m_mutex_cv);
             set_should_exit();
+            LogDebug("Notify thread : enforced by cleaning");
             m_to_process.notify_one();
         }
         m_thread.join();
@@ -98,10 +103,16 @@ void Logic::clean(void)
     if (m_proxy_connman)
         g_object_unref(m_proxy_connman);
 
+    if (m_loop)
+        g_main_loop_unref(m_loop);
+
     delete m_sqlquery;
+
+    LogDebug("Cert-checker cleaning finish.");
 }
 
 Logic::Logic(void) :
+        m_loop(g_main_loop_new(NULL, FALSE)),
         m_sqlquery(NULL),
         m_was_setup_called(false),
         m_is_online(false),
@@ -110,7 +121,8 @@ Logic::Logic(void) :
         m_proxy_connman(NULL),
         m_pc_install(nullptr, nullptr),
         m_pc_uninstall(nullptr, nullptr)
-{}
+{
+}
 
 bool Logic::get_online() const
 {
@@ -125,6 +137,7 @@ void Logic::set_online(bool online)
     m_is_online = online;
     if (m_is_online) {
         m_is_online_enabled = true;
+        LogDebug("Notify thread : Network connected");
         m_to_process.notify_one();
     }
 }
@@ -220,6 +233,9 @@ error_t  Logic::setup()
 
     LogDebug("Register package event handler success");
 
+    LogDebug("Running the main loop");
+    g_main_loop_run(m_loop);
+
     return NO_ERROR;
 }
 
@@ -248,6 +264,7 @@ int Logic::pkgmgrinfo_event_handler_static(
     } else if (keyStr.compare("end") == 0 && valStr.compare("ok") == 0) {
         return static_cast<Logic *>(data)->push_pkgmgrinfo_event(uid, pkgid);
     } else {
+        // TODO(sangwan.kwon) if get untreat event like fail, must quit loop
         LogDebug("Untreated event was caught : " << val);
         return -1;
     }
@@ -430,7 +447,6 @@ void Logic::connman_callback(GDBusProxy */*proxy*/,
     if (params_str == "('State', <'online'>)") {
         LogDebug("Device online");
         logic->set_online(true);
-        logic->m_to_process.notify_one();
     }
     else if (params_str == "('State', <'offline'>)") {
         LogDebug("Device offline");
@@ -521,6 +537,7 @@ void Logic::push_event(event_t event)
 {
     std::lock_guard<std::mutex> lock(m_mutex_cv);
     m_queue.push_event(std::move(event));
+    LogDebug("Notify thread : pkgmgr event added");
     m_to_process.notify_one();
 }
 
@@ -528,26 +545,32 @@ void Logic::process_all()
 {
     for(;;) {
         std::unique_lock<std::mutex> lock(m_mutex_cv);
-        if (m_should_exit)
-            break;  //lock will be unlocked upon destruction
 
         // don't sleep if there are online/installation/deinstallation events to process
-        if(m_queue.empty() && !m_is_online_enabled) {
-            LogDebug("Processing thread: waiting on condition");
+        if(m_queue.empty() || !get_online()) {
+            LogDebug("Processing thread : wait condition <Queue, Network> : "
+                    << !m_queue.empty() << ", " << get_online());
             m_to_process.wait(lock); // spurious wakeups do not concern us
-            LogDebug("Processing thread: running");
+            LogDebug("Processing thread : running");
         }
 
-        m_is_online_enabled = false;
         lock.unlock();
 
-        process_queue();
-        if (get_online())
-            process_buffer();
-        else
-            LogDebug("No network. Buffer won't be processed");
+        if (m_should_exit)
+            break;
 
-        LogDebug("Processing done");
+        if (get_online() && !m_queue.empty()) {
+            process_queue(); // move event data from queue to buffer & database
+            process_buffer();
+
+            LogDebug("Processing thread : done. g_main_loop quit");
+            g_main_loop_quit(m_loop);
+            break;
+        } else if (!get_online()) {
+            LogDebug("Processing thread : no network. Buffer won't be processed");
+        } else {
+            LogDebug("Processing thread : no event since cert-checker started");
+        }
     }
 }
 
@@ -621,4 +644,4 @@ void Logic::set_should_exit(void)
 
 }
 
-} //CCHECKER
+} // namespace CCHECKER

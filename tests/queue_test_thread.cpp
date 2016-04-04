@@ -23,8 +23,8 @@
 #include <thread>
 #include <unistd.h>
 
-#include <cchecker/app.h>
-#include <cchecker/queue.h>
+#include "service/app.h"
+#include "service/queue.h"
 #include <cchecker/log.h>
 
 #include <queue_test_thread.h>

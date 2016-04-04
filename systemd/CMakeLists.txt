@@ -1,4 +1,13 @@
-INSTALL(FILES
-    ${PROJECT_SOURCE_DIR}/systemd/cert-checker.service
-    DESTINATION
-    ${SYSTEMD_UNIT_DIR})
+CONFIGURE_FILE(
+	${SERVICE_NAME}.socket.in
+	${SERVICE_NAME}.socket @ONLY)
+CONFIGURE_FILE(
+	${SERVICE_NAME}.service.in
+	${SERVICE_NAME}.service @ONLY)
+
+INSTALL(
+	FILES
+		${SERVICE_NAME}.socket
+		${SERVICE_NAME}.service
+	DESTINATION
+		${SYSTEMD_UNIT_DIR})
