@@ -21,6 +21,8 @@
  *              Getting out app signature, getting certificates out of
  *              signature. Checking OCSP
  */
+#include "service/certs.h"
+
 #include <sys/types.h>
 #include <dirent.h>
 #include <list>
@@ -31,7 +33,6 @@
 #include <ckm/ckm-type.h>
 #include <ckm/ckm-raw-buffer.h>
 
-#include <cchecker/certs.h>
 #include <cchecker/log.h>
 
 namespace CCHECKER {

@@ -20,7 +20,7 @@
  * @brief       Implementation of class for multi-thread testing Queue
  */
 
-#include <cchecker/queue.h>
+#include "service/queue.h"
 
 namespace CCHECKER {
 

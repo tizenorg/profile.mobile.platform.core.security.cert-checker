@@ -1,5 +1,5 @@
 # Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
-#
+
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
@@ -14,13 +14,14 @@
 #
 # @file        CMakeLists.txt
 # @author      Janusz Kozerski <j.kozerski@samsung.com>
+# @author      Sangwan Kwon <sangwan.kwon@samsung.com>
 # @brief
 #
 
 ############################# Check minimum CMake version #####################
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT("cert-checker")
+PROJECT(${SERVICE_NAME})
 
 ############################# cmake packages ##################################
 
@@ -29,7 +30,6 @@ INCLUDE(FindPkgConfig)
 #############################     defines    ##################################
 
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
-SET(BINDIR "${PREFIX}/bin")
 SET(RESDIR "${PREFIX}/res")
 SET(LOCALEDIR "${RESDIR}/locale")
 
@@ -48,12 +48,22 @@ ADD_DEFINITIONS("-Wall")                        # Generate all warnings
 ADD_DEFINITIONS("-Wextra")                      # Generate even more extra warnings
 ADD_DEFINITIONS("-fvisibility=hidden -fPIE")    # Hide symbols by default
 
+# Set library flag
+ADD_DEFINITIONS("-fPIC")
+
 # Set linker flag
 SET(CMAKE_SHARED_LINKER_FLAGS  "-Wl,--as-needed")
 SET(CMAKE_EXE_LINKER_FLAGS     "-Wl,--as-needed")
 
-# Pass project name to sources
-ADD_DEFINITIONS("-DPROJECT_NAME=\"${PROJECT_NAME}\"")
+# Pass macro to sources
+ADD_DEFINITIONS("-DSERVICE_NAME=\"${SERVICE_NAME}\"")
+ADD_DEFINITIONS("-DSERVICE_STREAM=\"${SERVICE_STREAM}\"")
+ADD_DEFINITIONS("-DSERVICE_USER=\"${SERVICE_USER}\"")
+ADD_DEFINITIONS("-DSERVICE_GROUP=\"${SERVICE_GROUP}\"")
+
+ADD_DEFINITIONS("-DINCLUDE_INSTALL_DIR=\"${INCLUDE_INSTALL_DIR}\"")
+
+STRING(REGEX MATCH "([^.]*)" API_VERSION "${VERSION}")
 
 IF (CMAKE_BUILD_TYPE MATCHES "DEBUG")
     ADD_DEFINITIONS("-DBUILD_TYPE_DEBUG")
@@ -63,14 +73,37 @@ ENDIF (CMAKE_BUILD_TYPE MATCHES "DEBUG")
 ADD_DEFINITIONS("-DPOPUP=1")
 ADD_DEFINITIONS("-DDB_INSTALL_DIR=\"${DB_INSTALL_DIR}\"")
 
-SET(TARGET_CERT_CHECKER "cert-checker")
-SET(TARGET_CERT_CHECKER_POPUP "cert-checker-popup")
+# Define global macro about TARGET
+SET(TARGET_CERT_CHECKER "${SERVICE_NAME}")
+SET(TARGET_CERT_CHECKER_COMMON "${SERVICE_NAME}-common")
+SET(TARGET_CERT_CHECKER_POPUP "${SERVICE_NAME}-popup")
+
 # Tests
-SET(TARGET_CERT_CHECKER_TESTS "cert-checker-tests")
-SET(TARGET_CERT_CHECKER_TESTS_LOGIC "cert-checker-tests-logic")
-SET(TARGET_CERT_CHECKER_POPUP_TEST "cert-checker-popup-test")
+SET(TARGET_CERT_CHECKER_TESTS "${SERVICE_NAME}-tests")
+SET(TARGET_CERT_CHECKER_TESTS_LOGIC "${SERVICE_NAME}-tests-logic")
+SET(TARGET_CERT_CHECKER_POPUP_TEST "${SERVICE_NAME}-popup-test")
+
+# Define global macro about PATH
+SET(CERT_CHECKER_SRC_PATH ${PROJECT_SOURCE_DIR}/src)
+SET(CERT_CHECKER_SERVICE_PATH ${CERT_CHECKER_SRC_PATH}/service)
+SET(CERT_CHECKER_LOG_PATH ${CERT_CHECKER_SRC_PATH}/log)
+SET(CERT_CHECKER_UI_PATH ${CERT_CHECKER_SRC_PATH}/ui)
+SET(CERT_CHECKER_DB_PATH ${CERT_CHECKER_SRC_PATH}/db)
+
+SET(DPL_CORE_PATH ${CERT_CHECKER_SRC_PATH}/dpl/core)
+SET(DPL_CORE_SRC_PATH ${DPL_CORE_PATH}/src)
+SET(DPL_DB_PATH ${CERT_CHECKER_SRC_PATH}/dpl/db)
+SET(DPL_DB_SRC_PATH ${DPL_DB_PATH}/src)
+
+CONFIGURE_FILE(
+	packaging/${SERVICE_NAME}.manifest.in
+	${SERVICE_NAME}.manifest @ONLY)
+CONFIGURE_FILE(
+	packaging/${SERVICE_NAME}-common.manifest.in
+	${SERVICE_NAME}-common.manifest @ONLY)
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(db)
 ADD_SUBDIRECTORY(tests)
 ADD_SUBDIRECTORY(systemd)
+ADD_SUBDIRECTORY(pkgconfig)

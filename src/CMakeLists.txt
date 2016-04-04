@@ -1,4 +1,25 @@
-PKG_CHECK_MODULES(CERT_CHECKER_DEP
+# Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+# @file        CMakeLists.txt
+# @author      Janusz Kozerski <j.kozerski@samsung.com>
+# @author      Sangwan Kwon <sangwan.kwon@samsung.com>
+# @brief
+#
+
+############### CERT_CHECKER ###############
+PKG_CHECK_MODULES(${TARGET_CERT_CHECKER}_DEP
     REQUIRED
     capi-appfw-application
     dbus-1
@@ -10,59 +31,61 @@ PKG_CHECK_MODULES(CERT_CHECKER_DEP
     icu-i18n
     key-manager
     libsystemd-journal
+    libsystemd-daemon
     sqlite3
     pkgmgr
     pkgmgr-info
-    )
-
-SET(CERT_CHECKER_SRC_PATH ${PROJECT_SOURCE_DIR}/src)
-
-SET(CERT_CHECKER_SOURCES
-    ${CERT_CHECKER_SRC_PATH}/cert-checker.cpp
-    ${CERT_CHECKER_SRC_PATH}/app.cpp
-    ${CERT_CHECKER_SRC_PATH}/logic.cpp
-    ${CERT_CHECKER_SRC_PATH}/queue.cpp
-    ${CERT_CHECKER_SRC_PATH}/certs.cpp
-    # logs
-    ${CERT_CHECKER_SRC_PATH}/log/log.cpp
-    # dpl
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/assert.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/char_traits.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/errno_string.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/exception.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/noncopyable.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/string.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/src/serialization.cpp
-    # dpl DB
-    ${CERT_CHECKER_SRC_PATH}/dpl/db/src/sql_connection.cpp
-    ${CERT_CHECKER_SRC_PATH}/dpl/db/src/naive_synchronization_object.cpp
-    # DB
-    ${CERT_CHECKER_SRC_PATH}/db/sql_query.cpp
-    # UI
-    ${CERT_CHECKER_SRC_PATH}/ui/UIBackend.cpp
-    ${CERT_CHECKER_SRC_PATH}/ui/popup-runner.cpp
-    )
-
-INCLUDE_DIRECTORIES(SYSTEM
-    ${CERT_CHECKER_DEP_INCLUDE_DIRS}
-    ${CERT_CHECKER_SRC_PATH}/include/
-    ${CERT_CHECKER_SRC_PATH}/dpl/core/include/
-    ${CERT_CHECKER_SRC_PATH}/dpl/db/include/
-    )
-
-ADD_EXECUTABLE(${TARGET_CERT_CHECKER} ${CERT_CHECKER_SOURCES})
-
-SET_TARGET_PROPERTIES(${TARGET_CERT_CHECKER} PROPERTIES
-    COMPILE_FLAGS
-    -fpie
 )
 
+SET(MAIN_PATH ${CERT_CHECKER_SRC_PATH}/main)
+
+SET(${TARGET_CERT_CHECKER}_SRCS
+    ${MAIN_PATH}/cert-checker.cpp
+    ${CERT_CHECKER_SERVICE_PATH}/app.cpp
+    ${CERT_CHECKER_SERVICE_PATH}/logic.cpp
+    ${CERT_CHECKER_SERVICE_PATH}/queue.cpp
+    ${CERT_CHECKER_SERVICE_PATH}/certs.cpp
+    ${CERT_CHECKER_SERVICE_PATH}/ocsp-service.cpp
+    ${CERT_CHECKER_LOG_PATH}/log.cpp
+    ${CERT_CHECKER_DB_PATH}/sql_query.cpp
+    ${CERT_CHECKER_UI_PATH}/UIBackend.cpp
+    ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
+    ${DPL_CORE_SRC_PATH}/assert.cpp
+    ${DPL_CORE_SRC_PATH}/char_traits.cpp
+    ${DPL_CORE_SRC_PATH}/errno_string.cpp
+    ${DPL_CORE_SRC_PATH}/exception.cpp
+    ${DPL_CORE_SRC_PATH}/noncopyable.cpp
+    ${DPL_CORE_SRC_PATH}/string.cpp
+    ${DPL_CORE_SRC_PATH}/serialization.cpp
+    ${DPL_DB_SRC_PATH}/sql_connection.cpp
+    ${DPL_DB_SRC_PATH}/naive_synchronization_object.cpp
+)
+
+INCLUDE_DIRECTORIES(SYSTEM
+    ./
+    ${${TARGET_CERT_CHECKER}_DEP_INCLUDE_DIRS}
+    ${CERT_CHECKER_SRC_PATH}/include/
+    ${DPL_CORE_PATH}/include/
+    ${DPL_DB_PATH}/include/
+)
+
+SET_SOURCE_FILES_PROPERTIES(${${TARGET_CERT_CHECKER}_SRCS}
+    PROPERTIES
+        COMPILE_FLAGS "-D_GNU_SOURCE -fPIE -fvisibility=default"
+)
+
+ADD_EXECUTABLE(${TARGET_CERT_CHECKER} ${${TARGET_CERT_CHECKER}_SRCS})
+
 TARGET_LINK_LIBRARIES(${TARGET_CERT_CHECKER}
-    ${CERT_CHECKER_DEP_LIBRARIES}
+    ${${TARGET_CERT_CHECKER}_DEP_LIBRARIES}
+    ${TARGET_CERT_CHECKER_COMMON}
     -pie
-    )
+)
 
-INSTALL(TARGETS ${TARGET_CERT_CHECKER} DESTINATION ${BINDIR})
+INSTALL(TARGETS ${TARGET_CERT_CHECKER} DESTINATION ${BIN_DIR})
 
+ADD_SUBDIRECTORY(main)
+ADD_SUBDIRECTORY(service)
+ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(po)
 ADD_SUBDIRECTORY(ui)

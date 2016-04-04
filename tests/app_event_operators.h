@@ -20,8 +20,8 @@
  * @brief       Implementation of app_test class (from app_t)
  */
 
-#include <cchecker/app.h>
-#include <cchecker/queue.h>
+#include "service/app.h"
+#include "service/queue.h"
 
 #ifndef CCHECKER_APP_TEST_CLASS_H
 #define CCHECKER_APP_TEST_CLASS_H
