@@ -3,13 +3,11 @@ Description=Start the Cert-Checker
 Requires=dbus.service
 
 [Service]
-User=security_fw
-Group=security_fw
+User=@SERVICE_USER@
+Group=@SERVICE_GROUP@
 EnvironmentFile=-/etc/sysconfig/enlightenment
 # Makes popup bigger
 Environment="ELM_SCALE=4.0"
 Type=simple
-ExecStart=/usr/bin/cert-checker
-
-[Install]
-WantedBy=multi-user.target
+ExecStart=@BIN_DIR@/cert-checker
+Sockets=@SERVICE_NAME@.socket

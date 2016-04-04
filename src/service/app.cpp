@@ -19,12 +19,12 @@
  * @version     1.0
  * @brief       This file is the implementation of app struct
  */
+#include "service/app.h"
 
 #include <sstream>
 #include <string>
 #include <sys/types.h>
 
-#include <cchecker/app.h>
 #include <cchecker/log.h>
 
 namespace CCHECKER {

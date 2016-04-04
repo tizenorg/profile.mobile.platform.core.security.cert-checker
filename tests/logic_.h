@@ -28,7 +28,7 @@
  * Some of methods are stubbed, and some of them just calls corresponding methods from Logic Class.
  */
 
-#include <cchecker/logic.h>
+#include "service/logic.h"
 
 namespace CCHECKER {
 

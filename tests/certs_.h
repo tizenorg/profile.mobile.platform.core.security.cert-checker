@@ -20,7 +20,7 @@
  * @brief       Implementation of Certs for testing
  */
 
-#include <cchecker/certs.h>
+#include "service/certs.h"
 
 #ifndef CCHECKER_DBFIXTURE_H
 #define CCHECKER_DBFIXTURE_H

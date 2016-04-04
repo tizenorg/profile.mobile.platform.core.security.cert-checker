@@ -49,11 +49,9 @@ std::string log_apps(std::list<app_t> &apps, std::list<app_t> buff)
 
     return ret;
 }
-
-} //anonymus
+} // anonymous namespace
 
 BOOST_FIXTURE_TEST_SUITE(LOGIC_TEST, LogicWrapper)
-
 
 BOOST_AUTO_TEST_CASE(logic_setup) {
 
@@ -448,5 +446,4 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_APP_REVOKED_2) {
     buff = get_buffer_();
     BOOST_CHECK_MESSAGE(buff == apps, log_apps(apps, buff));
 }
-
 BOOST_AUTO_TEST_SUITE_END()
