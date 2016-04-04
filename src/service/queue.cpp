@@ -14,47 +14,48 @@
  *    limitations under the License.
  */
 /*
- * @file        queue.h
+ * @file        queue.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
  * @version     1.0
  * @brief       This file is the implementation of thread-safe queue
  */
-
-#ifndef CCHECKER_QUEUE_H
-#define CCHECKER_QUEUE_H
+#include "service/queue.h"
 
 #include <mutex>
-#include <queue>
-
-#include <cchecker/app.h>
+#include <utility>
 
 namespace CCHECKER {
 
-struct event_t {
-    enum class event_type_t {
-        APP_INSTALL,
-        APP_UNINSTALL,
-        EVENT_TYPE_UNKNOWN
-    };
+event_t::event_t():
+        event_type(event_type_t::EVENT_TYPE_UNKNOWN),
+        app()
+{}
 
-    event_type_t event_type;
-    app_t        app;
+event_t::event_t(const app_t &app, event_type_t type):
+        event_type(type),
+        app(app)
+{}
 
-    event_t();
-    event_t(const app_t &app, event_type_t type);
-};
+void Queue::push_event(const event_t &event)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_event_list.push(event);
+}
 
-class Queue {
-    public:
-        void push_event(const event_t &event);
-        bool pop_event(event_t &event);
-        bool empty();
+bool Queue::pop_event(event_t &event)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (m_event_list.empty())
+        return false;
 
-    private:
-        std::mutex          m_mutex;
-        std::queue<event_t> m_event_list;
-};
+    event = std::move(m_event_list.front());
+    m_event_list.pop();
+    return true;
+}
 
-} // CCHECKER
+bool Queue::empty()
+{
+    return m_event_list.empty();
+}
 
-#endif // CCHECKER_QUEUE_H
+} //CCHECKER

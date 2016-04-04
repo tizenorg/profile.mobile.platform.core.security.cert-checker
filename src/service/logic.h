@@ -16,6 +16,7 @@
 /*
  * @file        logic.h
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
  * @brief       This file is the implementation of SQL queries
  */
@@ -31,9 +32,11 @@
 #include <thread>
 #include <memory>
 
-#include <cchecker/app.h>
-#include <cchecker/certs.h>
-#include <cchecker/queue.h>
+#include "common/types.h"
+#include "common/binary-queue.h"
+#include "service/app.h"
+#include "service/certs.h"
+#include "service/queue.h"
 
 #include <package-manager.h>
 #include <pkgmgr-info.h>
@@ -42,7 +45,7 @@ namespace CCHECKER {
 
 namespace DB {
 class SqlQuery;
-}
+} // namespace DB
 
 enum error_t {
     NO_ERROR,
@@ -56,6 +59,11 @@ enum error_t {
 enum pkgmgr_event_t {
     EVENT_INSTALL,
     EVENT_UNINSTALL
+};
+
+enum class CommandId : int {
+    CC_OCSP_SYN = 0x01,
+    CC_OCSP_ACK = 0x02
 };
 
 class Logic {
@@ -130,6 +138,10 @@ class Logic {
 
         bool call_ui(const app_t &app);
 
+
+        // main event loop data type
+        GMainLoop *m_loop;
+
         Queue m_queue;
         Certs m_certs;
         std::list<app_t> m_buffer;
@@ -146,12 +158,13 @@ class Logic {
 
         GDBusProxy *m_proxy_connman;
 
+        // about pkgmgr event
         int m_reqid_install;
         int m_reqid_uninstall;
         std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)> m_pc_install;
         std::unique_ptr<pkgmgrinfo_client, int(*)(pkgmgrinfo_client *)> m_pc_uninstall;
 };
 
-} // CCHECKER
+} // namespace CCHECKER
 
 #endif //CCHECKER_LOGIC_H

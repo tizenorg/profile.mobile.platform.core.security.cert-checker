@@ -1,0 +1,7 @@
+[Socket]
+ListenStream=@SERVICE_STREAM@
+SocketUser=@SERVICE_USER@
+SocketUser=@SERVICE_GROUP@
+SocketMode=0777
+
+Service=@SERVICE_NAME@.service
