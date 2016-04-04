@@ -24,7 +24,7 @@
 #include <string>
 
 #include <cchecker/dpl/db/sql_connection.h>
-#include <cchecker/app.h>
+#include "service/app.h"
 
 namespace CCHECKER {
 namespace DB {

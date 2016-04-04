@@ -20,8 +20,9 @@
  * @brief       Implementation of stubbed functions for testing
  */
 
-#include <cchecker/certs.h>
-#include <cchecker/queue.h>
+#include "service/certs.h"
+#include "service/queue.h"
+
 #include <cchecker/sql_query.h>
 #include <cchecker/UIBackend.h>
 

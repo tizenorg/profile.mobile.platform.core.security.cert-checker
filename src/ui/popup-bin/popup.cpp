@@ -82,7 +82,7 @@ void show_popup(struct cert_checker_popup_data *pdp) {
     }
 
     pdp->win = elm_win_add(NULL,
-            dgettext(PROJECT_NAME, "SID_TITLE_OCSP_VERIFICATION_FAILED"),
+            dgettext(SERVICE_NAME, "SID_TITLE_OCSP_VERIFICATION_FAILED"),
             ELM_WIN_NOTIFICATION);
 
     elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
@@ -98,7 +98,7 @@ void show_popup(struct cert_checker_popup_data *pdp) {
 
     pdp->title = elm_label_add(pdp->popup);
     elm_object_style_set(pdp->title, "elm.text.title");
-    elm_object_text_set(pdp->title, dgettext(PROJECT_NAME, "SID_TITLE_OCSP_VERIFICATION_FAILED"));
+    elm_object_text_set(pdp->title, dgettext(SERVICE_NAME, "SID_TITLE_OCSP_VERIFICATION_FAILED"));
     evas_object_show(pdp->title);
     elm_box_pack_end(pdp->box, pdp->title);
 
@@ -112,11 +112,11 @@ void show_popup(struct cert_checker_popup_data *pdp) {
     // Set message
     // App ID may be absent, so in that case we need to use only package ID
     if (pdp->app_id == std::string(CCHECKER::TEMP_APP_ID)) {
-        char *content = dgettext(PROJECT_NAME, "SID_CONTENT_OCSP_PACKAGE VERIFICATION_FAILED");
+        char *content = dgettext(SERVICE_NAME, "SID_CONTENT_OCSP_PACKAGE VERIFICATION_FAILED");
         ret = asprintf(&buff, content, pdp->pkg_id.c_str());
     }
     else {
-        char *content = dgettext(PROJECT_NAME, "SID_CONTENT_OCSP_VERIFICATION_FAILED");
+        char *content = dgettext(SERVICE_NAME, "SID_CONTENT_OCSP_VERIFICATION_FAILED");
         ret = asprintf(&buff, content, pdp->app_id.c_str(), pdp->pkg_id.c_str());
     }
 
@@ -139,13 +139,13 @@ void show_popup(struct cert_checker_popup_data *pdp) {
 
     pdp->keep_button = elm_button_add(pdp->popup);
     elm_object_style_set(pdp->keep_button, "elm.swallow.content.button1");
-    elm_object_text_set(pdp->keep_button, dgettext(PROJECT_NAME, "SID_BTN_OCSP_KEEP_APP"));
+    elm_object_text_set(pdp->keep_button, dgettext(SERVICE_NAME, "SID_BTN_OCSP_KEEP_APP"));
     elm_object_part_content_set(pdp->popup, "button1", pdp->keep_button);
     evas_object_smart_callback_add(pdp->keep_button, "clicked", keep_answer, pdp);
 
     pdp->uninstall_button = elm_button_add(pdp->popup);
     elm_object_style_set(pdp->uninstall_button, "elm.swallow.content.button2");
-    elm_object_text_set(pdp->uninstall_button, dgettext(PROJECT_NAME, "SID_BTN_OCSP_UNINSTALL_APP"));
+    elm_object_text_set(pdp->uninstall_button, dgettext(SERVICE_NAME, "SID_BTN_OCSP_UNINSTALL_APP"));
     elm_object_part_content_set(pdp->popup, "button2  ", pdp->uninstall_button);
     evas_object_smart_callback_add(pdp->uninstall_button, "clicked", uninstall_answer, pdp);
 

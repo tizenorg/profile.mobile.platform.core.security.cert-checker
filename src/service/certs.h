@@ -28,7 +28,7 @@
 #include <ckm/ckm-certificate.h>
 #include <pkgmgr-info.h>
 
-#include <cchecker/app.h>
+#include "service/app.h"
 #include <ckm/ckm-manager.h>
 
 namespace CCHECKER {
