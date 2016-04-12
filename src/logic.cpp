@@ -20,7 +20,6 @@
  * @brief       This file is the implementation of SQL queries
  */
 #include <stdexcept>
-#include <tzplatform_config.h>
 
 #include <cchecker/logic.h>
 #include <cchecker/log.h>
@@ -70,7 +69,7 @@ struct PkgmgrinfoEvent {
 };
 
 std::set<PkgmgrinfoEvent> pkgmgrinfo_event_set;
-const char *const DB_PATH = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker.db");
+const char *const DB_PATH = DB_INSTALL_DIR"/.cert-checker.db";
 }
 
 Logic::~Logic(void)

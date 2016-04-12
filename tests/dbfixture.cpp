@@ -20,7 +20,6 @@
  * @brief       Implementation of DB test class
  */
 #include <boost/test/unit_test.hpp>
-#include <tzplatform_config.h>
 #include <fstream>
 
 #include <dbfixture.h>
@@ -28,8 +27,8 @@
 using namespace CCHECKER;
 
 namespace {
-const char *TEST_DB_PATH      = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker-test.db");
-const char *TEST_DB_PATH_TEMP = tzplatform_mkpath(TZ_SYS_DB, ".cert-checker-test-temp.db");
+const char *TEST_DB_PATH      = DB_INSTALL_DIR"/.cert-checker-test.db" ;
+const char *TEST_DB_PATH_TEMP = DB_INSTALL_DIR"/.cert-checker-test-temp.db";
 } // anonymus namespace
 
 DBFixture::DBFixture() :

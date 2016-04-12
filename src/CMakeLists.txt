@@ -10,7 +10,6 @@ PKG_CHECK_MODULES(CERT_CHECKER_DEP
     icu-i18n
     key-manager
     libsystemd-journal
-    libtzplatform-config
     sqlite3
     pkgmgr
     pkgmgr-info
