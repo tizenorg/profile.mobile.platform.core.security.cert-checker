@@ -23,11 +23,14 @@ BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(pkgmgr)
 BuildRequires: pkgconfig(pkgmgr-info)
 BuildRequires: boost-devel
+Requires: security-config
 
 %global TZ_SYS_DB        %{?TZ_SYS_DB:%TZ_SYS_DB}%{!?TZ_SYS_DB:/opt/dbspace}
 %global TZ_SYS_ROOT      %{?TZ_SYS_ROOT:%TZ_SYS_ROOT}%{!?TZ_SYS_ROOT:/root}
 %global TZ_SYS_RO_SHARE  %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:/usr/share}
 %global TZ_SYS_BIN       %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:/usr/bin}
+
+%global DB_INST_DIR      %{TZ_SYS_DB}/cert-checker
 
 %description
 Cert-checker
@@ -51,7 +54,7 @@ export FFLAGS="$FFLAGS"
 export LDFLAGS+="-Wl,--rpath=%{_libdir} "
 
 %cmake . -DVERSION=%{version} \
-        -DDB_INSTALL_DIR=%{TZ_SYS_DB} \
+        -DDB_INSTALL_DIR=%{DB_INST_DIR} \
         -DCMAKE_BUILD_TYPE=%{?build_type:%build_type}%{!?build_type:RELEASE} \
         -DCMAKE_VERBOSE_MAKEFILE=ON \
         -DTEST_APP_SIGNATURES_DIR="%{TZ_SYS_ROOT}/cert-checker-test" \
@@ -61,6 +64,7 @@ make %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
+mkdir -p %{buildroot}/%{DB_INST_DIR}
 mkdir -p %{buildroot}/%{TZ_SYS_RO_SHARE}/license
 cp LICENSE %{buildroot}/%{TZ_SYS_RO_SHARE}/license/%{name}
 %make_install
@@ -85,7 +89,8 @@ if [ $1 = 2 ]; then
     # update
     systemctl restart cert-checker.service
 fi
-chsmack -a System %{TZ_SYS_DB}/.cert-checker.db
+chsmack -a System %{DB_INST_DIR}
+chsmack -a System %{DB_INST_DIR}/.cert-checker.db
 
 %preun
 if [ $1 = 0 ]; then
@@ -105,15 +110,16 @@ fi
 %{TZ_SYS_BIN}/cert-checker-popup
 %manifest %{TZ_SYS_RO_SHARE}/%{name}.manifest
 %{TZ_SYS_RO_SHARE}/license/%{name}
-%config(noreplace) %attr(0600,root,root) %{TZ_SYS_DB}/.cert-checker.db
+%dir %attr(0600,security_fw,security_fw) %{DB_INST_DIR}
+%config(noreplace) %attr(0600,security_fw,security_fw) %{DB_INST_DIR}/.cert-checker.db
 %{_unitdir}/cert-checker.service
 %{_unitdir}/multi-user.target.wants/cert-checker.service
 
 %files -n cert-checker-tests
 %license LICENSE.BSL-1.0
-%defattr(-,root,root,-)
+%defattr(-,security_fw,security_fw,-)
 %{TZ_SYS_BIN}/cert-checker-tests
 %{TZ_SYS_BIN}/cert-checker-tests-logic
 %{TZ_SYS_BIN}/cert-checker-popup-test
-%{TZ_SYS_DB}/.cert-checker-test.db
+%{DB_INST_DIR}/.cert-checker-test.db
 %{TZ_SYS_ROOT}/cert-checker-test/*/*.xml
