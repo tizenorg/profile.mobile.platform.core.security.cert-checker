@@ -110,7 +110,7 @@ fi
 %{TZ_SYS_BIN}/cert-checker-popup
 %manifest %{TZ_SYS_RO_SHARE}/%{name}.manifest
 %{TZ_SYS_RO_SHARE}/license/%{name}
-%dir %attr(0600,security_fw,security_fw) %{DB_INST_DIR}
+%dir %attr(0700,security_fw,security_fw) %{DB_INST_DIR}
 %config(noreplace) %attr(0600,security_fw,security_fw) %{DB_INST_DIR}/.cert-checker.db
 %{_unitdir}/cert-checker.service
 %{_unitdir}/multi-user.target.wants/cert-checker.service
