@@ -52,6 +52,17 @@ Requires:   %{SBIN_DIR}/ldconfig
 %description -n lib%{name}-common
 cert-checker common library package.
 
+# client lib package
+%package -n lib%{name}-client
+Summary:    Client Library package for %{name}
+License:    Apache-2.0
+Group:      Security/Libraries
+Requires:   %{SBIN_DIR}/ldconfig
+Requires:   lib%{name}-common = %{version}-%{release}
+
+%description -n lib%{name}-client
+cert-checker client library package.
+
 # devel package
 %package devel
 Summary: Development files for %{name}
@@ -70,6 +81,8 @@ License:    Apache-2.0 and BSL-1.0
 Group:      Security/Testing
 Requires:   boost-test
 Requires:   %{name} = %{version}-%{release}
+Requires:   lib%{name}-common = %{version}-%{release}
+Requires:   lib%{name}-client = %{version}-%{release}
 
 %description -n %{name}-tests
 Internal test for cert-checker implementation.
@@ -153,10 +166,19 @@ fi
 %license LICENSE
 %{_libdir}/lib%{name}-common.so.*
 
+%files -n lib%{name}-client
+%defattr(-,root,root,-)
+%manifest %{name}-client.manifest
+%license LICENSE
+%{_libdir}/lib%{name}-client.so.*
+
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/lib%{name}-common.so
+%{_libdir}/lib%{name}-client.so
+%{_includedir}/cchecker/ocsp-client.h
+%{_includedir}/cchecker/error.h
 
 %files -n %{name}-tests
 %defattr(-,%{service_user},%{service_group},-)

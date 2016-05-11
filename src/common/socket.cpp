@@ -135,7 +135,7 @@ Socket Socket::connect(const std::string &path)
 			std::error_code(errno, std::generic_category()),
 			"socket connect failed!");
 
-	LogInfo("Connect to CSR server success with fd:" << fd);
+	LogInfo("Connect to OCSP service success with fd:" << fd);
 
 	return Socket(fd);
 }

@@ -30,6 +30,8 @@
 #include <logic_.h>
 #include <app_event_operators.h>
 
+#include "client/ocsp-client.h"
+
 using namespace CCHECKER;
 
 namespace {
@@ -52,6 +54,14 @@ std::string log_apps(std::list<app_t> &apps, std::list<app_t> buff)
 } // anonymous namespace
 
 BOOST_FIXTURE_TEST_SUITE(LOGIC_TEST, LogicWrapper)
+
+// TODO(sangwan.kwon) : seperate anothor test program
+BOOST_AUTO_TEST_CASE(client) {
+
+	CCHECKER::Client::OcspClient oc;
+	oc.request();
+
+}
 
 BOOST_AUTO_TEST_CASE(logic_setup) {
 

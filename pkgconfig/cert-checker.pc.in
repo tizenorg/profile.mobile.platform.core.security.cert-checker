@@ -7,5 +7,5 @@ Name: @SERVICE_NAME@
 Description: @PACKAGE_DESCRIPTION@
 Version: @VERSION@
 Requires:
-Libs: -L${libdir} -l@SERVICE_NAME@-common
+Libs: -L${libdir} -l@SERVICE_NAME@-common -l@SERVICE_NAME@-client
 Cflags: -I${includedir}
