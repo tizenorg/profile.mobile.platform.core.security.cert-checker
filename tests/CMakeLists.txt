@@ -9,7 +9,6 @@ PKG_CHECK_MODULES(CERT_CHECKER_TESTS_DEP
     gio-2.0
     icu-i18n
     key-manager
-    libsystemd-journal
     sqlite3
     pkgmgr
     pkgmgr-info
@@ -37,8 +36,6 @@ SET(CERT_CHECKER_TESTS_SOURCES
     ${CERT_CHECKER_SERVICE_PATH}/app.cpp
     ${CERT_CHECKER_SERVICE_PATH}/queue.cpp
     ${CERT_CHECKER_SERVICE_PATH}/certs.cpp
-    # logs
-    ${CERT_CHECKER_LOG_PATH}/log.cpp
     # dpl
     ${DPL_CORE_SRC_PATH}/assert.cpp
     ${DPL_CORE_SRC_PATH}/char_traits.cpp
@@ -65,8 +62,6 @@ SET(CERT_CHECKER_TESTS_LOGIC_SOURCES
     ${CERT_CHECKER_SERVICE_PATH}/logic.cpp
     ${CERT_CHECKER_SERVICE_PATH}/app.cpp
     ${CERT_CHECKER_SERVICE_PATH}/queue.cpp
-    # logs
-    ${CERT_CHECKER_LOG_PATH}/log.cpp
     # dpl
     ${DPL_CORE_SRC_PATH}/colors.cpp
 )
@@ -78,8 +73,6 @@ SET(CERT_CHECKER_POPUP_TEST_SOURCES
     ${CERT_CHECKER_SERVICE_PATH}/app.cpp
     ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
     ${CERT_CHECKER_UI_PATH}/UIBackend.cpp
-    # logs
-    ${CERT_CHECKER_LOG_PATH}/log.cpp
     )
 
 INCLUDE_DIRECTORIES(SYSTEM

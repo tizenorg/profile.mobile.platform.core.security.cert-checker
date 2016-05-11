@@ -24,9 +24,10 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include <cchecker/log.h>
 #include <dbfixture.h>
 #include <app_event_operators.h>
+
+#include "common/log.h"
 
 BOOST_FIXTURE_TEST_SUITE(DB_TEST, DBFixture)
 

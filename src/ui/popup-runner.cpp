@@ -31,7 +31,7 @@
 
 #include "service/app.h"
 #include "service/logic.h"
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <cchecker/UIBackend.h>
 #include <cchecker/popup-runner.h>
 

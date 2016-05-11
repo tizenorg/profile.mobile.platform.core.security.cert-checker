@@ -24,7 +24,7 @@
 #include <string>
 #include <thread>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <certs_.h>
 #include <app_event_operators.h>
 

@@ -30,7 +30,6 @@ PKG_CHECK_MODULES(${TARGET_CERT_CHECKER}_DEP
     gio-2.0
     icu-i18n
     key-manager
-    libsystemd-journal
     libsystemd-daemon
     sqlite3
     pkgmgr
@@ -46,7 +45,6 @@ SET(${TARGET_CERT_CHECKER}_SRCS
     ${CERT_CHECKER_SERVICE_PATH}/queue.cpp
     ${CERT_CHECKER_SERVICE_PATH}/certs.cpp
     ${CERT_CHECKER_SERVICE_PATH}/ocsp-service.cpp
-    ${CERT_CHECKER_LOG_PATH}/log.cpp
     ${CERT_CHECKER_DB_PATH}/sql_query.cpp
     ${CERT_CHECKER_UI_PATH}/UIBackend.cpp
     ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
@@ -71,7 +69,7 @@ INCLUDE_DIRECTORIES(SYSTEM
 
 SET_SOURCE_FILES_PROPERTIES(${${TARGET_CERT_CHECKER}_SRCS}
     PROPERTIES
-        COMPILE_FLAGS "-D_GNU_SOURCE -fPIE -fvisibility=default"
+        COMPILE_FLAGS "-D_GNU_SOURCE -fPIE"
 )
 
 ADD_EXECUTABLE(${TARGET_CERT_CHECKER} ${${TARGET_CERT_CHECKER}_SRCS})

@@ -22,7 +22,7 @@
 
 #include <cchecker/dpl/db/sql_connection.h>
 #include <cchecker/sql_query.h>
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace {
 

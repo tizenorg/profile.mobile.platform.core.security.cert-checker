@@ -33,7 +33,7 @@
 #include <cchecker/dpl/noncopyable.h>
 #include <cchecker/dpl/exception.h>
 #include <cchecker/dpl/optional.h>
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace CCHECKER {
 namespace DB {

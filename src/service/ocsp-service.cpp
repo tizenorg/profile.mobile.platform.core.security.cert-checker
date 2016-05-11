@@ -22,7 +22,7 @@
 #include "service/ocsp-service.h"
 #include "common/command-id.h"
 
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace CCHECKER {
 

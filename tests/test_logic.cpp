@@ -25,12 +25,11 @@
 #include <string>
 #include <unistd.h>
 
-#include <cchecker/log.h>
-
 #include <logic_.h>
 #include <app_event_operators.h>
 
 #include "client/ocsp-client.h"
+#include "common/log.h"
 
 using namespace CCHECKER;
 

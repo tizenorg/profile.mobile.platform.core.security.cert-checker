@@ -20,7 +20,7 @@
  * @brief       Implementation of app_test class (from app_t)
  */
 
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <app_event_operators.h>
 
 //using namespace CCHECKER;

@@ -21,7 +21,8 @@
  */
 
 #include <cchecker/UIBackend.h>
-#include <cchecker/log.h>
+
+#include "common/log.h"
 
 using namespace CCHECKER;
 

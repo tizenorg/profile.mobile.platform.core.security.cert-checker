@@ -31,6 +31,8 @@
 #include <cchecker/dpl/db/sql_connection.h>
 #include <cchecker/dpl/db/naive_synchronization_object.h>
 
+#include "common/log.h"
+
 namespace CCHECKER {
 namespace DB {
 namespace // anonymous

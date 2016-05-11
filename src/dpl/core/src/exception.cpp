@@ -23,7 +23,7 @@
 #include <cstdio>
 
 #include <cchecker/dpl/exception.h>
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace CCHECKER {
 Exception* Exception::m_lastException = NULL;

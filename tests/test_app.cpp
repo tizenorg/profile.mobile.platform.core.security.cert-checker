@@ -23,7 +23,7 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <app_event_operators.h>
 
 using namespace CCHECKER;

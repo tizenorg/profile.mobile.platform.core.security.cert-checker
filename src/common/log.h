@@ -62,24 +62,21 @@ do                                               \
                __FUNCTION__);                    \
 } while (0)
 
-/* Errors must be always logged. */
+/* always logged. */
 #define  LogError(message)          \
     CERT_CHECKER_LOG(message, LOG_ERR)
+#define LogInfo(message)            \
+    CERT_CHECKER_LOG(message, LOG_INFO)
+#define LogWarning(message)         \
+    CERT_CHECKER_LOG(message, LOG_WARNING)
 
+/* only debug logged. */
 #ifdef BUILD_TYPE_DEBUG
     #define LogDebug(message)       \
         CERT_CHECKER_LOG(message, LOG_DEBUG)
-    #define LogInfo(message)        \
-        CERT_CHECKER_LOG(message, LOG_INFO)
-    #define LogWarning(message)     \
-        CERT_CHECKER_LOG(message, LOG_WARNING)
 #else
     #define LogDebug(message)       \
         DPL_MACRO_DUMMY_LOGGING(message, LOG_DEBUG)
-    #define LogInfo(message)        \
-        DPL_MACRO_DUMMY_LOGGING(message, LOG_INFO)
-    #define LogWarning(message)     \
-        DPL_MACRO_DUMMY_LOGGING(message, LOG_WARNING)
 #endif // BUILD_TYPE_DEBUG
 
 #endif //CERT_CHECKER_LOG_H

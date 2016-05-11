@@ -25,7 +25,7 @@
 #include <string>
 #include <sys/types.h>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace CCHECKER {
 

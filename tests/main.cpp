@@ -25,7 +25,8 @@
 #include <boost/test/results_reporter.hpp>
 
 #include <colour_log_formatter.h>
-#include <cchecker/log.h>
+
+#include "common/log.h"
 
 struct TestConfig {
     TestConfig() {

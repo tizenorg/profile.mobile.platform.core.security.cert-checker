@@ -25,7 +25,7 @@
 
 #include "service/app.h"
 #include "service/queue.h"
-#include <cchecker/log.h>
+#include "common/log.h"
 
 #include <queue_test_thread.h>
 

@@ -27,7 +27,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace CCHECKER {
 

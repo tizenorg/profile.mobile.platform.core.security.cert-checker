@@ -24,9 +24,10 @@
 #include <string>
 #include <thread>
 
-#include <cchecker/log.h>
 #include <queue_test_thread.h>
 #include <app_event_operators.h>
+
+#include "common/log.h"
 
 using namespace CCHECKER;
 

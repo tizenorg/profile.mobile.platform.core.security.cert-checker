@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <set>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <cchecker/sql_query.h>
 #include <cchecker/UIBackend.h>
 

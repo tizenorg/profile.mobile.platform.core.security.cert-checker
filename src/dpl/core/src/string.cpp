@@ -33,7 +33,7 @@
 #include <cchecker/dpl/errno_string.h>
 #include <cchecker/dpl/exception.h>
 #include <cchecker/dpl/scoped_array.h>
-#include <cchecker/log.h>
+#include "common/log.h"
 
 // TODO: Completely move to ICU
 namespace CCHECKER {

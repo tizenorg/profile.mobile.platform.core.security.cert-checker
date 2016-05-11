@@ -33,7 +33,7 @@
 #include <ckm/ckm-type.h>
 #include <ckm/ckm-raw-buffer.h>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 
 namespace CCHECKER {
 

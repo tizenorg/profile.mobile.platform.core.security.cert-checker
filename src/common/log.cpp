@@ -18,6 +18,7 @@
  * @author      Janusz Kozerski <j.kozerski@samsung.com>
  * @brief       This file declares class for ask user window
  */
+#include "common/log.h"
 
 #include <stdexcept>
 #include <systemd/sd-journal.h>

@@ -31,7 +31,7 @@
 #include <Elementary.h>
 
 #include <popup.h>
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <cchecker/UIBackend.h>
 #include <cchecker/popup-runner.h>
 #include <cchecker/dpl/serialization.h>

@@ -21,7 +21,7 @@
 
 #include <app_control.h>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <cchecker/UIBackend.h>
 #include <cchecker/popup-runner.h>
 

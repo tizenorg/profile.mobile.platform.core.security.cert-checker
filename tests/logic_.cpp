@@ -25,7 +25,7 @@
  * Some of methods are stubbed, and some of them just calls corresponding methods from Logic Class.
  */
 
-#include <cchecker/log.h>
+#include "common/log.h"
 #include <chrono>
 #include <boost/test/unit_test.hpp>
 

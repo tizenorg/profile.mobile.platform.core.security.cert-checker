@@ -22,7 +22,7 @@
 
 #include <glib.h>
 
-#include <cchecker/log.h>
+#include "common/log.h"
 
 #include "service/logic.h"
 #include "service/ocsp-service.h"
