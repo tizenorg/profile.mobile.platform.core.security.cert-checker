@@ -32,6 +32,8 @@
 #include <set>
 #include <memory>
 
+#include "common/command-id.h"
+
 namespace CCHECKER {
 
 namespace Common {
@@ -145,6 +147,11 @@ struct Serialization {
 	static void Serialize(IStream &stream, const bool *const value)
 	{
 		stream.write(sizeof(*value), value);
+	}
+
+	static void Serialize(IStream &stream, const CommandId value)
+	{
+		Serialize(stream, static_cast<int>(value));
 	}
 
 	// std::string
@@ -399,6 +406,14 @@ struct Deserialization {
 	{
 		stream.read(sizeof(value), &value);
 	}
+
+	static void Deserialize(IStream &stream, CommandId &value)
+	{
+		int val;
+		Deserialize(stream, val);
+		value = static_cast<CommandId>(val);
+	}
+
 	static void Deserialize(IStream &stream, bool *&value)
 	{
 		value = new bool;

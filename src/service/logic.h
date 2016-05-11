@@ -61,11 +61,6 @@ enum pkgmgr_event_t {
     EVENT_UNINSTALL
 };
 
-enum class CommandId : int {
-    CC_OCSP_SYN = 0x01,
-    CC_OCSP_ACK = 0x02
-};
-
 class Logic {
     public:
         Logic(void);

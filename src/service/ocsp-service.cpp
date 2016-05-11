@@ -20,6 +20,7 @@
  * @brief
  */
 #include "service/ocsp-service.h"
+#include "common/command-id.h"
 
 #include <cchecker/log.h>
 
@@ -41,7 +42,10 @@ void OcspService::onMessageProcess(const ConnShPtr &connection)
 	auto in = connection->receive();
 	connection->send(this->process(connection, in));
 
-	LogDebug("Start to process message on ocsp service.");
+	if (m_logic.setup() != NO_ERROR)
+		throw std::logic_error("Cannot setup logic.");
+
+	LogDebug("Finish processing message on ocsp service.");
 }
 
 RawBuffer OcspService::process(const ConnShPtr &, RawBuffer &data)
@@ -49,17 +53,14 @@ RawBuffer OcspService::process(const ConnShPtr &, RawBuffer &data)
 	BinaryQueue q;
 	q.push(data);
 
-	int cmd;
-	q.Deserialize(cmd);
+	CommandId cid;
+	q.Deserialize(cid);
 
 	LogInfo("Request dispatch on ocsp-service.");
-	switch (static_cast<CommandId>(cmd)) {
+	switch (cid) {
 	case CommandId::CC_OCSP_SYN: {
-		if (m_logic.setup() != NO_ERROR)
-			throw std::logic_error("Cannot setup logic.");
-
-		// TODO(sangwan.kwon) : set protocol with client
-		return BinaryQueue::Serialize(1).pop();
+		LogDebug("Success to get SYN cmd. reply ACK cmd.");
+		return BinaryQueue::Serialize(CommandId::CC_OCSP_ACK).pop();
 	}
 	case CommandId::CC_OCSP_ACK:
 	default:
