@@ -25,7 +25,9 @@ namespace CCHECKER {
 
 enum class CommandId : int {
 	CC_OCSP_SYN = 0x01,
-	CC_OCSP_ACK = 0x02
+	CC_OCSP_ACK = 0x02,
+
+	CC_OCSP_ERR = -0x01
 };
 
 } // namespace CCHECKER
