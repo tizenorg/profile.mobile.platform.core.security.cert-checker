@@ -233,10 +233,13 @@ error_t  Logic::setup()
 
     LogDebug("Register package event handler success");
 
+    return NO_ERROR;
+}
+
+void Logic::run()
+{
     LogDebug("Running the main loop");
     g_main_loop_run(m_loop);
-
-    return NO_ERROR;
 }
 
 int Logic::pkgmgrinfo_event_handler_static(

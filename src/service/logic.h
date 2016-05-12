@@ -66,6 +66,7 @@ class Logic {
         Logic(void);
         virtual ~Logic(void);
         error_t  setup(void);
+        void run(void);
         virtual void clean(void);
 
         static void connman_callback(GDBusProxy *proxy,
@@ -132,7 +133,6 @@ class Logic {
         void set_should_exit(void);
 
         bool call_ui(const app_t &app);
-
 
         // main event loop data type
         GMainLoop *m_loop;

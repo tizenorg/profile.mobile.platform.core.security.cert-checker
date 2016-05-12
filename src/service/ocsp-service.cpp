@@ -42,8 +42,8 @@ void OcspService::onMessageProcess(const ConnShPtr &connection)
 	auto in = connection->receive();
 	connection->send(this->process(connection, in));
 
-	if (m_logic.setup() != NO_ERROR)
-		throw std::logic_error("Cannot setup logic.");
+	// Run gmainloop for event listening.
+	m_logic.run();
 
 	LogDebug("Finish processing message on ocsp service.");
 }
@@ -59,7 +59,12 @@ RawBuffer OcspService::process(const ConnShPtr &, RawBuffer &data)
 	LogInfo("Request dispatch on ocsp-service.");
 	switch (cid) {
 	case CommandId::CC_OCSP_SYN: {
-		LogDebug("Success to get SYN cmd. reply ACK cmd.");
+		if (m_logic.setup() != NO_ERROR) {
+			BinaryQueue::Serialize(CommandId::CC_OCSP_ERR).pop();
+			throw std::logic_error("Cannot setup logic.");
+		}
+
+		LogDebug("Success to receive SYN and setup. reply ACK cmd.");
 		return BinaryQueue::Serialize(CommandId::CC_OCSP_ACK).pop();
 	}
 	case CommandId::CC_OCSP_ACK:
