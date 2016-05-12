@@ -185,6 +185,7 @@ fi
 %license LICENSE LICENSE.BSL-1.0
 %{TZ_SYS_BIN}/%{name}-tests
 %{TZ_SYS_BIN}/%{name}-tests-logic
+%{TZ_SYS_BIN}/%{name}-tests-client
 %{TZ_SYS_BIN}/%{name}-popup-test
 %{DB_INST_DIR}/.%{name}-test.db
 %{TZ_SYS_ROOT}/%{name}-test/*/*.xml
