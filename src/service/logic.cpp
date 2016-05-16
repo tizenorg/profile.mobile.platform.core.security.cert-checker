@@ -132,8 +132,7 @@ bool Logic::get_online() const
 void Logic::set_online(bool online)
 {
     std::lock_guard<std::mutex> lock(m_mutex_cv);
-    if (m_is_online == online)
-        return;
+
     m_is_online = online;
     if (m_is_online) {
         m_is_online_enabled = true;
@@ -546,39 +545,51 @@ void Logic::push_event(event_t event)
 
 void Logic::process_all()
 {
+    LogInfo("[thread] Start to process event.");
     for(;;) {
         std::unique_lock<std::mutex> lock(m_mutex_cv);
 
-        // don't sleep if there are online/installation/deinstallation events to process
-        if(m_queue.empty() || !get_online()) {
-            LogDebug("Processing thread : wait condition <Queue, Network> : "
+        // TODO(sangwan.kwon) Should wake up about OCSP_CHECK_AGAIN case
+        if(m_queue.empty() && !m_is_online_enabled) { // Wait condition.
+            LogDebug("[thread] wait condition <queue, Network> : "
                     << !m_queue.empty() << ", " << get_online());
             m_to_process.wait(lock); // spurious wakeups do not concern us
-            LogDebug("Processing thread : running");
+            LogDebug("[thread] wake up! running stage");
         }
+
+        // Value for prevent infinite loop.
+        m_is_online_enabled = false;
+        // Move event data from queue to buffer & database.
+        process_queue();
 
         lock.unlock();
 
-        if (m_should_exit)
-            break;
+        if (get_online() && !m_buffer.empty()) {
 
-        if (get_online() && !m_queue.empty()) {
-            process_queue(); // move event data from queue to buffer & database
             process_buffer();
 
-            LogDebug("Processing thread : done. g_main_loop quit");
-            g_main_loop_quit(m_loop);
-            break;
+            // This is for OCSP_CHECK_AGAIN case.
+            if(m_buffer.empty()) {
+                LogInfo("[thread] Finish processing event.");
+                g_main_loop_quit(m_loop);
+                break;
+            } else {
+                LogDebug("[thread] Check again : " << m_buffer.size());
+            }
         } else if (!get_online()) {
-            LogDebug("Processing thread : no network. Buffer won't be processed");
+            LogDebug("[thread] No network. Buffer won't be processed.");
         } else {
-            LogDebug("Processing thread : no event since cert-checker started");
+            LogDebug("[thread] No event since cert-checker started.");
         }
+
+        if (m_should_exit)
+            break;
     }
 }
 
 void Logic::process_event(const event_t &event)
 {
+    LogDebug("Move event from queue to (buffer and db).");
     if (event.event_type == event_t::event_type_t::APP_INSTALL) {
         // pulling out certificates from signatures
         app_t app = event.app;
