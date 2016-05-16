@@ -1,6 +1,6 @@
 Name:       cert-checker
 Summary:    OCSP checking on application installation
-Version:    0.0.5
+Version:    0.1.0
 Release:    1
 Group:      Security/Certificate Management
 License:    Apache-2.0 and BSL-1.0
