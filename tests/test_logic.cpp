@@ -65,7 +65,6 @@ BOOST_AUTO_TEST_CASE(logic_setup) {
 }
 
 BOOST_AUTO_TEST_CASE(logic_workflow_mixed) {
-
     BOOST_REQUIRE(setup() == NO_ERROR);
 
     wait_for_worker();
@@ -129,7 +128,7 @@ BOOST_AUTO_TEST_CASE(logic_workflow_mixed_2) {
     wait_for_worker();
 
     // turn off the network
-    connman_callback_manual_(true);
+    connman_callback_manual_(false);
 
     // add applications:
     app_t app1("app_1", "pkg_1", 5001, {});
@@ -146,6 +145,9 @@ BOOST_AUTO_TEST_CASE(logic_workflow_mixed_2) {
 
     app_t app5("app_5", "pkg_5", 100, {{"OCSP_APP_REVOKED"}}); // popup will fail
     pkgmgr_install_manual_(app5);
+
+    // turn on the Internet - buffer should be processed
+    connman_callback_manual_(true);
 
     wait_for_worker(5, 0, 5);
     std::list<app_t> buff = get_buffer_();
@@ -278,26 +280,19 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_CHECK_AGAIN) {
     app_t app2("app_2", "pkg_2", 5002, {{"OCSP_CHECK_AGAIN"}});
     pkgmgr_install_manual_(app2);
 
-    connman_callback_manual_(true);
-
     app_t app3("app_3", "pkg_3", 100, {{"OCSP_CHECK_AGAIN"}});
     pkgmgr_install_manual_(app3);
 
     app_t app4("app_4", "pkg_4", 5004, {{"OCSP_CHECK_AGAIN"}});
     pkgmgr_install_manual_(app4);
 
+    connman_callback_manual_(true);
+
     wait_for_worker(4, 0, 4);
 
     std::list<app_t> buff = get_buffer_();
     std::list<app_t> apps = {app1, app2, app3, app4};
 
-    BOOST_CHECK_MESSAGE(buff == apps, log_apps(apps, buff));
-
-    connman_callback_manual_(false);
-
-    wait_for_worker(0, 0, 0);
-
-    buff = get_buffer_();
     BOOST_CHECK_MESSAGE(buff == apps, log_apps(apps, buff));
 
     connman_callback_manual_(true);
@@ -326,7 +321,6 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_CERT_ERROR) {
     app_t app2("app_2", "pkg_2", 5002, {{"OCSP_CERT_ERROR"}});
     pkgmgr_install_manual_(app2);
 
-    connman_callback_manual_(true);
 
     app_t app3("app_3", "pkg_3", 100, {{"OCSP_CERT_ERROR"}});
     pkgmgr_install_manual_(app3);
@@ -334,6 +328,7 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_CERT_ERROR) {
     app_t app4("app_4", "pkg_4", 5004, {{"OCSP_CERT_ERROR"}});
     pkgmgr_install_manual_(app4);
 
+    connman_callback_manual_(true);
     wait_for_worker(4, 0, 4);
     std::list<app_t> buff = get_buffer_();
 
@@ -371,14 +366,13 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_APP_REVOKED) {
     app_t app2("app_2", "pkg_2", 5002, {{"OCSP_APP_REVOKED"}});
     pkgmgr_install_manual_(app2);
 
-    connman_callback_manual_(true);
-
     app_t app3("app_3", "pkg_3", 5003, {{"OCSP_APP_REVOKED"}});
     pkgmgr_install_manual_(app3);
 
     app_t app4("app_4", "pkg_4", 5004, {{"OCSP_APP_REVOKED"}});
     pkgmgr_install_manual_(app4);
 
+    connman_callback_manual_(true);
     wait_for_worker(4, 0, 4);
 
     std::list<app_t> buff = get_buffer_();
@@ -417,13 +411,13 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_APP_REVOKED_2) {
     app_t app2("app_2", "pkg_2", 1002, {{"OCSP_APP_REVOKED"}});
     pkgmgr_install_manual_(app2);
 
-    connman_callback_manual_(true);
-
     app_t app3("app_3", "pkg_3", 1003, {{"OCSP_APP_REVOKED"}});
     pkgmgr_install_manual_(app3);
 
     app_t app4("app_4", "pkg_4", 1004, {{"OCSP_APP_REVOKED"}});
     pkgmgr_install_manual_(app4);
+
+    connman_callback_manual_(true);
 
     wait_for_worker(4, 0, 4);
 
@@ -434,14 +428,14 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_APP_REVOKED_2) {
 
     connman_callback_manual_(true);
 
-    wait_for_worker();
+    wait_for_worker(0, 0, 4);
 
     buff = get_buffer_();
     BOOST_CHECK_MESSAGE(buff == apps, log_apps(apps, buff));
 
     connman_callback_manual_(true);
 
-    wait_for_worker();
+    wait_for_worker(0, 0, 4);
 
     buff = get_buffer_();
     BOOST_CHECK_MESSAGE(buff == apps, log_apps(apps, buff));

@@ -129,9 +129,9 @@ void Logic_::wait_for_worker(int installCnt, int uninstallCnt, int bufferCnt)
                        m_bufferCnt == bufferCnt;
             }
     );
+    reset_cnt();
     _m_mutex_wait_cv.unlock();
     BOOST_REQUIRE(!timeout);
-    reset_cnt();
 }
 
 const std::list<app_t>& Logic_::get_buffer_()

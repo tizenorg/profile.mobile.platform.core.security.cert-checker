@@ -53,7 +53,7 @@ class Logic_ : public Logic {
         int m_bufferCnt;
 
         void process_event(const event_t &event);
-        void app_processed();
+        void app_processed() override;
         std::condition_variable _m_wait_for_process;
         std::mutex _m_mutex_wait_cv;
 };
