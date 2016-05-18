@@ -25,17 +25,18 @@
 #include <stdexcept>
 #include <set>
 
-#include "common/log.h"
 #include <cchecker/sql_query.h>
 #include <cchecker/UIBackend.h>
 
 #include "common/binary-queue.h"
+#include "common/log.h"
 
 using namespace std;
 
 namespace CCHECKER {
 
 namespace {
+
 struct PkgmgrinfoEvent {
     PkgmgrinfoEvent(uid_t _uid, const char *_pkgid)
         : uid(_uid)
@@ -107,6 +108,8 @@ void Logic::clean(void)
         g_main_loop_unref(m_loop);
 
     delete m_sqlquery;
+
+    timerStop();
 
     LogDebug("Cert-checker cleaning finish.");
 }
@@ -575,6 +578,8 @@ void Logic::process_all()
                 break;
             } else {
                 LogDebug("[thread] Check again : " << m_buffer.size());
+                // Timer running periodically
+                timerStart(3600);
             }
         } else if (!get_online()) {
             LogDebug("[thread] No network. Buffer won't be processed.");
@@ -584,6 +589,19 @@ void Logic::process_all()
 
         if (m_should_exit)
             break;
+    }
+}
+
+void Logic::job(void)
+{
+    std::lock_guard<std::mutex> lock(m_mutex_cv);
+
+    if (m_buffer.empty()) {
+        LogDebug("[timer] Buffer is empty.");
+        timerStop();
+    } else {
+        LogDebug("[timer] Notify thread - periodic wakeup");
+        m_to_process.notify_one();
     }
 }
 
