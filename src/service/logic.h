@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+0 * Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "common/types.h"
+#include "common/timer.h"
 #include "common/binary-queue.h"
 #include "service/app.h"
 #include "service/certs.h"
@@ -61,7 +62,7 @@ enum pkgmgr_event_t {
     EVENT_UNINSTALL
 };
 
-class Logic {
+class Logic : public Timer {
     public:
         Logic(void);
         virtual ~Logic(void);
@@ -133,6 +134,9 @@ class Logic {
         void set_should_exit(void);
 
         bool call_ui(const app_t &app);
+
+        // Timer function
+        void job(void) override;
 
         // main event loop data type
         GMainLoop *m_loop;
