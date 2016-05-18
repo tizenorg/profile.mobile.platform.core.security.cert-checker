@@ -31,6 +31,7 @@ SET(${TARGET_CERT_CHECKER_COMMON}_SRCS
 	${COMMON_PATH}/mainloop.cpp
 	${COMMON_PATH}/service.cpp
 	${COMMON_PATH}/socket.cpp
+	${COMMON_PATH}/timer.cpp
 	${COMMON_PATH}/log.cpp
 )
 
