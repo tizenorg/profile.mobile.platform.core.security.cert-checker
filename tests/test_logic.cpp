@@ -16,6 +16,7 @@
 /*
  * @file        test_logic.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
  * @brief       Tests of Logic class
  */
@@ -440,4 +441,23 @@ BOOST_AUTO_TEST_CASE(logic_workflow_OCSP_APP_REVOKED_2) {
     buff = get_buffer_();
     BOOST_CHECK_MESSAGE(buff == apps, log_apps(apps, buff));
 }
+
+BOOST_AUTO_TEST_CASE(logic_workflow_timer) {
+
+    // Wait for setup.
+    BOOST_REQUIRE(setup() == NO_ERROR);
+    wait_for_worker();
+
+    // Turn off the network.
+    connman_callback_manual_(false);
+
+    // Job() will run. Install process.
+    timerStart(1);
+    wait_for_worker(5);
+    timerStop();
+
+    // If Timer is not work, wait_for_worker throw exception.
+    BOOST_REQUIRE(true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

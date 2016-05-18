@@ -16,6 +16,7 @@
 /*
  * @file        logic_.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com) 
  * @version     1.0
  * @brief       This file is the implementation of SQL queries
  */
@@ -44,6 +45,7 @@ Logic_::~Logic_(void)
 {
     clean();
 }
+
 void Logic_::clean(void)
 {
     LogDebug("Cert-checker cleaning.");
@@ -60,6 +62,14 @@ void Logic_::clean(void)
         LogDebug("Processing thread joined");
     } else
         LogDebug("No thread to join");
+}
+
+void Logic_::job()
+{
+    LogDebug("Test timer job");
+    m_installCnt++;
+
+    _m_wait_for_process.notify_one();
 }
 
 void Logic_::connman_callback_manual_(bool state)

@@ -16,6 +16,7 @@
 /*
  * @file        logic_.h
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com) 
  * @version     1.0
  * @brief       This file is the tesst implementation of Logic class
  */
@@ -47,6 +48,9 @@ class Logic_ : public Logic {
         void reset_cnt();
         void wait_for_worker(int installCnt, int uninstallCnt, int bufferCnt);
 
+    protected:
+        void job(void) override;
+
     private:
         int m_installCnt;
         int m_uninstallCnt;
@@ -72,6 +76,17 @@ public:
 
     void wait_for_worker(int installCnt = 0, int uninstallCnt = 0, int bufferCnt = 0) {
         m_logic.wait_for_worker(installCnt, uninstallCnt, bufferCnt);
+    }
+
+    // timer operation
+    void timerStart(int interval)
+    {
+        m_logic.timerStart(interval);
+    }
+
+    void timerStop()
+    {
+        m_logic.timerStop();
     }
 
 private:
