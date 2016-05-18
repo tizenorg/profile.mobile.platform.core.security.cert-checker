@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "common/types.h"
+#include "common/timer.h"
 #include "common/binary-queue.h"
 #include "service/app.h"
 #include "service/certs.h"
@@ -61,7 +62,7 @@ enum pkgmgr_event_t {
     EVENT_UNINSTALL
 };
 
-class Logic {
+class Logic : public Timer {
     public:
         Logic(void);
         virtual ~Logic(void);
@@ -133,6 +134,9 @@ class Logic {
         void set_should_exit(void);
 
         bool call_ui(const app_t &app);
+
+        // Timer function
+        void job(void) override;
 
         // main event loop data type
         GMainLoop *m_loop;
