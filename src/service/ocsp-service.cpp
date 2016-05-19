@@ -43,7 +43,7 @@ void OcspService::onMessageProcess(const ConnShPtr &connection)
 	connection->send(this->process(connection, in));
 
 	// Run gmainloop for event listening.
-	m_logic.run();
+	m_logic.run(TIMEOUT_G_SERVICE);
 
 	LogDebug("Finish processing message on ocsp service.");
 }
