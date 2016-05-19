@@ -77,6 +77,21 @@ class Logic : public Timer {
                 void *logic_ptr);
 
     protected:
+        // Timer function
+        void job(void) override;
+
+        virtual void process_event(const event_t &event);
+        virtual void app_processed() {}; // for tests
+        void set_should_exit(void);
+        void push_event(event_t event);
+        void set_online(bool online);
+
+        std::list<app_t> m_buffer;
+        std::condition_variable m_to_process;
+        std::mutex m_mutex_cv;
+        std::thread m_thread;
+
+    private:
         error_t setup_db();
         void load_database_to_buffer();
 
@@ -117,42 +132,30 @@ class Logic : public Timer {
 
         int push_pkgmgrinfo_event(uid_t uid, const char *pkgid);
 
-        void push_event(event_t event);
 
         void process_all(void);
         void process_queue(void);
-        virtual void process_event(const event_t &event);
 
         bool process_app(app_t& app);
         void process_buffer(void);
-        virtual void app_processed() {}; // for tests
 
         bool get_online(void) const;
-        void set_online(bool online);
 
         bool get_should_exit(void) const;
-        void set_should_exit(void);
 
         bool call_ui(const app_t &app);
-
-        // Timer function
-        void job(void) override;
 
         // main event loop data type
         GMainLoop *m_loop;
 
         Queue m_queue;
         Certs m_certs;
-        std::list<app_t> m_buffer;
         DB::SqlQuery *m_sqlquery;
         bool m_was_setup_called;
 
         bool m_is_online;
         // TODO: use m_queue for online events
         bool m_is_online_enabled;
-        std::condition_variable m_to_process;
-        std::mutex m_mutex_cv;
-        std::thread m_thread;
         bool m_should_exit;
 
         GDBusProxy *m_proxy_connman;
