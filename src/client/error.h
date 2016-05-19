@@ -22,12 +22,10 @@
 #pragma once
 
 namespace CCHECKER {
-namespace Client {
 
 using CCerr = int;
 
 const CCerr E_CC_NONE = 0;
 const CCerr E_CC_INTERNAL = -1;
 
-} // namespace Client
 } // namespace CCHECKER

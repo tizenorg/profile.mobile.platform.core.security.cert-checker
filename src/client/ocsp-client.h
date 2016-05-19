@@ -28,7 +28,6 @@
 #include "client/error.h"
 
 namespace CCHECKER {
-namespace Client {
 
 class OcspClient {
 public:
@@ -45,5 +44,4 @@ private:
 	std::unique_ptr<Dispatcher> m_dispatcher;
 };
 
-} // namespace Client
 } // namespace CCHECKER

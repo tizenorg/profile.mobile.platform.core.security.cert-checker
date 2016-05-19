@@ -26,7 +26,6 @@
 #include "common/log.h"
 
 namespace CCHECKER {
-namespace Client {
 
 OcspClient::OcspClient() :
 	m_address(SERVICE_STREAM)
@@ -50,5 +49,4 @@ CCerr OcspClient::request()
 		return E_CC_INTERNAL;
 }
 
-} // namespace Client
 } // namespace CCHECKER

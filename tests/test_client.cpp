@@ -26,15 +26,12 @@
 #include "client/ocsp-client.h"
 #include "common/log.h"
 
-using namespace CCHECKER;
-
 BOOST_AUTO_TEST_SUITE(CLIENT_TEST)
 
 BOOST_AUTO_TEST_CASE(client_api) {
 
-	Client::OcspClient oc;
-	BOOST_REQUIRE(oc.request() == Client::E_CC_NONE);
-
+	CCHECKER::OcspClient oc;
+	BOOST_REQUIRE(oc.request() == CCHECKER::E_CC_NONE);
 
 }
 
