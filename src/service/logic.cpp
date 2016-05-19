@@ -238,9 +238,16 @@ error_t  Logic::setup()
     return NO_ERROR;
 }
 
-void Logic::run()
+void Logic::run(guint timeout)
 {
     LogDebug("Running the main loop");
+
+    // Add timeout.
+    auto *src = g_timeout_source_new_seconds(timeout);
+    g_source_set_callback(src, timeout_cb, m_loop, NULL);
+    g_source_attach(src, g_main_loop_get_context(m_loop));
+    g_source_unref(src);
+
     g_main_loop_run(m_loop);
 }
 
@@ -557,7 +564,9 @@ void Logic::process_all()
             LogDebug("[thread] wait condition <queue, Network> : "
                     << !m_queue.empty() << ", " << get_online());
             m_to_process.wait(lock); // spurious wakeups do not concern us
+
             LogDebug("[thread] wake up! running stage");
+            m_is_first_run = true;
         }
 
         // Value for prevent infinite loop.
@@ -579,7 +588,7 @@ void Logic::process_all()
             } else {
                 LogDebug("[thread] Check again : " << m_buffer.size());
                 // Timer running periodically
-                timerStart(3600);
+                timerStart(TIMEOUT_TIMER);
             }
         } else if (!get_online()) {
             LogDebug("[thread] No network. Buffer won't be processed.");
@@ -673,7 +682,23 @@ bool Logic::get_should_exit(void) const
 void Logic::set_should_exit(void)
 {
     m_should_exit = true;
+}
 
+std::atomic<bool> Logic::m_is_first_run(false);
+
+bool Logic::is_gmain_loop_running()
+{
+    return g_main_loop_is_running(m_loop);
+}
+
+gboolean Logic::timeout_cb(gpointer data)
+{
+    if (!m_is_first_run) {
+        LogDebug("No event Since cchecker launched. timeout.");
+        g_main_loop_quit(static_cast<GMainLoop *>(data));
+    }
+
+    return FALSE;
 }
 
 } // namespace CCHECKER
