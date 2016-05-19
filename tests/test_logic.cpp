@@ -457,4 +457,16 @@ BOOST_AUTO_TEST_CASE(logic_workflow_timer) {
     BOOST_REQUIRE(true);
 }
 
+BOOST_AUTO_TEST_CASE(logic_workflow_gio_timeout) {
+
+    // Wait for setup.
+    BOOST_REQUIRE(setup() == NO_ERROR);
+    wait_for_worker();
+
+    // Run gmainloop.
+    run(10);
+
+    BOOST_REQUIRE(is_gmain_loop_running() == false);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
