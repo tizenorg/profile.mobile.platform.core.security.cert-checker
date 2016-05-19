@@ -28,6 +28,8 @@
 
 namespace CCHECKER {
 
+const int TIMEOUT_G_SERVICE = 600; // 10 minutes
+
 class OcspService : public Service {
 public:
 	OcspService(const std::string &address);
