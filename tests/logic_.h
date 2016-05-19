@@ -83,10 +83,19 @@ public:
     {
         m_logic.timerStart(interval);
     }
-
     void timerStop()
     {
         m_logic.timerStop();
+    }
+
+    // gio operation
+    void run(guint timeout)
+    {
+        m_logic.run(timeout);
+    }
+    bool is_gmain_loop_running()
+    {
+        return m_logic.is_gmain_loop_running();
     }
 
 private:
