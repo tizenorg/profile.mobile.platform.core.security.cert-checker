@@ -233,14 +233,19 @@ error_t  Logic::setup()
         return REGISTER_CALLBACK_ERROR;
     }
 
+    // Init for gio timeout.
+    m_is_first_run = false;
+
     LogDebug("Register package event handler success");
 
     return NO_ERROR;
 }
 
-void Logic::run()
+void Logic::run(guint timeout)
 {
     LogDebug("Running the main loop");
+
+    g_timeout_add_seconds(timeout, timeout_cb, m_loop);
     g_main_loop_run(m_loop);
 }
 
@@ -552,12 +557,14 @@ void Logic::process_all()
     for(;;) {
         std::unique_lock<std::mutex> lock(m_mutex_cv);
 
-        // TODO(sangwan.kwon) Should wake up about OCSP_CHECK_AGAIN case
-        if(m_queue.empty() && !m_is_online_enabled) { // Wait condition.
+        // Wait condition.
+        if(m_queue.empty() && !m_is_online_enabled) {
             LogDebug("[thread] wait condition <queue, Network> : "
                     << !m_queue.empty() << ", " << get_online());
             m_to_process.wait(lock); // spurious wakeups do not concern us
+
             LogDebug("[thread] wake up! running stage");
+            m_is_first_run = true;
         }
 
         // Value for prevent infinite loop.
@@ -579,7 +586,7 @@ void Logic::process_all()
             } else {
                 LogDebug("[thread] Check again : " << m_buffer.size());
                 // Timer running periodically
-                timerStart(3600);
+                timerStart(TIMEOUT_TIMER);
             }
         } else if (!get_online()) {
             LogDebug("[thread] No network. Buffer won't be processed.");
@@ -673,7 +680,23 @@ bool Logic::get_should_exit(void) const
 void Logic::set_should_exit(void)
 {
     m_should_exit = true;
+}
 
+std::atomic<bool> Logic::m_is_first_run(false);
+
+bool Logic::is_gmain_loop_running()
+{
+    return g_main_loop_is_running(m_loop);
+}
+
+gboolean Logic::timeout_cb(gpointer data)
+{
+    if (!m_is_first_run) {
+        LogDebug("No event Since cchecker launched. timeout.");
+        g_main_loop_quit(static_cast<GMainLoop *>(data));
+    }
+
+    return FALSE;
 }
 
 } // namespace CCHECKER
