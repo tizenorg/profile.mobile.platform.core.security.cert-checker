@@ -44,6 +44,8 @@
 
 namespace CCHECKER {
 
+const int TIMEOUT_TIMER = 3600;
+
 namespace DB {
 class SqlQuery;
 } // namespace DB
@@ -67,7 +69,8 @@ class Logic : public Timer {
         Logic(void);
         virtual ~Logic(void);
         error_t  setup(void);
-        void run(void);
+        void run(guint timeout);
+        bool is_gmain_loop_running();
         virtual void clean(void);
 
         static void connman_callback(GDBusProxy *proxy,
@@ -94,7 +97,6 @@ class Logic : public Timer {
     private:
         error_t setup_db();
         void load_database_to_buffer();
-
         void add_app_to_buffer_and_database(const app_t &app);
         void remove_app_from_buffer_and_database(const app_t &app);
 
@@ -109,6 +111,7 @@ class Logic : public Timer {
                         GVariant   *parameters,
                         void *logic_ptr)
                 );
+        bool get_online(void) const;
 
         static int pkgmgrinfo_event_handler_static(
             uid_t uid,
@@ -119,7 +122,6 @@ class Logic : public Timer {
             const char *val,
             const void *pmsg,
             void *data);
-
         int pkgmgrinfo_event_handler(
             uid_t uid,
             int reqid,
@@ -129,21 +131,17 @@ class Logic : public Timer {
             const char *val,
             const void *pmsg,
             void *data);
-
         int push_pkgmgrinfo_event(uid_t uid, const char *pkgid);
-
 
         void process_all(void);
         void process_queue(void);
-
         bool process_app(app_t& app);
         void process_buffer(void);
-
-        bool get_online(void) const;
-
         bool get_should_exit(void) const;
 
         bool call_ui(const app_t &app);
+
+        static gboolean timeout_cb(gpointer data);
 
         // main event loop data type
         GMainLoop *m_loop;
@@ -157,6 +155,7 @@ class Logic : public Timer {
         // TODO: use m_queue for online events
         bool m_is_online_enabled;
         bool m_should_exit;
+        static std::atomic<bool> m_is_first_run;
 
         GDBusProxy *m_proxy_connman;
 
