@@ -59,10 +59,10 @@ BOOST_AUTO_TEST_CASE(logic_setup) {
     BOOST_REQUIRE(setup() == NO_ERROR);
 
     // double setup
-    BOOST_REQUIRE(setup() == INTERNAL_ERROR);
+    BOOST_REQUIRE(setup() == NO_ERROR);
 
     // double setup
-    BOOST_REQUIRE(setup() == INTERNAL_ERROR);
+    BOOST_REQUIRE(setup() == NO_ERROR);
 }
 
 BOOST_AUTO_TEST_CASE(logic_workflow_mixed) {
@@ -466,7 +466,7 @@ BOOST_AUTO_TEST_CASE(logic_workflow_gio_timeout) {
     // Run gmainloop.
     run(3);
 
-    BOOST_REQUIRE(is_gmain_loop_running() == false);
+    BOOST_REQUIRE(is_running() == false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

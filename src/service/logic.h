@@ -70,7 +70,7 @@ class Logic : public Timer {
         virtual ~Logic(void);
         error_t  setup(void);
         void run(guint timeout);
-        bool is_gmain_loop_running();
+        bool is_running();
         virtual void clean(void);
 
         static void connman_callback(GDBusProxy *proxy,

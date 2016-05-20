@@ -33,6 +33,13 @@ OcspService::OcspService(const std::string &address) :
 
 OcspService::~OcspService()
 {
+	if(m_thread.joinable())
+		m_thread.join();
+}
+
+void OcspService::run(void)
+{
+	m_logic.run(TIMEOUT_G_SERVICE);
 }
 
 void OcspService::onMessageProcess(const ConnShPtr &connection)
@@ -43,7 +50,8 @@ void OcspService::onMessageProcess(const ConnShPtr &connection)
 	connection->send(this->process(connection, in));
 
 	// Run gmainloop for event listening.
-	m_logic.run(TIMEOUT_G_SERVICE);
+	if(!m_logic.is_running())
+		m_thread = std::thread(&OcspService::run,this);
 
 	LogDebug("Finish processing message on ocsp service.");
 }

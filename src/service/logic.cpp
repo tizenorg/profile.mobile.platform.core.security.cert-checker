@@ -166,8 +166,8 @@ error_t  Logic::setup()
 {
     // Check if setup was called
     if (m_was_setup_called) {
-        LogError("You can call setup only once");
-        return INTERNAL_ERROR;
+        LogDebug("Setup is already done.");
+        return NO_ERROR;
     }
     m_was_setup_called = true;
 
@@ -684,7 +684,7 @@ void Logic::set_should_exit(void)
 
 std::atomic<bool> Logic::m_is_first_run(false);
 
-bool Logic::is_gmain_loop_running()
+bool Logic::is_running()
 {
     return g_main_loop_is_running(m_loop);
 }

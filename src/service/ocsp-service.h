@@ -22,6 +22,7 @@
 #pragma once
 
 #include <string>
+#include <thread>
 
 #include "common/service.h"
 #include "service/logic.h"
@@ -37,9 +38,10 @@ public:
 
 private:
 	virtual void onMessageProcess(const ConnShPtr &) override;
-
 	RawBuffer process(const ConnShPtr &, RawBuffer &);
+	void run(void);
 
+	std::thread m_thread;
 	Logic m_logic;
 };
 
