@@ -93,9 +93,9 @@ public:
     {
         m_logic.run(timeout);
     }
-    bool is_gmain_loop_running()
+    bool is_running()
     {
-        return m_logic.is_gmain_loop_running();
+        return m_logic.is_running();
     }
 
 private:

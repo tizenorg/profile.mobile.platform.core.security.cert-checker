@@ -38,8 +38,6 @@ int main(void)
 
 		setlocale(LC_ALL, "");
 
-		// Set timeout about socket read event.
-		service.setTimeout(50);
 		service.start();
 
 		LogInfo("Cert-checker exit!");
