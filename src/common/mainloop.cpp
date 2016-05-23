@@ -16,6 +16,7 @@
 /*
  * @file        mainloop.cpp
  * @author      Kyungwook Tak (k.tak@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
  * @brief       Mainloop with epoll
  */
@@ -33,7 +34,8 @@ namespace CCHECKER {
 
 Mainloop::Mainloop() :
 	m_isTimedOut(false),
-	m_pollfd(::epoll_create1(EPOLL_CLOEXEC))
+	m_pollfd(::epoll_create1(EPOLL_CLOEXEC)),
+	m_stopped(false)
 {
 	if (m_pollfd == -1)
 		throw std::system_error(
@@ -43,18 +45,35 @@ Mainloop::Mainloop() :
 
 Mainloop::~Mainloop()
 {
-	if (!m_isTimedOut && !m_callbacks.empty())
+	if (!m_stopped && !m_isTimedOut && !m_callbacks.empty())
 		throw std::logic_error("mainloop registered callbacks should be empty "
-							   "except timed out case");
+							"except timed out case");
 
 	::close(m_pollfd);
 }
 
+void Mainloop::stop()
+{
+	m_stopped = true;
+	wakeupSignal.send();
+}
+
+void Mainloop::prepare()
+{
+	auto wakeupMainloop = [&](uint32_t) {
+		wakeupSignal.receive();
+		removeEventSource(wakeupSignal.getFd());
+	};
+
+	addEventSource(wakeupSignal.getFd(), EPOLLIN, std::move(wakeupMainloop));
+}
+
 void Mainloop::run(int timeout)
 {
+	prepare();
 	m_isTimedOut = false;
 
-	while (!m_isTimedOut) {
+	while (!m_isTimedOut && !m_stopped) {
 		dispatch(timeout);
 	}
 

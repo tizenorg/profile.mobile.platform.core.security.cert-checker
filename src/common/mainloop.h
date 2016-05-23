@@ -16,20 +16,24 @@
 /*
  * @file        mainloop.h
  * @author      Kyungwook Tak (k.tak@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
- * @brief       Manageloop with epoll
+ * @brief       Mainloop with epoll
  */
 #pragma once
 
 #include <functional>
+#include <atomic>
 #include <mutex>
 #include <unordered_map>
+
+#include "common/eventfd.h"
 
 namespace CCHECKER {
 
 class Mainloop {
 public:
-	typedef std::function<void(uint32_t event)> Callback;
+	using Callback = std::function<void(uint32_t)>;
 
 	Mainloop();
 	virtual ~Mainloop();
@@ -40,17 +44,21 @@ public:
 	Mainloop &operator=(Mainloop &&) = delete;
 
 	void run(int timeout);
+	void stop(void);
 
 	void addEventSource(int fd, uint32_t event, Callback &&callback);
 	void removeEventSource(int fd);
 
 private:
 	void dispatch(int timeout);
+	void prepare();
 
 	bool m_isTimedOut;
 	int m_pollfd;
+	std::atomic<bool> m_stopped;
 	std::mutex m_mutex;
 	std::unordered_map<int, Callback> m_callbacks;
+	EventFD wakeupSignal;
 
 	constexpr static size_t MAX_EPOLL_EVENTS = 32;
 };
