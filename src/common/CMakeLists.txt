@@ -28,6 +28,7 @@ SET(${TARGET_CERT_CHECKER_COMMON}_SRCS
 	${COMMON_PATH}/binary-queue.cpp
 	${COMMON_PATH}/connection.cpp
 	${COMMON_PATH}/dispatcher.cpp
+	${COMMON_PATH}/eventfd.cpp
 	${COMMON_PATH}/mainloop.cpp
 	${COMMON_PATH}/service.cpp
 	${COMMON_PATH}/socket.cpp

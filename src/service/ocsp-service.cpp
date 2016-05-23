@@ -40,6 +40,7 @@ OcspService::~OcspService()
 void OcspService::run(void)
 {
 	m_logic.run(TIMEOUT_G_SERVICE);
+	this->stop();
 }
 
 void OcspService::onMessageProcess(const ConnShPtr &connection)

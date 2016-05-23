@@ -65,6 +65,8 @@ void Service::start()
 void Service::stop()
 {
 	LogInfo("Service stop!");
+	m_loop.setStopped(true);
+	m_loop.stop();
 }
 
 void Service::setNewConnectionCallback(const ConnCallback &/*callback*/)
@@ -85,7 +87,7 @@ void Service::setNewConnectionCallback(const ConnCallback &/*callback*/)
 		*/
 
 		m_loop.addEventSource(fd, EPOLLIN | EPOLLHUP | EPOLLRDHUP,
-		[ &, fd](uint32_t event) {
+		[&, fd](uint32_t event) {
 			LogDebug("read event comes in to fd[" << fd << "]");
 
 			if (m_connectionRegistry.count(fd) == 0)

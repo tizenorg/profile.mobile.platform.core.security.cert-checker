@@ -22,13 +22,18 @@
 #pragma once
 
 #include <functional>
+#include <atomic>
 #include <mutex>
 #include <unordered_map>
+
+#include "common/eventfd.h"
 
 namespace CCHECKER {
 
 class Mainloop {
 public:
+	// using
+	typedef unsigned int Event;
 	typedef std::function<void(uint32_t event)> Callback;
 
 	Mainloop();
@@ -40,17 +45,23 @@ public:
 	Mainloop &operator=(Mainloop &&) = delete;
 
 	void run(int timeout);
+	void stop(void);
 
 	void addEventSource(int fd, uint32_t event, Callback &&callback);
 	void removeEventSource(int fd);
 
+	void setStopped(bool flag);
+
 private:
 	void dispatch(int timeout);
+	void prepare();
 
 	bool m_isTimedOut;
 	int m_pollfd;
+	std::atomic<bool> m_stopped;
 	std::mutex m_mutex;
 	std::unordered_map<int, Callback> m_callbacks;
+	EventFD wakeupSignal;
 
 	constexpr static size_t MAX_EPOLL_EVENTS = 32;
 };
