@@ -19,18 +19,43 @@
  * @version     1.0
  * @brief       Client request OcspService with dispatcher in it
  */
-#include "client/ocsp-client.h"
-#include "client/error.h"
-#include "common/command-id.h"
 
+#include <string>
+
+#include "client/ocsp-client.h"
+#include "cchecker/error.h"
+#include "common/command-id.h"
+#include "common/dispatcher.h"
 #include "common/log.h"
 
 namespace CCHECKER {
 
-OcspClient::OcspClient() :
-	m_address(SERVICE_STREAM)
+class OcspClient::Impl
 {
-	m_dispatcher.reset(new Dispatcher(m_address));
+public:
+	Impl() : m_address(SERVICE_STREAM) {
+		m_dispatcher.reset(new Dispatcher(m_address));
+	}
+	virtual ~Impl() {}
+
+	CCerr request() {
+		LogDebug("Request to oscp service.");
+		auto ret = m_dispatcher->methodCall<CommandId>(CommandId::CC_OCSP_SYN);
+
+		LogDebug("Response ret : " << static_cast<int>(ret));
+		if(ret == CommandId::CC_OCSP_ACK)
+			return E_CC_NONE;
+		else
+			return E_CC_INTERNAL;
+	}
+
+private:
+	std::string m_address;
+	std::unique_ptr<Dispatcher> m_dispatcher;
+};
+
+OcspClient::OcspClient() : m_impl(new Impl)
+{
 }
 
 OcspClient::~OcspClient()
@@ -39,14 +64,7 @@ OcspClient::~OcspClient()
 
 CCerr OcspClient::request()
 {
-	LogDebug("Request to oscp service.");
-	auto ret = m_dispatcher->methodCall<CommandId>(CommandId::CC_OCSP_SYN);
-
-	LogDebug("Response ret : " << static_cast<int>(ret));
-	if(ret == CommandId::CC_OCSP_ACK)
-		return E_CC_NONE;
-	else
-		return E_CC_INTERNAL;
+	return m_impl->request();
 }
 
 } // namespace CCHECKER

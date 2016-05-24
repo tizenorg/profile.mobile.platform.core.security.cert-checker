@@ -19,13 +19,12 @@
  * @version     1.0
  * @brief       Client request to ocsp service
  */
+
 #pragma once
 
-#include <string>
 #include <memory>
 
-#include "common/dispatcher.h"
-#include "client/error.h"
+#include "cchecker/error.h"
 
 namespace CCHECKER {
 
@@ -40,8 +39,8 @@ public:
 	CCerr request();
 
 private:
-	std::string m_address;
-	std::unique_ptr<Dispatcher> m_dispatcher;
+	class Impl;
+	std::unique_ptr<Impl> m_impl;
 };
 
 } // namespace CCHECKER
