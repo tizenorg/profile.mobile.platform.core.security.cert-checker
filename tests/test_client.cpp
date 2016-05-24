@@ -23,15 +23,14 @@
 #define BOOST_TEST_MODULE CERT_CHECKER_TESTS
 #include <boost/test/unit_test.hpp>
 
-#include "client/ocsp-client.h"
-#include "common/log.h"
+#include <cchecker/ocsp.h>
 
 BOOST_AUTO_TEST_SUITE(CLIENT_TEST)
 
 BOOST_AUTO_TEST_CASE(client_api) {
 
-	CCHECKER::OcspClient oc;
-	BOOST_REQUIRE(oc.request() == CCHECKER::E_CC_NONE);
+	auto ret = cchecker_ocsp_request();
+	BOOST_REQUIRE(ret == 0);
 
 }
 

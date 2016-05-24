@@ -177,8 +177,7 @@ fi
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/lib%{name}-common.so
 %{_libdir}/lib%{name}-client.so
-%{_includedir}/cchecker/ocsp-client.h
-%{_includedir}/cchecker/error.h
+%{_includedir}/cchecker/ocsp.h
 
 %files -n %{name}-tests
 %defattr(-,%{service_user},%{service_group},-)
