@@ -22,7 +22,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <time.h>
 
 #include <string>
 #include <vector>
@@ -126,15 +125,6 @@ struct Serialization {
 		stream.write(sizeof(value), &value);
 	}
 	static void Serialize(IStream &stream, const int64_t *const value)
-	{
-		stream.write(sizeof(*value), value);
-	}
-
-	static void Serialize(IStream &stream, const time_t value)
-	{
-		stream.write(sizeof(value), &value);
-	}
-	static void Serialize(IStream &stream, const time_t *const value)
 	{
 		stream.write(sizeof(*value), value);
 	}
@@ -388,16 +378,6 @@ struct Deserialization {
 	static void Deserialize(IStream &stream, int64_t *&value)
 	{
 		value = new int64_t;
-		stream.read(sizeof(*value), value);
-	}
-
-	static void Deserialize(IStream &stream, time_t &value)
-	{
-		stream.read(sizeof(value), &value);
-	}
-	static void Deserialize(IStream &stream, time_t *&value)
-	{
-		value = new time_t;
 		stream.read(sizeof(*value), value);
 	}
 
