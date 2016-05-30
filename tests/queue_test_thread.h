@@ -25,19 +25,19 @@
 namespace CCHECKER {
 
 class TestQueue {
-    public:
-        TestQueue():
-            m_sent(0),
-            m_max_events(0)
-        {};
-        void add_events_th (int number_of_threads);
-        bool pop_events ();
+public:
+	TestQueue():
+		m_sent(0),
+		m_max_events(0)
+	{};
+	void add_events_th(int number_of_threads);
+	bool pop_events();
 
-    private:
-        Queue m_queue;
-        int  m_sent;
-        int  m_max_events;
-        void add_events();
+private:
+	Queue m_queue;
+	int  m_sent;
+	int  m_max_events;
+	void add_events();
 };
 
 } // CCHECKER

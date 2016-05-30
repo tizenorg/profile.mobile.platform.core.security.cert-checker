@@ -29,8 +29,7 @@
 
 namespace CCHECKER {
 
-class Timer
-{
+class Timer {
 public:
 	Timer(void);
 	virtual ~Timer(void);
@@ -45,7 +44,7 @@ public:
 
 protected:
 	// This is for derived class member function.
-	virtual void job(void){}
+	virtual void job(void) {}
 
 	void run();
 

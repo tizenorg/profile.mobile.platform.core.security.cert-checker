@@ -33,6 +33,7 @@ namespace CCHECKER {
 EventFD::EventFD(unsigned int initval, int flags)
 {
 	fd = ::eventfd(initval, flags);
+
 	if (fd == -1) {
 		throw std::logic_error("EventFd from constructor is failed!!");
 	}
@@ -48,6 +49,7 @@ EventFD::~EventFD()
 void EventFD::send()
 {
 	const std::uint64_t val = 1;
+
 	if (::write(fd, &val, sizeof(val)) == -1) {
 		throw std::logic_error("EventFd send to fd is failed!!");
 	}
@@ -56,6 +58,7 @@ void EventFD::send()
 void EventFD::receive()
 {
 	std::uint64_t val;
+
 	if (::read(fd, &val, sizeof(val)) == -1) {
 		throw std::logic_error("EventFd read to fd is failed!!");
 	}

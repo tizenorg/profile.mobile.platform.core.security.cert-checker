@@ -26,27 +26,23 @@
 
 using namespace CCHECKER;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    LogDebug("Cert-checker popup-test start!");
+	LogDebug("Cert-checker popup-test start!");
+	int timeout = 60;
 
-    int timeout = 60;
-    if (argc > 1) {
-        timeout = atoi(argv[1]);
-    }
-    LogDebug("popup-test timeout: " << timeout);
+	if (argc > 1) {
+		timeout = atoi(argv[1]);
+	}
 
-    setlocale(LC_ALL, "");
-
-    UI::UIBackend ui(timeout);
-
-    app_t app(std::string("test_APP_ID"),
-            std::string("test PKG ID"),
-            5005,
-            {});
-
-    ui.call_popup(app);
-
-    LogDebug("Cert-checker popup-test exit!");
-    return 0;
+	LogDebug("popup-test timeout: " << timeout);
+	setlocale(LC_ALL, "");
+	UI::UIBackend ui(timeout);
+	app_t app(std::string("test_APP_ID"),
+			  std::string("test PKG ID"),
+			  5005,
+			  {});
+	ui.call_popup(app);
+	LogDebug("Cert-checker popup-test exit!");
+	return 0;
 }

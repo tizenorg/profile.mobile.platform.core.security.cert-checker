@@ -85,7 +85,6 @@ Socket &Socket::operator=(Socket &&other)
 
 	m_fd = other.m_fd;
 	other.m_fd = 0;
-
 	return *this;
 }
 
@@ -108,7 +107,6 @@ Socket Socket::accept() const
 			"socket accept failed!");
 
 	LogInfo("Accept client success with fd: " << fd);
-
 	return Socket(fd);
 }
 
@@ -126,7 +124,6 @@ Socket Socket::connect(const std::string &path)
 
 	sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
-
 	strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path));
 
 	if (::connect(fd, reinterpret_cast<sockaddr *>(&addr),
@@ -136,7 +133,6 @@ Socket Socket::connect(const std::string &path)
 			"socket connect failed!");
 
 	LogInfo("Connect to OCSP service success with fd:" << fd);
-
 	return Socket(fd);
 }
 
@@ -148,11 +144,9 @@ int Socket::getFd() const
 RawBuffer Socket::read(void) const
 {
 	size_t total = 0;
-
 	RawBuffer data(1024, 0);
 	auto buf = reinterpret_cast<char *>(data.data());
 	auto size = data.size();
-
 	LogDebug("Read data from stream on socket fd[" << m_fd << "]");
 
 	while (total < size) {
@@ -173,20 +167,16 @@ RawBuffer Socket::read(void) const
 	}
 
 	data.resize(total);
-
 	LogDebug("Read data of size[" << total
-		  << "] from stream on socket fd[" << m_fd << "] done.");
-
+			 << "] from stream on socket fd[" << m_fd << "] done.");
 	return data;
 }
 
 void Socket::write(const RawBuffer &data) const
 {
 	size_t total = 0;
-
 	auto buf = reinterpret_cast<const char *>(data.data());
 	auto size = data.size();
-
 	LogDebug("Write data to stream on socket fd[" << m_fd << "]");
 
 	while (total < size) {
@@ -205,7 +195,7 @@ void Socket::write(const RawBuffer &data) const
 	}
 
 	LogDebug("Write data of size[" << total <<
-		  "] to stream on socket fd[" << m_fd << "] done.");
+			 "] to stream on socket fd[" << m_fd << "] done.");
 }
 
 } // namespace CCHECKER

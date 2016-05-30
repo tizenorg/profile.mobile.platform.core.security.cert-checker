@@ -29,64 +29,66 @@ namespace CCHECKER {
 
 void sort_buffer(std::list<app_t> &buff)
 {
-    for (auto &iter : buff) {
-        sort(iter);
-    }
+	for (auto &iter : buff) {
+		sort(iter);
+	}
 
-    buff.sort();
+	buff.sort();
 }
 
 void sort(app_t &app)
 {
-    app.signatures.sort();
+	app.signatures.sort();
 }
 
 // Needed for sort()
 bool operator < (const app_t &app1, const app_t &app2)
 {
-    if (app1.app_id != app2.app_id)
-        return app1.app_id < app2.app_id;
-    if (app1.pkg_id != app2.pkg_id)
-        return app1.pkg_id < app2.pkg_id;
-    if (app1.uid != app2.uid)
-        return app1.uid < app2.uid;
+	if (app1.app_id != app2.app_id)
+		return app1.app_id < app2.app_id;
 
-    return app1.signatures < app2.signatures;
+	if (app1.pkg_id != app2.pkg_id)
+		return app1.pkg_id < app2.pkg_id;
+
+	if (app1.uid != app2.uid)
+		return app1.uid < app2.uid;
+
+	return app1.signatures < app2.signatures;
 }
 
 bool operator ==(const app_t &app1, const app_t &app2)
 {
-    if (app1.app_id != app2.app_id ||
-            app1.pkg_id != app2.pkg_id ||
-            app1.uid != app2.uid ||
-            app1.signatures.size() != app2.signatures.size() ||
-            app1.verified != app2.verified) {
-        LogDebug("app_t compare error: " << app1.str() << " is different than: " << app2.str());
-        return false;
-    }
+	if (app1.app_id != app2.app_id ||
+			app1.pkg_id != app2.pkg_id ||
+			app1.uid != app2.uid ||
+			app1.signatures.size() != app2.signatures.size() ||
+			app1.verified != app2.verified) {
+		LogDebug("app_t compare error: " << app1.str() << " is different than: " << app2.str());
+		return false;
+	}
 
-    return app1.signatures == app2.signatures;
+	return app1.signatures == app2.signatures;
 }
 
 bool operator !=(const app_t &app1, const app_t &app2)
 {
-    return !(app1 == app2);
+	return !(app1 == app2);
 }
 
 bool operator ==(const event_t &event1, const event_t &event2)
 {
-    if (event1.event_type != event2.event_type)
-        return false;
+	if (event1.event_type != event2.event_type)
+		return false;
 
-    if (event1.app != event2.app)
-        return false;
+	if (event1.app != event2.app)
+		return false;
 
-    return true;
+	return true;
 }
 
 bool operator !=(const event_t &event1, const event_t &event2)
 {
-    return !(event1 == event2);
+	return !(event1 == event2);
 }
 
 } // CHCHECKER

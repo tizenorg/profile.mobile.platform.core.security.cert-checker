@@ -34,72 +34,94 @@
 namespace CCHECKER {
 
 class Logic_ : public Logic {
-    public:
-        Logic_(void);
-        virtual ~Logic_(void);
-        virtual void clean(void);
+public:
+	Logic_(void);
+	virtual ~Logic_(void);
+	virtual void clean(void);
 
-        // For tests only
-        void connman_callback_manual_(bool state);
-        void pkgmgr_install_manual_(const app_t &app);
-        void pkgmgr_uninstall_manual_(const app_t &app);
-        const std::list<app_t>& get_buffer_();
+	// For tests only
+	void connman_callback_manual_(bool state);
+	void pkgmgr_install_manual_(const app_t &app);
+	void pkgmgr_uninstall_manual_(const app_t &app);
+	const std::list<app_t> &get_buffer_();
 
-        void reset_cnt();
-        void wait_for_worker(int installCnt, int uninstallCnt, int bufferCnt);
+	void reset_cnt();
+	void wait_for_worker(int installCnt, int uninstallCnt, int bufferCnt);
 
-    protected:
-        void job(void) override;
+protected:
+	void job(void) override;
 
-    private:
-        int m_installCnt;
-        int m_uninstallCnt;
-        int m_bufferCnt;
+private:
+	int m_installCnt;
+	int m_uninstallCnt;
+	int m_bufferCnt;
 
-        void process_event(const event_t &event);
-        void app_processed() override;
-        std::condition_variable _m_wait_for_process;
-        std::mutex _m_mutex_wait_cv;
+	void process_event(const event_t &event);
+	void app_processed() override;
+	std::condition_variable _m_wait_for_process;
+	std::mutex _m_mutex_wait_cv;
 };
 
 class LogicWrapper {
 public:
-    LogicWrapper() {}
-    ~LogicWrapper() { m_logic.clean(); }
+	LogicWrapper() {}
+	~LogicWrapper()
+	{
+		m_logic.clean();
+	}
 
-    error_t setup() { return m_logic.setup(); }
-    void clean() { m_logic.clean(); }
-    void connman_callback_manual_(bool state) { m_logic.connman_callback_manual_(state); }
-    void pkgmgr_install_manual_(const app_t &app) { m_logic.pkgmgr_install_manual_(app); }
-    void pkgmgr_uninstall_manual_(const app_t &app) { m_logic.pkgmgr_uninstall_manual_(app); }
-    const std::list<app_t>& get_buffer_() { return m_logic.get_buffer_(); }
+	error_t setup()
+	{
+		return m_logic.setup();
+	}
+	void clean()
+	{
+		m_logic.clean();
+	}
+	void connman_callback_manual_(bool state)
+	{
+		m_logic.connman_callback_manual_(state);
+	}
+	void pkgmgr_install_manual_(const app_t &app)
+	{
+		m_logic.pkgmgr_install_manual_(app);
+	}
+	void pkgmgr_uninstall_manual_(const app_t &app)
+	{
+		m_logic.pkgmgr_uninstall_manual_(app);
+	}
+	const std::list<app_t> &get_buffer_()
+	{
+		return m_logic.get_buffer_();
+	}
 
-    void wait_for_worker(int installCnt = 0, int uninstallCnt = 0, int bufferCnt = 0) {
-        m_logic.wait_for_worker(installCnt, uninstallCnt, bufferCnt);
-    }
+	void wait_for_worker(int installCnt = 0, int uninstallCnt = 0, int bufferCnt = 0)
+	{
+		m_logic.wait_for_worker(installCnt, uninstallCnt, bufferCnt);
+	}
 
-    // timer operation
-    void timerStart(int interval)
-    {
-        m_logic.timerStart(interval);
-    }
-    void timerStop()
-    {
-        m_logic.timerStop();
-    }
+	// timer operation
+	void timerStart(int interval)
+	{
+		m_logic.timerStart(interval);
+	}
+	void timerStop()
+	{
+		m_logic.timerStop();
+	}
 
-    // gio operation
-    void run(guint timeout)
-    {
-        m_logic.run(timeout);
-    }
-    bool is_running()
-    {
-        return m_logic.is_running();
-    }
+	// gio operation
+	void run(guint timeout)
+	{
+		m_logic.run(timeout);
+	}
+	bool is_running()
+	{
+		return m_logic.is_running();
+	}
 
 private:
-    Logic_ m_logic;
+	Logic_ m_logic;
 };
 
 } // CCHECKER

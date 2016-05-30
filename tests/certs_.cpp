@@ -27,7 +27,7 @@ using namespace CCHECKER;
 Certs_::~Certs_()
 {}
 
-Certs_::ocsp_response_t Certs_::check_ocsp_chain_ (const chain_t &chain)
+Certs_::ocsp_response_t Certs_::check_ocsp_chain_(const chain_t &chain)
 {
-    return this->check_ocsp_chain(chain);
+	return this->check_ocsp_chain(chain);
 }

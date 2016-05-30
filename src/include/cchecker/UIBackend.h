@@ -27,31 +27,31 @@ namespace CCHECKER {
 namespace UI {
 
 enum popup_status : int {
-    NO_ERROR   = 0,
-    EXIT_ERROR = 1
+	NO_ERROR   = 0,
+	EXIT_ERROR = 1
 };
 
 enum response_e : int {
-    DONT_UNINSTALL = 2,
-    UNINSTALL      = 3,
-    RESPONSE_ERROR = 4
+	DONT_UNINSTALL = 2,
+	UNINSTALL      = 3,
+	RESPONSE_ERROR = 4
 };
 
 class UIBackend {
 public:
-    explicit UIBackend(int timeout = 60); //timeout in seconds (zero or less means infinity)
-    virtual ~UIBackend();
+	explicit UIBackend(int timeout = 60); //timeout in seconds (zero or less means infinity)
+	virtual ~UIBackend();
 
-    // Displays popup with question, and - if needed - app_control for removing application.
-    // Returns true if UI was displayed correctly and user's response was collected.
-    // If there was a problem with displaying UI or a timeout has been reached (no user's response)
-    // then returns false.
-    bool call_popup(const app_t &app);
+	// Displays popup with question, and - if needed - app_control for removing application.
+	// Returns true if UI was displayed correctly and user's response was collected.
+	// If there was a problem with displaying UI or a timeout has been reached (no user's response)
+	// then returns false.
+	bool call_popup(const app_t &app);
 
 private:
-    response_e run(const app_t &app);
+	response_e run(const app_t &app);
 
-    const int m_responseTimeout; // seconds
+	const int m_responseTimeout; // seconds
 };
 
 } // UI

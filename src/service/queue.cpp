@@ -27,35 +27,36 @@
 namespace CCHECKER {
 
 event_t::event_t():
-        event_type(event_type_t::EVENT_TYPE_UNKNOWN),
-        app()
+	event_type(event_type_t::EVENT_TYPE_UNKNOWN),
+	app()
 {}
 
 event_t::event_t(const app_t &app, event_type_t type):
-        event_type(type),
-        app(app)
+	event_type(type),
+	app(app)
 {}
 
 void Queue::push_event(const event_t &event)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_event_list.push(event);
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_event_list.push(event);
 }
 
 bool Queue::pop_event(event_t &event)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if (m_event_list.empty())
-        return false;
+	std::lock_guard<std::mutex> lock(m_mutex);
 
-    event = std::move(m_event_list.front());
-    m_event_list.pop();
-    return true;
+	if (m_event_list.empty())
+		return false;
+
+	event = std::move(m_event_list.front());
+	m_event_list.pop();
+	return true;
 }
 
 bool Queue::empty()
 {
-    return m_event_list.empty();
+	return m_event_list.empty();
 }
 
 } //CCHECKER

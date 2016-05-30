@@ -34,29 +34,29 @@
 namespace CCHECKER {
 
 enum sig_t {
-    AUTHOR_SIG,
-    DISTRIBUTOR_SIG,
-    DISTRIBUTOR2_SIG
+	AUTHOR_SIG,
+	DISTRIBUTOR_SIG,
+	DISTRIBUTOR2_SIG
 };
 
 class Certs {
-    public:
-        enum class ocsp_response_t {
-            OCSP_APP_OK,
-            OCSP_APP_REVOKED,
-            OCSP_CHECK_AGAIN,
-            OCSP_CERT_ERROR
-        };
-        Certs();
-        virtual ~Certs();
-        void get_certificates (app_t &app);
-        ocsp_response_t check_ocsp (const app_t &app);
+public:
+	enum class ocsp_response_t {
+		OCSP_APP_OK,
+		OCSP_APP_REVOKED,
+		OCSP_CHECK_AGAIN,
+		OCSP_CERT_ERROR
+	};
+	Certs();
+	virtual ~Certs();
+	void get_certificates(app_t &app);
+	ocsp_response_t check_ocsp(const app_t &app);
 
-    protected: // Needed for tests
-        ocsp_response_t check_ocsp_chain (const chain_t &chain);
+protected: // Needed for tests
+	ocsp_response_t check_ocsp_chain(const chain_t &chain);
 
-    //private:
-        CKM::ManagerShPtr m_ckm;
+	//private:
+	CKM::ManagerShPtr m_ckm;
 };
 
 } // CCHECKER

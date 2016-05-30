@@ -31,28 +31,28 @@
 namespace CCHECKER {
 
 struct event_t {
-    enum class event_type_t {
-        APP_INSTALL,
-        APP_UNINSTALL,
-        EVENT_TYPE_UNKNOWN
-    };
+	enum class event_type_t {
+		APP_INSTALL,
+		APP_UNINSTALL,
+		EVENT_TYPE_UNKNOWN
+	};
 
-    event_type_t event_type;
-    app_t        app;
+	event_type_t event_type;
+	app_t        app;
 
-    event_t();
-    event_t(const app_t &app, event_type_t type);
+	event_t();
+	event_t(const app_t &app, event_type_t type);
 };
 
 class Queue {
-    public:
-        void push_event(const event_t &event);
-        bool pop_event(event_t &event);
-        bool empty();
+public:
+	void push_event(const event_t &event);
+	bool pop_event(event_t &event);
+	bool empty();
 
-    private:
-        std::mutex          m_mutex;
-        std::queue<event_t> m_event_list;
+private:
+	std::mutex          m_mutex;
+	std::queue<event_t> m_event_list;
 };
 
 } // CCHECKER

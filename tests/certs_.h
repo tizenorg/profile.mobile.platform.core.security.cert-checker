@@ -28,9 +28,9 @@
 using namespace CCHECKER;
 
 class Certs_ : public Certs {
-    public:
-        virtual ~Certs_();
-        ocsp_response_t check_ocsp_chain_ (const chain_t &chain);
+public:
+	virtual ~Certs_();
+	ocsp_response_t check_ocsp_chain_(const chain_t &chain);
 };
 
 #endif //CCHECKER_DBFIXTURE_H

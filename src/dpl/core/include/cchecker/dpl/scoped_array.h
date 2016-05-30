@@ -29,36 +29,33 @@
 
 namespace CCHECKER {
 template<typename Class>
-struct ScopedArrayPolicy
-{
-    typedef Class* Type;
-    static Type NullValue()
-    {
-        return NULL;
-    }
-    static void Destroy(Type ptr)
-    {
-        delete[] ptr;
-    }
+struct ScopedArrayPolicy {
+	typedef Class *Type;
+	static Type NullValue()
+	{
+		return NULL;
+	}
+	static void Destroy(Type ptr)
+	{
+		delete[] ptr;
+	}
 };
 
 template<typename Class>
-class ScopedArray : public ScopedResource<ScopedArrayPolicy<Class> >
-{
-    typedef ScopedArrayPolicy<Class> Policy;
-    typedef ScopedResource<Policy> BaseType;
+class ScopedArray : public ScopedResource<ScopedArrayPolicy<Class>> {
+	typedef ScopedArrayPolicy<Class> Policy;
+	typedef ScopedResource<Policy> BaseType;
 
-  public:
-    explicit ScopedArray(Class *ptr = Policy::NullValue()) : BaseType(ptr) { }
+public:
+	explicit ScopedArray(Class *ptr = Policy::NullValue()) : BaseType(ptr) { }
 
-    Class &operator [](std::ptrdiff_t k) const
-    {
-        Assert(this->m_value != Policy::NullValue() &&
-               "Dereference of scoped NULL array!");
-        Assert(k >= 0 && "Negative array index");
-
-        return this->m_value[k];
-    }
+	Class &operator[](std::ptrdiff_t k) const
+	{
+		Assert(this->m_value != Policy::NullValue() &&
+			   "Dereference of scoped NULL array!");
+		Assert(k >= 0 && "Negative array index");
+		return this->m_value[k];
+	}
 };
 } // namespace CCHECKER
 

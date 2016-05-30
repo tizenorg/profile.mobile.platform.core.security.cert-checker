@@ -24,27 +24,27 @@
 #include <systemd/sd-journal.h>
 
 void JournalLog(int logLevel,
-                const char *message,
-                const char *fileName,
-                int line,
-                const char *function)
+				const char *message,
+				const char *fileName,
+				int line,
+				const char *function)
 {
-    try {
-        sd_journal_send("PRIORITY=%d", logLevel,
-                "CODE_FILE=%s", fileName,
-                "CODE_FUNC=%s", function,
-                "CODE_LINE=%d", line,
-                // add file, line & function info to log message
-                "MESSAGE=[%s:%d] %s(): %s", fileName, line, function, message,
-                NULL);
-    } catch (const std::out_of_range&) {
-        sd_journal_send(
-                "PRIORITY=%d", LOG_ERR,
-                "CODE_FILE=%s", fileName,
-                "CODE_FUNC=%s", function,
-                "CODE_LINE=%d", line,
-                // add file, line & function info to log message
-                "MESSAGE=[%s:%d] %s(): Unsupported log level %d", fileName, line, function, logLevel,
-                NULL);
-    }
+	try {
+		sd_journal_send("PRIORITY=%d", logLevel,
+						"CODE_FILE=%s", fileName,
+						"CODE_FUNC=%s", function,
+						"CODE_LINE=%d", line,
+						// add file, line & function info to log message
+						"MESSAGE=[%s:%d] %s(): %s", fileName, line, function, message,
+						NULL);
+	} catch (const std::out_of_range &) {
+		sd_journal_send(
+			"PRIORITY=%d", LOG_ERR,
+			"CODE_FILE=%s", fileName,
+			"CODE_FUNC=%s", function,
+			"CODE_LINE=%d", line,
+			// add file, line & function info to log message
+			"MESSAGE=[%s:%d] %s(): Unsupported log level %d", fileName, line, function, logLevel,
+			NULL);
+	}
 }

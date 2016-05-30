@@ -33,7 +33,7 @@ OcspService::OcspService(const std::string &address) :
 
 OcspService::~OcspService()
 {
-	if(m_thread.joinable())
+	if (m_thread.joinable())
 		m_thread.join();
 }
 
@@ -46,13 +46,12 @@ void OcspService::run(void)
 void OcspService::onMessageProcess(const ConnShPtr &connection)
 {
 	LogDebug("Start to process message on ocsp service.");
-
 	auto in = connection->receive();
 	connection->send(this->process(connection, in));
 
 	// Run gmainloop for event listening.
-	if(!m_logic.is_running())
-		m_thread = std::thread(&OcspService::run,this);
+	if (!m_logic.is_running())
+		m_thread = std::thread(&OcspService::run, this);
 
 	LogDebug("Finish processing message on ocsp service.");
 }
@@ -61,11 +60,10 @@ RawBuffer OcspService::process(const ConnShPtr &, RawBuffer &data)
 {
 	BinaryQueue q;
 	q.push(data);
-
 	CommandId cid;
 	q.Deserialize(cid);
-
 	LogInfo("Request dispatch on ocsp-service.");
+
 	switch (cid) {
 	case CommandId::CC_OCSP_SYN: {
 		if (m_logic.setup() != NO_ERROR) {
@@ -76,6 +74,7 @@ RawBuffer OcspService::process(const ConnShPtr &, RawBuffer &data)
 		LogDebug("Success to receive SYN and setup. reply ACK cmd.");
 		return BinaryQueue::Serialize(CommandId::CC_OCSP_ACK).pop();
 	}
+
 	case CommandId::CC_OCSP_ACK:
 	default:
 		throw std::logic_error("Protocol error. unknown command id.");

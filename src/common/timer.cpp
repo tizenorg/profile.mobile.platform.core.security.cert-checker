@@ -38,7 +38,7 @@ void Timer::timerStart(int interval)
 {
 	LogDebug("Timer start!!");
 
-	if(m_isRunning)
+	if (m_isRunning)
 		return;
 
 	m_isRunning = true;
@@ -63,7 +63,7 @@ void Timer::timerStop()
 
 void Timer::run()
 {
-	while(1) {
+	while (1) {
 		LogDebug("[timer] running interval : " << m_interval);
 
 		if (m_isStop)
@@ -73,10 +73,9 @@ void Timer::run()
 		m_cv.wait_for(
 			lock,
 			std::chrono::seconds(m_interval),
-			[this] {
-				return m_isStop == true;
-			}
-		);
+		[this] {
+			return m_isStop == true;
+		});
 
 		job();
 	}

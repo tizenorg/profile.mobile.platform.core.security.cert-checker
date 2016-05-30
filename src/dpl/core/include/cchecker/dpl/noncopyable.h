@@ -23,15 +23,14 @@
 #define CCHECKER_NONCOPYABLE_H
 
 namespace CCHECKER {
-class Noncopyable
-{
-  private:
-    Noncopyable(const Noncopyable &);
-    const Noncopyable &operator=(const Noncopyable &);
+class Noncopyable {
+private:
+	Noncopyable(const Noncopyable &);
+	const Noncopyable &operator=(const Noncopyable &);
 
-  public:
-    Noncopyable();
-    virtual ~Noncopyable();
+public:
+	Noncopyable();
+	virtual ~Noncopyable();
 };
 } // namespace CCHECKER
 

@@ -28,9 +28,9 @@
 using namespace CCHECKER;
 
 class DBFixture : public DB::SqlQuery {
-    public:
-        DBFixture();
-        virtual ~DBFixture();
+public:
+	DBFixture();
+	virtual ~DBFixture();
 };
 
 #endif //CCHECKER_DBFIXTURE_H
