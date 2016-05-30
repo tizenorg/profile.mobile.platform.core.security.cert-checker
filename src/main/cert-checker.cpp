@@ -33,16 +33,11 @@ int main(void)
 {
 	try {
 		LogInfo("Cert-checker start!");
-
 		CCHECKER::OcspService service(SERVICE_STREAM);
-
 		setlocale(LC_ALL, "");
-
 		service.start();
-
 		LogInfo("Cert-checker exit!");
 		return 0;
-
 	} catch (const std::exception &e) {
 		LogError("Exception occured in cert-checker main : " << e.what());
 		return -1;

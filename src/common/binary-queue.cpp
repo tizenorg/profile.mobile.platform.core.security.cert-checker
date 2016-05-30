@@ -39,9 +39,7 @@ BinaryQueue::~BinaryQueue()
 RawBuffer BinaryQueue::pop()
 {
 	RawBuffer buf(m_size);
-
 	read(m_size, buf.data());
-
 	return buf;
 }
 
@@ -78,7 +76,6 @@ void BinaryQueue::read(size_t size, void *bytes)
 
 		size_t count = std::min(size, m_buckets.front()->left);
 		cur = m_buckets.front()->extractTo(cur, count);
-
 		size -= count;
 		m_size -= count;
 
@@ -107,10 +104,8 @@ void *BinaryQueue::Bucket::extractTo(void *dest, size_t size)
 		throw std::logic_error("logic error. invalid input to Bucket::extractTo.");
 
 	memcpy(dest, cur, size);
-
 	cur += size;
 	left -= size;
-
 	return static_cast<unsigned char *>(dest) + size;
 }
 

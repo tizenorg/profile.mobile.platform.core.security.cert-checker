@@ -47,7 +47,7 @@ Mainloop::~Mainloop()
 {
 	if (!m_stopped && !m_isTimedOut && !m_callbacks.empty())
 		throw std::logic_error("mainloop registered callbacks should be empty "
-							"except timed out case");
+							   "except timed out case");
 
 	::close(m_pollfd);
 }
@@ -64,7 +64,6 @@ void Mainloop::prepare()
 		wakeupSignal.receive();
 		removeEventSource(wakeupSignal.getFd());
 	};
-
 	addEventSource(wakeupSignal.getFd(), EPOLLIN, std::move(wakeupMainloop));
 }
 
@@ -87,9 +86,7 @@ void Mainloop::addEventSource(int fd, uint32_t event, Callback &&callback)
 		throw std::logic_error("event source already added!");
 
 	LogDebug("Add event[" << event << "] source on fd[" << fd << "]");
-
 	epoll_event e;
-
 	e.events = event;
 	e.data.fd = fd;
 
@@ -127,7 +124,6 @@ void Mainloop::dispatch(int timeout)
 {
 	int nfds = -1;
 	epoll_event event[MAX_EPOLL_EVENTS];
-
 	LogDebug("Mainloop dispatched with timeout: " << timeout);
 
 	do {
@@ -158,7 +154,6 @@ void Mainloop::dispatch(int timeout)
 		}
 
 		LogDebug("event[" << event[i].events << "] polled on fd[" << fd << "]");
-
 		m_callbacks[fd](event[i].events);
 	}
 }

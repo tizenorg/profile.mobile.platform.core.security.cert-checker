@@ -32,20 +32,18 @@ const char *TEST_DB_PATH_TEMP = DB_INSTALL_DIR"/.cert-checker-test-temp.db";
 } // anonymus namespace
 
 DBFixture::DBFixture() :
-        DB::SqlQuery()
+	DB::SqlQuery()
 {
-    // Remove temporary databse
-    BOOST_CHECK(unlink(TEST_DB_PATH_TEMP) == 0 || errno == ENOENT);
-
-    // Restore original database
-    std::ifstream f1(TEST_DB_PATH, std::fstream::binary);
-    std::ofstream f2(TEST_DB_PATH_TEMP, std::fstream::trunc|std::fstream::binary);
-    f2 << f1.rdbuf();
-    f2.close();
-    f1.close();
-
-    // Open temporary database
-    BOOST_REQUIRE(connect(TEST_DB_PATH_TEMP));
+	// Remove temporary databse
+	BOOST_CHECK(unlink(TEST_DB_PATH_TEMP) == 0 || errno == ENOENT);
+	// Restore original database
+	std::ifstream f1(TEST_DB_PATH, std::fstream::binary);
+	std::ofstream f2(TEST_DB_PATH_TEMP, std::fstream::trunc | std::fstream::binary);
+	f2 << f1.rdbuf();
+	f2.close();
+	f1.close();
+	// Open temporary database
+	BOOST_REQUIRE(connect(TEST_DB_PATH_TEMP));
 };
 
 DBFixture::~DBFixture()

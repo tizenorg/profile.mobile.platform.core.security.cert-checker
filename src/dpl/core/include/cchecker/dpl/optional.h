@@ -26,135 +26,137 @@
 
 namespace CCHECKER {
 template <typename Type>
-class Optional
-{
-    class Exception
-    {
-      public:
-        DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, Base)
-        DECLARE_EXCEPTION_TYPE(Base, NullReference)
-    };
+class Optional {
+	class Exception {
+	public:
+		DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, Base)
+		DECLARE_EXCEPTION_TYPE(Base, NullReference)
+	};
 
-  public:
-    Optional() :
-        m_null(true),
-        m_value()
-    {}
+public:
+	Optional() :
+		m_null(true),
+		m_value()
+	{}
 
-    Optional(const Type& t) :
-        m_null(false),
-        m_value(t)
-    {}
+	Optional(const Type &t) :
+		m_null(false),
+		m_value(t)
+	{}
 
-    bool IsNull() const
-    {
-        return m_null;
-    }
+	bool IsNull() const
+	{
+		return m_null;
+	}
 
-    Type& operator*()
-    {
-        if (m_null) {
-            Throw(typename Exception::NullReference);
-        }
-        return m_value;
-    }
+	Type &operator*()
+	{
+		if (m_null) {
+			Throw(typename Exception::NullReference);
+		}
 
-    const Type& operator*() const
-    {
-        if (m_null) {
-            Throw(typename Exception::NullReference);
-        }
-        return m_value;
-    }
+		return m_value;
+	}
 
-    const Type* operator->() const
-    {
-        if (m_null) {
-            Throw(typename Exception::NullReference);
-        }
-        return &m_value;
-    }
+	const Type &operator*() const
+	{
+		if (m_null) {
+			Throw(typename Exception::NullReference);
+		}
 
-    Type* operator->()
-    {
-        if (m_null) {
-            Throw(typename Exception::NullReference);
-        }
-        return &m_value;
-    }
+		return m_value;
+	}
 
-    bool operator!() const
-    {
-        return m_null;
-    }
+	const Type *operator->() const
+	{
+		if (m_null) {
+			Throw(typename Exception::NullReference);
+		}
 
-    Optional<Type>& operator=(const Type& other)
-    {
-        m_null = false;
-        m_value = other;
-        return *this;
-    }
+		return &m_value;
+	}
 
-    bool operator==(const Optional<Type>& aSecond) const
-    {
-        return LogicalOperator<true>(*this, aSecond,
-                                     std::equal_to<Type>(), std::equal_to<bool>());
-    }
+	Type *operator->()
+	{
+		if (m_null) {
+			Throw(typename Exception::NullReference);
+		}
 
-    bool operator==(const Type& aSecond) const
-    {
-        return Optional<Type>(aSecond) == *this;
-    }
+		return &m_value;
+	}
 
-    bool operator!=(const Optional<Type>& aSecond) const
-    {
-        return !(*this == aSecond);
-    }
+	bool operator!() const
+	{
+		return m_null;
+	}
 
-    bool operator<(const Optional<Type>& aSecond) const
-    {
-        return LogicalOperator<false>(*this, aSecond,
-                                      std::less<Type>(), std::less<bool>());
-    }
+	Optional<Type> &operator=(const Type &other)
+	{
+		m_null = false;
+		m_value = other;
+		return *this;
+	}
 
-    bool operator>(const Optional<Type>& aSecond) const
-    {
-        return LogicalOperator<false>(*this, aSecond,
-                                      std::greater<Type>(), std::greater<bool>());
-    }
+	bool operator==(const Optional<Type> &aSecond) const
+	{
+		return LogicalOperator<true>(*this, aSecond,
+									 std::equal_to<Type>(), std::equal_to<bool>());
+	}
 
-    bool operator<=(const Optional<Type>& aSecond) const
-    {
-        return *this == aSecond || *this < aSecond;
-    }
+	bool operator==(const Type &aSecond) const
+	{
+		return Optional<Type>(aSecond) == *this;
+	}
 
-    bool operator>=(const Optional<Type>& aSecond) const
-    {
-        return *this == aSecond || *this > aSecond;
-    }
+	bool operator!=(const Optional<Type> &aSecond) const
+	{
+		return !(*this == aSecond);
+	}
 
-    static Optional<Type> Null;
+	bool operator<(const Optional<Type> &aSecond) const
+	{
+		return LogicalOperator<false>(*this, aSecond,
+									  std::less<Type>(), std::less<bool>());
+	}
 
-  private:
-    bool m_null;
-    Type m_value;
+	bool operator>(const Optional<Type> &aSecond) const
+	{
+		return LogicalOperator<false>(*this, aSecond,
+									  std::greater<Type>(), std::greater<bool>());
+	}
 
-    template <bool taEquality, typename taComparator, typename taNullComparator>
-    static bool LogicalOperator(const Optional<Type>& aFirst,
-                                const Optional<Type>& aSecond,
-                                taComparator aComparator,
-                                taNullComparator aNullComparator)
-    {
-        if (aFirst.m_null == aSecond.m_null) {
-            if (aFirst.m_null) {
-                return taEquality;
-            } else {
-                return aComparator(aFirst.m_value, aSecond.m_value);
-            }
-        } else {
-            return aNullComparator(aFirst.m_null, aSecond.m_null);
-        }
-    }
+	bool operator<=(const Optional<Type> &aSecond) const
+	{
+		return *this == aSecond || *this < aSecond;
+	}
+
+	bool operator>=(const Optional<Type> &aSecond) const
+	{
+		return *this == aSecond || *this > aSecond;
+	}
+
+	static Optional<Type> Null;
+
+private:
+	bool m_null;
+	Type m_value;
+
+	template <bool taEquality, typename taComparator, typename taNullComparator>
+	static bool LogicalOperator(const Optional<Type> &aFirst,
+								const Optional<Type> &aSecond,
+								taComparator aComparator,
+								taNullComparator aNullComparator)
+	{
+		if (aFirst.m_null == aSecond.m_null) {
+			if (aFirst.m_null) {
+				return taEquality;
+			} else {
+				return aComparator(aFirst.m_value, aSecond.m_value);
+			}
+		} else {
+			return aNullComparator(aFirst.m_null, aSecond.m_null);
+		}
+	}
 };
 
 template<typename Type>
@@ -162,14 +164,14 @@ Optional<Type> Optional<Type>::Null = Optional<Type>();
 } //namespace CCHECKER
 
 template<typename Type>
-std::ostream& operator<<(std::ostream& aStream,
-                         const CCHECKER::Optional<Type>& aOptional)
+std::ostream &operator<<(std::ostream &aStream,
+						 const CCHECKER::Optional<Type> &aOptional)
 {
-    if (aOptional.IsNull()) {
-        return aStream << "null optional";
-    } else {
-        return aStream << *aOptional;
-    }
+	if (aOptional.IsNull()) {
+		return aStream << "null optional";
+	} else {
+		return aStream << *aOptional;
+	}
 }
 
 #endif // CCHECKER_OPTIONAL_VALUE_H

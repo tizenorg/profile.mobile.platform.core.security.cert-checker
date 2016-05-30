@@ -29,15 +29,15 @@ namespace CCHECKER {
 // Do not call directly
 // Always use Assert macro
 CCHECKER_NORETURN void AssertProc(const char *condition,
-                             const char *file,
-                             int line,
-                             const char *function);
+								  const char *file,
+								  int line,
+								  const char *function);
 } // namespace CCHECKER
 
 #define Assert(Condition) do { if (!(Condition)) { CCHECKER::AssertProc(#Condition, \
-                                                                   __FILE__, \
-                                                                   __LINE__, \
-                                                                   __FUNCTION__); \
-                               } } while (0)
+				__FILE__, \
+				__LINE__, \
+				__FUNCTION__); \
+	} } while (0)
 
 #endif // CCHECKER_ASSERT_H

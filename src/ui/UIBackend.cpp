@@ -29,7 +29,7 @@ namespace CCHECKER {
 namespace UI {
 
 UIBackend::UIBackend(int timeout) :
-    m_responseTimeout(timeout)
+	m_responseTimeout(timeout)
 {}
 
 UIBackend::~UIBackend()
@@ -37,34 +37,35 @@ UIBackend::~UIBackend()
 
 response_e UIBackend::run(const app_t &app)
 {
-    return run_popup(app, m_responseTimeout);
+	return run_popup(app, m_responseTimeout);
 }
 
 bool UIBackend::call_popup(const app_t &app)
 {
-    response_e resp;
+	response_e resp;
+	resp = run(app);
+	LogDebug(app.str() << " response: " << resp);
 
-    resp = run(app);
-    LogDebug(app.str() << " response: " << resp);
-    if (resp == response_e::RESPONSE_ERROR) {
-        return false;
-    }
+	if (resp == response_e::RESPONSE_ERROR) {
+		return false;
+	} else if (resp == response_e::UNINSTALL) {
+		app_control_h service = NULL;
+		int result = 0;
+		result = app_control_create(&service);
 
-    else if (resp == response_e::UNINSTALL) {
-        app_control_h service = NULL;
-        int result = 0;
-        result = app_control_create(&service);
-        if (!service || result != APP_CONTROL_ERROR_NONE) {
-            return false;
-        }
-        app_control_set_operation(service, APP_CONTROL_OPERATION_DEFAULT);
-        app_control_set_app_id(service, "setting-manage-applications-efl");
-        app_control_add_extra_data(service, "viewtype", "application-info");
-        app_control_add_extra_data(service, "pkgname", app.pkg_id.c_str());
-        app_control_send_launch_request(service, NULL, NULL);
-        app_control_destroy(service);
-    }
-    return true;
+		if (!service || result != APP_CONTROL_ERROR_NONE) {
+			return false;
+		}
+
+		app_control_set_operation(service, APP_CONTROL_OPERATION_DEFAULT);
+		app_control_set_app_id(service, "setting-manage-applications-efl");
+		app_control_add_extra_data(service, "viewtype", "application-info");
+		app_control_add_extra_data(service, "pkgname", app.pkg_id.c_str());
+		app_control_send_launch_request(service, NULL, NULL);
+		app_control_destroy(service);
+	}
+
+	return true;
 }
 
 } // UI

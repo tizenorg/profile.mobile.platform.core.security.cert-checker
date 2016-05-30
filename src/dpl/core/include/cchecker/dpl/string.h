@@ -33,47 +33,46 @@ namespace CCHECKER {
 typedef std::basic_string<wchar_t, CharTraits> String;
 
 // @brief String exception class
-class StringException
-{
-  public:
-    DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, Base)
+class StringException {
+public:
+	DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, Base)
 
-    // @brief Invalid init for UTF8 to UTF32 converter
-    DECLARE_EXCEPTION_TYPE(Base, IconvInitErrorUTF8ToUTF32)
+	// @brief Invalid init for UTF8 to UTF32 converter
+	DECLARE_EXCEPTION_TYPE(Base, IconvInitErrorUTF8ToUTF32)
 
-    // @brief Invalid taStdContainerinit for UTF32 to UTF32 converter
-    DECLARE_EXCEPTION_TYPE(Base, IconvInitErrorUTF32ToUTF8)
+	// @brief Invalid taStdContainerinit for UTF32 to UTF32 converter
+	DECLARE_EXCEPTION_TYPE(Base, IconvInitErrorUTF32ToUTF8)
 
-    // @brief Invalid conversion for UTF8 to UTF32 converter
-    DECLARE_EXCEPTION_TYPE(Base, IconvConvertErrorUTF8ToUTF32)
+	// @brief Invalid conversion for UTF8 to UTF32 converter
+	DECLARE_EXCEPTION_TYPE(Base, IconvConvertErrorUTF8ToUTF32)
 
-    // @brief Invalid conversion for UTF8 to UTF32 converter
-    DECLARE_EXCEPTION_TYPE(Base, IconvConvertErrorUTF32ToUTF8)
+	// @brief Invalid conversion for UTF8 to UTF32 converter
+	DECLARE_EXCEPTION_TYPE(Base, IconvConvertErrorUTF32ToUTF8)
 
-    // @brief Invalid ASCII character detected in FromASCII
-    DECLARE_EXCEPTION_TYPE(Base, InvalidASCIICharacter)
+	// @brief Invalid ASCII character detected in FromASCII
+	DECLARE_EXCEPTION_TYPE(Base, InvalidASCIICharacter)
 
-    // @brief Invalid ASCII character detected in FromASCII
-    DECLARE_EXCEPTION_TYPE(Base, ICUInvalidCharacterFound)
+	// @brief Invalid ASCII character detected in FromASCII
+	DECLARE_EXCEPTION_TYPE(Base, ICUInvalidCharacterFound)
 };
 
 //!\brief convert ASCII string to CCHECKER::String
-String FromASCIIString(const std::string& aString);
+String FromASCIIString(const std::string &aString);
 
 //!\brief convert UTF32 string to CCHECKER::String
-String FromUTF32String(const std::wstring& aString);
+String FromUTF32String(const std::wstring &aString);
 
 //@brief Returns String object created from UTF8 string
 //@param[in] aString input UTF-8 string
-String FromUTF8String(const std::string& aString);
+String FromUTF8String(const std::string &aString);
 
 //@brief Returns String content as std::string
-std::string ToUTF8String(const String& aString);
+std::string ToUTF8String(const String &aString);
 
 //@brief Compare two unicode strings
 int StringCompare(const String &left,
-                  const String &right,
-                  bool caseInsensitive = false);
+				  const String &right,
+				  bool caseInsensitive = false);
 
 //@brief Splits the string into substrings.
 //@param[in] str Input string
@@ -81,61 +80,63 @@ int StringCompare(const String &left,
 // delimiters. Can be also a single delimiter character.
 //@param[in] it InserterIterator that is used to save the generated substrings.
 template<typename StringType, typename Delimiters, typename InserterIterator>
-void Tokenize(const StringType& str,
-              const Delimiters& delimiters,
-              InserterIterator it,
-              bool ignoreEmpty = false)
+void Tokenize(const StringType &str,
+			  const Delimiters &delimiters,
+			  InserterIterator it,
+			  bool ignoreEmpty = false)
 {
-    typename StringType::size_type nextSearchStart = 0;
-    typename StringType::size_type pos;
-    typename StringType::size_type length;
+	typename StringType::size_type nextSearchStart = 0;
+	typename StringType::size_type pos;
+	typename StringType::size_type length;
 
-    while (true) {
-        pos = str.find_first_of(delimiters, nextSearchStart);
-        length =
-            ((pos == StringType::npos) ? str.length() : pos) - nextSearchStart;
+	while (true) {
+		pos = str.find_first_of(delimiters, nextSearchStart);
+		length =
+			((pos == StringType::npos) ? str.length() : pos) - nextSearchStart;
 
-        if (!ignoreEmpty || length > 0) {
-            *it = str.substr(nextSearchStart, length);
-            it++;
-        }
+		if (!ignoreEmpty || length > 0) {
+			*it = str.substr(nextSearchStart, length);
+			it++;
+		}
 
-        if (pos == StringType::npos) {
-            return;
-        }
+		if (pos == StringType::npos) {
+			return;
+		}
 
-        nextSearchStart = pos + 1;
-    }
+		nextSearchStart = pos + 1;
+	}
 }
 
 namespace Utils {
 
-template<typename T> class ConcatFunc : public std::binary_function<T, T, T>
-{
+template<typename T> class ConcatFunc : public std::binary_function<T, T, T> {
 public:
-    explicit ConcatFunc(const T & val) : m_delim(val) {}
-    T operator()(const T & arg1, const T & arg2) const
-    {
-        return arg1 + m_delim + arg2;
-    }
+	explicit ConcatFunc(const T &val) : m_delim(val) {}
+	T operator()(const T &arg1, const T &arg2) const
+	{
+		return arg1 + m_delim + arg2;
+	}
 private:
-    T m_delim;
+	T m_delim;
 };
 
 }
 
 template<typename ForwardIterator>
-typename ForwardIterator::value_type Join(ForwardIterator begin, ForwardIterator end, typename ForwardIterator::value_type delim)
+typename ForwardIterator::value_type Join(ForwardIterator begin, ForwardIterator end,
+		typename ForwardIterator::value_type delim)
 {
-    typedef typename ForwardIterator::value_type value;
-    if(begin == end) return value();
-    Utils::ConcatFunc<value> func(delim);
-    ForwardIterator init = begin;
-    return std::accumulate(++begin, end, *init, func);
+	typedef typename ForwardIterator::value_type value;
+
+	if (begin == end) return value();
+
+	Utils::ConcatFunc<value> func(delim);
+	ForwardIterator init = begin;
+	return std::accumulate(++begin, end, *init, func);
 }
 
 } //namespace CCHECKER
 
-std::ostream& operator<<(std::ostream& aStream, const CCHECKER::String& aString);
+std::ostream &operator<<(std::ostream &aStream, const CCHECKER::String &aString);
 
 #endif // CCHECKER_STRING

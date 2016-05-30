@@ -26,7 +26,8 @@
 #include "client/error.h"
 
 __attribute__((visibility("default")))
-int cchecker_ocsp_request() {
+int cchecker_ocsp_request()
+{
 	CCHECKER::OcspClient oc;
 	return oc.request() == CCHECKER::E_CC_NONE ? 0 : -1;
 };

@@ -41,9 +41,9 @@ CCerr OcspClient::request()
 {
 	LogDebug("Request to oscp service.");
 	auto ret = m_dispatcher->methodCall<CommandId>(CommandId::CC_OCSP_SYN);
-
 	LogDebug("Response ret : " << static_cast<int>(ret));
-	if(ret == CommandId::CC_OCSP_ACK)
+
+	if (ret == CommandId::CC_OCSP_ACK)
 		return E_CC_NONE;
 	else
 		return E_CC_INTERNAL;

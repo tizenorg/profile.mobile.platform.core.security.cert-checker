@@ -38,37 +38,38 @@ Certs::~Certs()
 
 void Certs::get_certificates(app_t &app)
 {
-    (void)app;
+	(void)app;
 }
 
 // Only the public functions need to be stubbed for testing all possibilities
 Certs::ocsp_response_t Certs::check_ocsp(const app_t &app)
 {
-    if (app.signatures.empty())
-        return ocsp_response_t::OCSP_APP_OK;
+	if (app.signatures.empty())
+		return ocsp_response_t::OCSP_APP_OK;
 
-    if (app.signatures.front().empty())
-            return ocsp_response_t::OCSP_APP_OK;
+	if (app.signatures.front().empty())
+		return ocsp_response_t::OCSP_APP_OK;
 
-    std::string ret = app.signatures.front().front();
+	std::string ret = app.signatures.front().front();
 
-    if ("OCSP_APP_REVOKED" == ret)
-        return ocsp_response_t::OCSP_APP_REVOKED;
-    if ("OCSP_CHECK_AGAIN" == ret)
-        return ocsp_response_t::OCSP_CHECK_AGAIN;
-    if ("OCSP_CERT_ERROR" == ret)
-        return ocsp_response_t::OCSP_CERT_ERROR;
+	if ("OCSP_APP_REVOKED" == ret)
+		return ocsp_response_t::OCSP_APP_REVOKED;
 
-    return ocsp_response_t::OCSP_APP_OK;
+	if ("OCSP_CHECK_AGAIN" == ret)
+		return ocsp_response_t::OCSP_CHECK_AGAIN;
+
+	if ("OCSP_CERT_ERROR" == ret)
+		return ocsp_response_t::OCSP_CERT_ERROR;
+
+	return ocsp_response_t::OCSP_APP_OK;
 }
 
 // DB
 DB::SqlQuery::SqlQuery(const std::string &path)
 {
-    m_connection = NULL;
-    m_inUserTransaction = false;
-
-    (void)path;
+	m_connection = NULL;
+	m_inUserTransaction = false;
+	(void)path;
 }
 
 DB::SqlQuery::~SqlQuery()
@@ -76,29 +77,29 @@ DB::SqlQuery::~SqlQuery()
 
 bool DB::SqlQuery::add_app_to_check_list(const app_t &app)
 {
-    (void)app;
-    return true; // Success
+	(void)app;
+	return true; // Success
 }
 
 void DB::SqlQuery::remove_app_from_check_list(const app_t &app)
 {
-    (void)app;
+	(void)app;
 }
 
 void DB::SqlQuery::mark_as_verified(const app_t &app, const app_t::verified_t &verified)
 {
-    (void)app;
-    (void)verified;
+	(void)app;
+	(void)verified;
 }
 
 void DB::SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
 {
-    (void)apps_buffer;
+	(void)apps_buffer;
 }
 
 // UI
 UI::UIBackend::UIBackend(int timeout) :
-        m_responseTimeout(timeout)
+	m_responseTimeout(timeout)
 {}
 
 UI::UIBackend::~UIBackend()
@@ -106,10 +107,10 @@ UI::UIBackend::~UIBackend()
 
 bool UI::UIBackend::call_popup(const app_t &app)
 {
-    if (app.uid > 5000)
-        return true;
+	if (app.uid > 5000)
+		return true;
 
-    return false;
+	return false;
 }
 
 } //CCHECKER

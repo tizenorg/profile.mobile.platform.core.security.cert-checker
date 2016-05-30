@@ -32,7 +32,6 @@ namespace CCHECKER {
 Service::Service(const std::string &address) : m_address(address)
 {
 	LogDebug("Service constructed with address[" << address << "]");
-
 	m_timeout = -1;
 	setNewConnectionCallback(nullptr);
 	setCloseConnectionCallback(nullptr);
@@ -45,12 +44,9 @@ Service::~Service()
 void Service::start()
 {
 	LogInfo("Service start!");
-
 	Socket socket(m_address);
-
 	LogDebug("Get systemd socket[" << socket.getFd()
-		  << "] with address[" << m_address << "]");
-
+			 << "] with address[" << m_address << "]");
 	m_loop.addEventSource(socket.getFd(), EPOLLIN | EPOLLHUP | EPOLLRDHUP,
 	[&](uint32_t event) {
 		if (event != EPOLLIN)
@@ -58,7 +54,6 @@ void Service::start()
 
 		m_onNewConnection(std::make_shared<Connection>(socket.accept()));
 	});
-
 	m_loop.run(m_timeout);
 }
 
@@ -76,17 +71,14 @@ void Service::setNewConnectionCallback(const ConnCallback &/*callback*/)
 			throw std::logic_error("onNewConnection called but ConnShPtr is nullptr.");
 
 		int fd = connection->getFd();
-
 		LogInfo("welcome! accepted client socket fd[" << fd << "]");
-
 		/*
 		    // TODO: disable temporarily
 		    if (callback)
 		    callback(connection);
 		*/
-
 		m_loop.addEventSource(fd, EPOLLIN | EPOLLHUP | EPOLLRDHUP,
-		[&, fd](uint32_t event) {
+		[ &, fd](uint32_t event) {
 			LogDebug("read event comes in to fd[" << fd << "]");
 
 			if (m_connectionRegistry.count(fd) == 0)
@@ -101,10 +93,8 @@ void Service::setNewConnectionCallback(const ConnCallback &/*callback*/)
 			}
 
 			LogDebug("Start message process on fd[" << fd << "]");
-
 			onMessageProcess(conn);
 		});
-
 		m_connectionRegistry[fd] = connection;
 	};
 }
@@ -122,10 +112,8 @@ void Service::setCloseConnectionCallback(const ConnCallback &/*callback*/)
 			throw std::logic_error("no connection in registry to remove.");
 
 		LogInfo("good-bye! close socket fd[" << fd << "]");
-
 		m_loop.removeEventSource(fd);
 		m_connectionRegistry.erase(fd); /* scoped-lock needed? */
-
 		/*
 		    // TODO: disable temporarily
 		    if (callback)

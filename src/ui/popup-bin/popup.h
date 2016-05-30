@@ -24,15 +24,15 @@
 #include <cchecker/UIBackend.h>
 
 struct cert_checker_popup_data {
-    std::string app_id;
-    std::string pkg_id;
-    CCHECKER::UI::response_e result;
+	std::string app_id;
+	std::string pkg_id;
+	CCHECKER::UI::response_e result;
 
-    Evas_Object *popup       = NULL;
-    Evas_Object *win         = NULL;
-    Evas_Object *box         = NULL;
-    Evas_Object *title       = NULL;
-    Evas_Object *content     = NULL;
-    Evas_Object *keep_button = NULL;
-    Evas_Object *uninstall_button = NULL;
+	Evas_Object *popup       = NULL;
+	Evas_Object *win         = NULL;
+	Evas_Object *box         = NULL;
+	Evas_Object *title       = NULL;
+	Evas_Object *content     = NULL;
+	Evas_Object *keep_button = NULL;
+	Evas_Object *uninstall_button = NULL;
 };

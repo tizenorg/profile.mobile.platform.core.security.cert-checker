@@ -27,20 +27,20 @@
 #include <cchecker/dpl/db/naive_synchronization_object.h>
 
 namespace {
-    unsigned int seed = time(NULL);
+unsigned int seed = time(NULL);
 }
 
 namespace CCHECKER {
 namespace DB {
 void NaiveSynchronizationObject::Synchronize()
 {
-    // Sleep for about 10ms - 30ms
-    std::this_thread::sleep_for(std::chrono::milliseconds(10 + rand_r(&seed) % 20));
+	// Sleep for about 10ms - 30ms
+	std::this_thread::sleep_for(std::chrono::milliseconds(10 + rand_r(&seed) % 20));
 }
 
 void NaiveSynchronizationObject::NotifyAll()
 {
-    // No need to inform about anything
+	// No need to inform about anything
 }
 } // namespace DB
 } // namespace CCHECKER

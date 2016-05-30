@@ -27,11 +27,10 @@
 
 BOOST_AUTO_TEST_SUITE(CLIENT_TEST)
 
-BOOST_AUTO_TEST_CASE(client_api) {
-
+BOOST_AUTO_TEST_CASE(client_api)
+{
 	auto ret = cchecker_ocsp_request();
 	BOOST_REQUIRE(ret == 0);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()

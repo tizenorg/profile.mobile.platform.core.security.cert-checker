@@ -31,8 +31,8 @@ public:
 	EventFD(unsigned int initval = 0, int flags = EFD_SEMAPHORE | EFD_CLOEXEC);
 	~EventFD();
 
-	EventFD(const EventFD&) = delete;
-	EventFD& operator=(const EventFD&) = delete;
+	EventFD(const EventFD &) = delete;
+	EventFD &operator=(const EventFD &) = delete;
 
 	void send();
 	void receive();

@@ -23,28 +23,28 @@
 
 #include <cchecker/dpl/serialization.h>
 
-namespace CCHECKER{
-namespace UI{
+namespace CCHECKER {
+namespace UI {
 
 class BinaryStream : public CCHECKER::IStream {
-  public:
-    void Read (size_t num,       void * bytes);
-    void Write(size_t num, const void * bytes);
+public:
+	void Read(size_t num,       void *bytes);
+	void Write(size_t num, const void *bytes);
 
-    BinaryStream();
-    ~BinaryStream();
+	BinaryStream();
+	~BinaryStream();
 
-    const unsigned char* char_pointer() const;
-    size_t size() const;
+	const unsigned char *char_pointer() const;
+	size_t size() const;
 
-  private:
-    std::vector<unsigned char> m_data;
-    size_t m_readPosition;
+private:
+	std::vector<unsigned char> m_data;
+	size_t m_readPosition;
 };
 
 response_e run_popup(
-    const app_t &app,
-    int timeout); // zero or negative timeout means infinity
+	const app_t &app,
+	int timeout); // zero or negative timeout means infinity
 
 } // UI
 } // CCHECKER

@@ -32,11 +32,11 @@ using namespace CCHECKER;
 
 BOOST_FIXTURE_TEST_SUITE(CERT_TEST, Certs_)
 
-BOOST_AUTO_TEST_CASE(Certs_OCSP_positive) {
-
-    //*.wikipedia.com:
-    chain_t chain = {
-            "MIIH1jCCBr6gAwIBAgISESGXLjKl5bLinUct/tty1iduMA0GCSqGSIb3DQEBCwUA\
+BOOST_AUTO_TEST_CASE(Certs_OCSP_positive)
+{
+	//*.wikipedia.com:
+	chain_t chain = {
+		"MIIH1jCCBr6gAwIBAgISESGXLjKl5bLinUct/tty1iduMA0GCSqGSIb3DQEBCwUA\
 MGYxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMTwwOgYD\
 VQQDEzNHbG9iYWxTaWduIE9yZ2FuaXphdGlvbiBWYWxpZGF0aW9uIENBIC0gU0hB\
 MjU2IC0gRzIwHhcNMTQxMjE2MjEyNDAzWhcNMTcwMjE5MTIwMDAwWjB5MQswCQYD\
@@ -79,7 +79,7 @@ gOk/sO6ilkOun/u5QBigxne1/P4g2SYkISqRqA0Z9FloEd6odDb6dbIHhhz270rH\
 4V9POUs5kH7d1OJs9d5Fv9y3t/Yt1pGaHyK/DTUbYVhMyn0EaLxd3FLJ9ABKpQJ+\
 OUcTfe55U2Ox1H/87b6Ca04DDl3u2i87jPbhgshWSNwU8+llHCst0sbG",
 
-"MIIEaTCCA1GgAwIBAgILBAAAAAABRE7wQkcwDQYJKoZIhvcNAQELBQAwVzELMAkG\
+		"MIIEaTCCA1GgAwIBAgILBAAAAAABRE7wQkcwDQYJKoZIhvcNAQELBQAwVzELMAkG\
 A1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jv\
 b3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xNDAyMjAxMDAw\
 MDBaFw0yNDAyMjAxMDAwMDBaMGYxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i\
@@ -104,7 +104,7 @@ XN0cvfNVlg/UBsD84iOKJHDTu/B5GqdhcIOKrwbFINihY9Bsrk8y1658GEV1BSl3\
 SOlCdjSXVWkkDoPWoC209fN5ikkodBpBocLTJIg1MGCUF7ThBCIxPTsvFwayuJ2G\
 K1pp74P1S8SqtCr4fKGxhZSM9AyHDPSsQPhZSZg=",
 
-"MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkG\
+		"MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkG\
 A1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jv\
 b3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5MDExMjAw\
 MDBaFw0yODAxMjgxMjAwMDBaMFcxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i\
@@ -122,19 +122,19 @@ yj1hTdNGCbM+w6DjY1Ub8rrvrTnhQ7k4o+YviiY776BQVvnGCv04zcQLcFGUl5gE\
 38NflNUVyRRBnMRddWQVDf9VMOyGj/8N7yy5Y0b2qvzfvGn9LhJIZJrglfCm7ymP\
 AbEVtQwdpf5pLGkkeB6zpxxxYu7KyJesF12KwvhHhm4qxFYxldBniYUr+WymXUad\
 DKqC5JlR3XC321Y9YeRq4VzW9v493kHMB65jUr9TU/Qr6cf9tveCX4XSQRjbgbME\
-HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4A=="};
-
-    Certs::ocsp_response_t resp = check_ocsp_chain_ (chain);
-    LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
-    BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_CHECK_AGAIN);
+HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4A=="
+	};
+	Certs::ocsp_response_t resp = check_ocsp_chain_(chain);
+	LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
+	BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_CHECK_AGAIN);
 }
 
-BOOST_AUTO_TEST_CASE(Certs_OCSP_negative_1) {
-    // Broken chain of certificates
-
-    //*.wikipedia.com:
-   chain_t chain = {
-            "MIIH1jCCBr6gAwIBAgISESGXLjKl5bLinUct/tty1iduMA0GCSqGSIb3DQEBCwUA\
+BOOST_AUTO_TEST_CASE(Certs_OCSP_negative_1)
+{
+	// Broken chain of certificates
+	//*.wikipedia.com:
+	chain_t chain = {
+		"MIIH1jCCBr6gAwIBAgISESGXLjKl5bLinUct/tty1iduMA0GCSqGSIb3DQEBCwUA\
 MGYxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMTwwOgYD\
 VQQDEzNHbG9iYWxTaWduIE9yZ2FuaXphdGlvbiBWYWxpZGF0aW9uIENBIC0gU0hB\
 MjU2IC0gRzIwHhcNMTQxMjE2MjEyNDAzWhcNMTcwMjE5MTIwMDAwWjB5MQswCQYD\
@@ -175,18 +175,18 @@ gwBA5hp8MA0GCSqGSIb3DQEBCwUAA4IBAQC45+nGVISGOZctc9mxhil3EDmlBIzY\
 gOk/sO6ilkOun/u5QBigxne1/P4g2SYkISqRqA0Z9FloEd6odDb6dbIHhhz270rH\
 3pjewMLq6OA09eklPav4f3NiBL/VcqG53TRTJW6eHxZuEsGAgBmwk6jKf8e+BjmZ\
 4V9POUs5kH7d1OJs9d5Fv9y3t/Yt1pGaHyK/DTUbYVhMyn0EaLxd3FLJ9ABKpQJ+\
-OUcTfe55U2Ox1H/87b6Ca04DDl3u2i87jPbhgshWSNwU8+llHCst0sbG"};
-
-    Certs::ocsp_response_t resp = check_ocsp_chain_ (chain);
-    LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
-    BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_CERT_ERROR);
+OUcTfe55U2Ox1H/87b6Ca04DDl3u2i87jPbhgshWSNwU8+llHCst0sbG"
+	};
+	Certs::ocsp_response_t resp = check_ocsp_chain_(chain);
+	LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
+	BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_CERT_ERROR);
 }
 
-BOOST_AUTO_TEST_CASE(Certs_OCSP_negative_2) {
-    // Last Certificate is corrupted
-
-    chain_t chain = {
-            "MIIH1jCCBr6gAwIBAgISESGXLjKl5bLinUct/tty1iduMA0GCSqGSIb3DQEBCwUA\
+BOOST_AUTO_TEST_CASE(Certs_OCSP_negative_2)
+{
+	// Last Certificate is corrupted
+	chain_t chain = {
+		"MIIH1jCCBr6gAwIBAgISESGXLjKl5bLinUct/tty1iduMA0GCSqGSIb3DQEBCwUA\
 MGYxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMTwwOgYD\
 VQQDEzNHbG9iYWxTaWduIE9yZ2FuaXphdGlvbiBWYWxpZGF0aW9uIENBIC0gU0hB\
 MjU2IC0gRzIwHhcNMTQxMjE2MjEyNDAzWhcNMTcwMjE5MTIwMDAwWjB5MQswCQYD\
@@ -229,7 +229,7 @@ gOk/sO6ilkOun/u5QBigxne1/P4g2SYkISqRqA0Z9FloEd6odDb6dbIHhhz270rH\
 4V9POUs5kH7d1OJs9d5Fv9y3t/Yt1pGaHyK/DTUbYVhMyn0EaLxd3FLJ9ABKpQJ+\
 OUcTfe55U2Ox1H/87b6Ca04DDl3u2i87jPbhgshWSNwU8+llHCst0sbG",
 
-"MIIEaTCCA1GgAwIBAgILBAAAAAABRE7wQkcwDQYJKoZIhvcNAQELBQAwVzELMAkG\
+		"MIIEaTCCA1GgAwIBAgILBAAAAAABRE7wQkcwDQYJKoZIhvcNAQELBQAwVzELMAkG\
 A1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jv\
 b3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xNDAyMjAxMDAw\
 MDBaFw0yNDAyMjAxMDAwMDBaMGYxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i\
@@ -254,7 +254,7 @@ XN0cvfNVlg/UBsD84iOKJHDTu/B5GqdhcIOKrwbFINihY9Bsrk8y1658GEV1BSl3\
 SOlCdjSXVWkkDoPWoC209fN5ikkodBpBocLTJIg1MGCUF7ThBCIxPTsvFwayuJ2G\
 K1pp74P1S8SqtCr4fKGxhZSM9AyHDPSsQPhZSZg=",
 
-"MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkG\
+		"MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkG\
 A1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jv\
 b3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5MDExMjAw\
 MDBaFw0yODAxMjgxMjAwMDBaMFcxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i\
@@ -272,18 +272,18 @@ yj1hTdNGCbM+w6DjY1Ub8rrvrTnhQ7k4o+YviiY776BQVvnGCv04zcQLcFGUl5gE\
 38NflNUVyRRBnMRddWQVDf9VMOyGj/8N7yy5Y0b2qvzfvGn9LhJIZJrglfCm7ymP\
 AbEVtQwdpf5pLGkkeB6zpxxxYu7KyJesF12KwvhHhm4qxFYxldBniYUr+WymXUad\
 DKqC5JlR3XC321Y9YeRq4VzW9v493kHMB65jUr9TU/Qr6cf9tveCX4XSQRjbgbME\
-HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4"};
-
-    Certs::ocsp_response_t resp = check_ocsp_chain_ (chain);
-    LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
-    BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_CERT_ERROR);
+HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4"
+	};
+	Certs::ocsp_response_t resp = check_ocsp_chain_(chain);
+	LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
+	BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_CERT_ERROR);
 }
 
-BOOST_AUTO_TEST_CASE(Certs_OCSP_positive_1) {
-
-    chain_t chain = {
-    // MBANK, signed by SYMANTEC, expires 04 Feb 2016
-    "MIIGXDCCBUSgAwIBAgIQKJK70TuBw91HAA0BqZSPETANBgkqhkiG9w0BAQsFADB3\
+BOOST_AUTO_TEST_CASE(Certs_OCSP_positive_1)
+{
+	chain_t chain = {
+		// MBANK, signed by SYMANTEC, expires 04 Feb 2016
+		"MIIGXDCCBUSgAwIBAgIQKJK70TuBw91HAA0BqZSPETANBgkqhkiG9w0BAQsFADB3\
 MQswCQYDVQQGEwJVUzEdMBsGA1UEChMUU3ltYW50ZWMgQ29ycG9yYXRpb24xHzAd\
 BgNVBAsTFlN5bWFudGVjIFRydXN0IE5ldHdvcmsxKDAmBgNVBAMTH1N5bWFudGVj\
 IENsYXNzIDMgRVYgU1NMIENBIC0gRzMwHhcNMTUwMTE1MDAwMDAwWhcNMTYwMjA0\
@@ -318,8 +318,8 @@ SReh+urkTFGUdSPCsD4mQk3zI1wNhE7Amb2mUTIaSLzabnN89hn9jlvQwLH2Wkf2\
 aFmUlsB1C6YFMqVPRfHuxyPUb2zjw+ll7UStQxuSSTpwBmW1g/dIhtle9+o8i3z2\
 WJAT38TP3mPw8SUWLbgGyih6bsB6eBxFEM5awP60XXjZfVAmoVLlj9oWYNQrZLwk",
 
-    // SYMANTEC, signed by VERISIGN, expires 30 Oct 2023
-    "MIIFKzCCBBOgAwIBAgIQfuFKb2/v8tN/P61lTTratDANBgkqhkiG9w0BAQsFADCB\
+		// SYMANTEC, signed by VERISIGN, expires 30 Oct 2023
+		"MIIFKzCCBBOgAwIBAgIQfuFKb2/v8tN/P61lTTratDANBgkqhkiG9w0BAQsFADCB\
 yjELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL\
 ExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTowOAYDVQQLEzEoYykgMjAwNiBWZXJp\
 U2lnbiwgSW5jLiAtIEZvciBhdXRob3JpemVkIHVzZSBvbmx5MUUwQwYDVQQDEzxW\
@@ -347,11 +347,10 @@ qLuSLRtzsMarNvSWbCAI7woeZiRFT2cAQMgHVHQzO6atuyOfZu2iRHA0+w7qAf3P\
 eHTfp61Vt19N9tY/4IbOJMdCqRMURDVLtt/JYKwMf9mTIUvunORJApjTYHtcvNUw\
 LwfORELEC5n+5p/8sHiGUW3RLJ3GlvuFgrsEL/digO9i2n/2DqyQuFa9eT/ygG6j\
 2bkPXToHHZGThkspTOHcteHgM52zyzaRS/6htO7w+Q=="
-    };
-
-    Certs::ocsp_response_t resp = check_ocsp_chain_ (chain);
-    LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
-    BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_APP_OK);
+	};
+	Certs::ocsp_response_t resp = check_ocsp_chain_(chain);
+	LogDebug("Certs_::check_ocsp_chain_ response : " << (int) resp);
+	BOOST_REQUIRE(resp == Certs::ocsp_response_t::OCSP_APP_OK);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

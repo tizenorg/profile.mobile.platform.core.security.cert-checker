@@ -29,41 +29,45 @@
 namespace CCHECKER {
 namespace DB {
 class SqlQuery {
-    public:
-        class Exception {
-            public: DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, Base);
-            public: DECLARE_EXCEPTION_TYPE(Base, InternalError);
-            public: DECLARE_EXCEPTION_TYPE(Base, TransactionError);
-            public: DECLARE_EXCEPTION_TYPE(Base, InvalidArgs);
-        };
-        SqlQuery() :
-        m_connection(NULL),
-        m_inUserTransaction(false)
-        {};
-        explicit SqlQuery(const std::string &path);
-        virtual ~SqlQuery();
+public:
+	class Exception {
+	public:
+		DECLARE_EXCEPTION_TYPE(CCHECKER::Exception, Base);
+	public:
+		DECLARE_EXCEPTION_TYPE(Base, InternalError);
+	public:
+		DECLARE_EXCEPTION_TYPE(Base, TransactionError);
+	public:
+		DECLARE_EXCEPTION_TYPE(Base, InvalidArgs);
+	};
+	SqlQuery() :
+		m_connection(NULL),
+		m_inUserTransaction(false)
+	{};
+	explicit SqlQuery(const std::string &path);
+	virtual ~SqlQuery();
 
-        // Connecting outside the constructor
-        bool connect(const std::string& path);
+	// Connecting outside the constructor
+	bool connect(const std::string &path);
 
-        // Apps
-        bool add_app_to_check_list(const app_t &app);
-        void remove_app_from_check_list(const app_t &app);
-        void mark_as_verified(const app_t &app, const app_t::verified_t &verified);
-        void get_app_list(std::list<app_t> &apps_buffer); // TODO: typedef std::list<app_t>
+	// Apps
+	bool add_app_to_check_list(const app_t &app);
+	void remove_app_from_check_list(const app_t &app);
+	void mark_as_verified(const app_t &app, const app_t::verified_t &verified);
+	void get_app_list(std::list<app_t> &apps_buffer); // TODO: typedef std::list<app_t>
 
-    protected:
-        SqlConnection *m_connection;
+protected:
+	SqlConnection *m_connection;
 
-    private:
-        bool m_inUserTransaction;
-        int getDBVersion(void);
-        void get_apps(std::list<app_t> &apps_buffer);
-        bool check_if_app_exists(const app_t &app);
-        bool get_check_id(const app_t &app, int32_t &check_id);
-        bool add_chain_id(const int32_t check_id, int32_t &chain_id);
-        int verified_enum_to_int(const app_t::verified_t &verified);
-        app_t::verified_t verified_int_to_enum(const int &verified);
+private:
+	bool m_inUserTransaction;
+	int getDBVersion(void);
+	void get_apps(std::list<app_t> &apps_buffer);
+	bool check_if_app_exists(const app_t &app);
+	bool get_check_id(const app_t &app, int32_t &check_id);
+	bool add_chain_id(const int32_t check_id, int32_t &chain_id);
+	int verified_enum_to_int(const app_t::verified_t &verified);
+	app_t::verified_t verified_int_to_enum(const int &verified);
 };
 } // DB
 } // CCHECKER
