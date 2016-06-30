@@ -36,6 +36,11 @@
 #include <cchecker/popup-runner.h>
 #include <cchecker/dpl/serialization.h>
 #include <cchecker/dpl/errno_string.h>
+#include <cchecker/dpl/exception.h>
+
+#ifndef FD_SETSIZE
+#define FD_SETSIZE 1024
+#endif
 
 using namespace CCHECKER::UI;
 
@@ -204,81 +209,103 @@ void deserialize(cert_checker_popup_data *pdp, char *line, ssize_t line_length)
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
-	// int pipe_in and int pipe_out should be passed to Popup via args.
-	// These parameters should be passed to Popup via pipe_in:
-	// std::string    app_id
-	// std::string    pkg_id
-	struct cert_checker_popup_data pd;
-	struct cert_checker_popup_data *pdp = &pd;
-	LogDebug("############################ popup binary ################################");
-	setlocale(LC_ALL, "");
+	try {
+		// int pipe_in and int pipe_out should be passed to Popup via args.
+		// These parameters should be passed to Popup via pipe_in:
+		// std::string    app_id
+		// std::string    pkg_id
+		struct cert_checker_popup_data pd;
+		struct cert_checker_popup_data *pdp = &pd;
+		LogDebug("############################ popup binary ################################");
+		setlocale(LC_ALL, "");
 
-	if (argc < 3) {
-		LogError("To few args passed in exec to popup-bin - should be at least 3:");
-		LogError("(binary-name, pipe_in, pipe_out)");
-		LogError("return ERROR");
-		return popup_status::EXIT_ERROR;
-	}
+		if (argc < 3) {
+			LogError("To few args passed in exec to popup-bin - should be at least 3:");
+			LogError("(binary-name, pipe_in, pipe_out)");
+			LogError("return ERROR");
+			return popup_status::EXIT_ERROR;
+		}
 
-	LogDebug("Passed args: " << argv[0] << ", " << argv[1] << ", " << argv[2]);
-	int pipe_in;
-	int pipe_out;
+		LogDebug("Passed args: " << argv[0] << ", " << argv[1] << ", " << argv[2]);
+		int pipe_in;
+		int pipe_out;
 
-	// Parsing args (pipe_in, pipe_out)
-	if (0 == sscanf(argv[1], "%d", &pipe_in)) {
-		LogError("Error while parsing pipe_in; return ERROR");
-		return popup_status::EXIT_ERROR;
-	}
+		// Parsing args (pipe_in, pipe_out)
+		if (0 == sscanf(argv[1], "%d", &pipe_in)) {
+			LogError("Error while parsing pipe_in; return ERROR");
+			return popup_status::EXIT_ERROR;
+		}
 
-	if (0 == sscanf(argv[2], "%d", &pipe_out)) {
-		LogError("Error while parsing pipe_out; return ERROR");
-		return popup_status::EXIT_ERROR;
-	}
+		if (pipe_in < 0 || pipe_in > FD_SETSIZE) {
+			LogError("fb about pipe_in is in invalid.");
+			return popup_status::EXIT_ERROR;
+		}
 
-	LogDebug("Parsed pipes: IN: " << pipe_in << ", OUT: " <<  pipe_out);
+		if (0 == sscanf(argv[2], "%d", &pipe_out)) {
+			LogError("Error while parsing pipe_out; return ERROR");
+			return popup_status::EXIT_ERROR;
+		}
 
-	if (wait_for_parent_info(pipe_in) == -1) {
+		if (pipe_out < 0 || pipe_out > FD_SETSIZE) {
+			LogError("fb about pipe_out is in invalid.");
+			close(pipe_in);
+			return popup_status::EXIT_ERROR;
+		}
+
+		LogDebug("Parsed pipes: IN: " << pipe_in << ", OUT: " <<  pipe_out);
+
+		if (wait_for_parent_info(pipe_in) == -1) {
+			close(pipe_out);
+			return popup_status::EXIT_ERROR;
+		}
+
+		int  buff_size = 1024;
+		char line[buff_size];
+		ssize_t count = 0;
+
+		do {
+			count = TEMP_FAILURE_RETRY(read(pipe_in, line, buff_size));
+		} while (0 == count);
+
+		if (count < 0) {
+			int error = errno;
+			close(pipe_in);
+			close(pipe_out);
+			LogError("read returned a negative value (" << count << ")");
+			LogError("error: " << CCHECKER::GetErrnoString(error));
+			LogError("Exit popup - ERROR");
+			return popup_status::EXIT_ERROR;
+		}
+
+		LogDebug("Read bytes : " << count);
+		close(pipe_in); // cleanup
+		deserialize(pdp, line, count);
+		pdp->result = response_e::RESPONSE_ERROR;
+		show_popup(pdp); // Showing popup
+		// sending validation_result to popup-runner
+		BinaryStream stream_out;
+		LogDebug("pdp->result : " << pdp->result);
+		CCHECKER::Serialization::Serialize(stream_out, pdp->result);
+
+		if (-1 == TEMP_FAILURE_RETRY(write(pipe_out, stream_out.char_pointer(), stream_out.size()))) {
+			LogError("Write to pipe failed!");
+			close(pipe_out);
+			return popup_status::EXIT_ERROR;
+		}
+
 		close(pipe_out);
+		LogDebug("############################ /popup binary ################################");
+		LogDebug("Return: " << popup_status::NO_ERROR);
+		return popup_status::NO_ERROR;
+	} catch (const CCHECKER::Exception &e) {
+		LogError("Exception occured in popup main.");
+		return popup_status::EXIT_ERROR;
+	} catch (const std::exception &e) {
+		LogError("Exception occured in popup main : " << e.what());
+		return popup_status::EXIT_ERROR;
+	} catch (...) {
+		LogError("Unhandled exception occured in popup main.");
 		return popup_status::EXIT_ERROR;
 	}
-
-	int  buff_size = 1024;
-	char line[buff_size];
-	ssize_t count = 0;
-
-	do {
-		count = TEMP_FAILURE_RETRY(read(pipe_in, line, buff_size));
-	} while (0 == count);
-
-	if (count < 0) {
-		int error = errno;
-		close(pipe_in);
-		close(pipe_out);
-		LogError("read returned a negative value (" << count << ")");
-		LogError("error: " << CCHECKER::GetErrnoString(error));
-		LogError("Exit popup - ERROR");
-		return popup_status::EXIT_ERROR;
-	}
-
-	LogDebug("Read bytes : " << count);
-	close(pipe_in); // cleanup
-	deserialize(pdp, line, count);
-	pdp->result = response_e::RESPONSE_ERROR;
-	show_popup(pdp); // Showing popup
-	// sending validation_result to popup-runner
-	BinaryStream stream_out;
-	LogDebug("pdp->result : " << pdp->result);
-	CCHECKER::Serialization::Serialize(stream_out, pdp->result);
-
-	if (-1 == TEMP_FAILURE_RETRY(write(pipe_out, stream_out.char_pointer(), stream_out.size()))) {
-		LogError("Write to pipe failed!");
-		close(pipe_out);
-		return popup_status::EXIT_ERROR;
-	}
-
-	close(pipe_out);
-	LogDebug("############################ /popup binary ################################");
-	LogDebug("Return: " << popup_status::NO_ERROR);
-	return popup_status::NO_ERROR;
 }
 ELM_MAIN()

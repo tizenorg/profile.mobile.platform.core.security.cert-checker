@@ -30,7 +30,6 @@
 #include <cchecker/dpl/errno_string.h>
 #include <cchecker/dpl/assert.h>
 #include <cchecker/dpl/exception.h>
-#include <cchecker/dpl/assert.h>
 #include <cchecker/dpl/scoped_free.h>
 
 namespace CCHECKER {
