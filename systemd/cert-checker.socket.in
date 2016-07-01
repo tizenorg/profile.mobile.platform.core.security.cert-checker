@@ -5,3 +5,6 @@ SocketGroup=@SERVICE_GROUP@
 SocketMode=0777
 
 Service=@SERVICE_NAME@.service
+
+[Install]
+WantedBy=sockets.target

@@ -38,7 +38,7 @@ Check OCSP validation at app install/uninstall time.
 
 # service macro
 %global service_name     %{name}
-%global service_stream   /tmp/%{service_name}.socket
+%global service_stream   /tmp/.%{service_name}.socket
 %global service_user     security_fw
 %global service_group    security_fw
 
@@ -115,6 +115,8 @@ make %{?jobs:-j%jobs}
 %install
 %make_install
 %find_lang %{name}
+%install_service sockets.target.wants %{name}.socket
+
 
 %clean
 rm -rf %{buildroot}
@@ -157,6 +159,7 @@ fi
 %config(noreplace) %attr(0600,%{service_user},%{service_group}) %{DB_INST_DIR}/.%{name}.db
 %{_unitdir}/%{name}.service
 %{_unitdir}/%{name}.socket
+%{_unitdir}/sockets.target.wants/%{name}.socket
 %{TZ_SYS_BIN}/%{name}
 %{TZ_SYS_BIN}/%{name}-popup
 
