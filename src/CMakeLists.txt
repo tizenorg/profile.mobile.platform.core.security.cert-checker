@@ -46,8 +46,6 @@ SET(${TARGET_CERT_CHECKER}_SRCS
     ${CERT_CHECKER_SERVICE_PATH}/certs.cpp
     ${CERT_CHECKER_SERVICE_PATH}/ocsp-service.cpp
     ${CERT_CHECKER_DB_PATH}/sql_query.cpp
-    ${CERT_CHECKER_UI_PATH}/UIBackend.cpp
-    ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
     ${DPL_CORE_SRC_PATH}/assert.cpp
     ${DPL_CORE_SRC_PATH}/char_traits.cpp
     ${DPL_CORE_SRC_PATH}/errno_string.cpp

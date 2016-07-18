@@ -1,0 +1,15 @@
+[Unit]
+Description=Cert-checker popup socket
+Wants=@SERVICE_NAME@-popup.servcie
+Before=@SERVICE_NAME@-popup.service
+
+[Socket]
+ListenStream=@POPUP_STREAM@
+SocketUser=@SERVICE_USER@
+SocketGroup=@SERVICE_GROUP@
+SocketMode=0777
+
+Service=@SERVICE_NAME@-popup.service
+
+[Install]
+WantedBy=sockets.target

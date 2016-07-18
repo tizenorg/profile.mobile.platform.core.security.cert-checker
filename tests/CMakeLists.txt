@@ -80,8 +80,7 @@ SET(CERT_CHECKER_POPUP_TEST_SOURCES
     ${CERT_CHECKER_TESTS_SRC_PATH}/popup_test.cpp
     # cert-checker
     ${CERT_CHECKER_SERVICE_PATH}/app.cpp
-    ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
-    ${CERT_CHECKER_UI_PATH}/UIBackend.cpp
+    ${CERT_CHECKER_UI_PATH}/popup-client.cpp
     )
 
 INCLUDE_DIRECTORIES(SYSTEM
