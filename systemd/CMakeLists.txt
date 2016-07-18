@@ -4,6 +4,12 @@ CONFIGURE_FILE(
 CONFIGURE_FILE(
 	${SERVICE_NAME}.service.in
 	${SERVICE_NAME}.service @ONLY)
+CONFIGURE_FILE(
+	${SERVICE_NAME}-popup.socket.in
+	${SERVICE_NAME}-popup.socket @ONLY)
+CONFIGURE_FILE(
+	${SERVICE_NAME}-popup.service.in
+	${SERVICE_NAME}-popup.service @ONLY)
 
 INSTALL(
 	FILES
@@ -11,3 +17,10 @@ INSTALL(
 		${SERVICE_NAME}.service
 	DESTINATION
 		${SYSTEMD_UNIT_DIR})
+
+INSTALL(
+	FILES
+		${SERVICE_NAME}-popup.socket
+		${SERVICE_NAME}-popup.service
+	DESTINATION
+		${POPUP_SYSTEMD_UNIT_DIR})
