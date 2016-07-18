@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 Samsung Electronics Co., Ltd All Rights Reserved
+ *  Copyright (c) 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,35 +14,24 @@
  *  limitations under the License
  */
 /*
- * @file        popup_test.cpp
- * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @file        popup-client.cpp
  * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
- * @brief       Cert-checker popup test
+ * @brief       Client about popup service
  */
+#include "popup-client.h"
 
-#include "service/app.h"
 #include "common/log.h"
-#include "ui/popup-client.h"
 
-int main(int, char **)
+using namespace CCHECKER::UI;
+
+PopupClient::PopupClient() : m_address(POPUP_STREAM)
 {
-	LogDebug("Cert-checker popup-test start!");
-	setlocale(LC_ALL, "");
+	m_dispatcher.reset(new Dispatcher(m_address));
+}
 
-	CCHECKER::app_t app(
-			std::string("test_APP_ID"),
-			std::string("test_PKG_ID"),
-			5005,
-			{});
-
-	CCHECKER::UI::PopupClient client;
-	auto ret = client.dispatch(app);
-	if (ret)
-		LogDebug("Success to launch popup.");
-	else
-		LogError("Failed to launch popup.");
-
-	LogDebug("Cert-checker popup-test exit!");
-	return 0;
+bool PopupClient::dispatch(const app_t &app)
+{
+	LogDebug("Dispatch popup service. app : " << app.str());
+	return m_dispatcher->methodCall<bool>(app);
 }

@@ -24,7 +24,6 @@
 #include "service/queue.h"
 
 #include <cchecker/sql_query.h>
-#include <cchecker/UIBackend.h>
 
 namespace CCHECKER {
 
@@ -95,22 +94,6 @@ void DB::SqlQuery::mark_as_verified(const app_t &app, const app_t::verified_t &v
 void DB::SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
 {
 	(void)apps_buffer;
-}
-
-// UI
-UI::UIBackend::UIBackend(int timeout) :
-	m_responseTimeout(timeout)
-{}
-
-UI::UIBackend::~UIBackend()
-{}
-
-bool UI::UIBackend::call_popup(const app_t &app)
-{
-	if (app.uid > 5000)
-		return true;
-
-	return false;
 }
 
 } //CCHECKER
