@@ -21,11 +21,9 @@
 ############### CERT_CHECKER ###############
 PKG_CHECK_MODULES(${TARGET_CERT_CHECKER}_DEP
     REQUIRED
-    capi-appfw-application
     dbus-1
     dbus-glib-1
     db-util
-    elementary
     glib-2.0
     gio-2.0
     icu-i18n
@@ -46,8 +44,7 @@ SET(${TARGET_CERT_CHECKER}_SRCS
     ${CERT_CHECKER_SERVICE_PATH}/certs.cpp
     ${CERT_CHECKER_SERVICE_PATH}/ocsp-service.cpp
     ${CERT_CHECKER_DB_PATH}/sql_query.cpp
-    ${CERT_CHECKER_UI_PATH}/UIBackend.cpp
-    ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
+    ${CERT_CHECKER_UI_PATH}/popup-client.cpp
     ${DPL_CORE_SRC_PATH}/assert.cpp
     ${DPL_CORE_SRC_PATH}/char_traits.cpp
     ${DPL_CORE_SRC_PATH}/errno_string.cpp
@@ -62,6 +59,7 @@ SET(${TARGET_CERT_CHECKER}_SRCS
 INCLUDE_DIRECTORIES(SYSTEM
     ./
     ${${TARGET_CERT_CHECKER}_DEP_INCLUDE_DIRS}
+    ${CERT_CHECKER_SRC_PATH}/
     ${CERT_CHECKER_SRC_PATH}/include/
     ${DPL_CORE_PATH}/include/
     ${DPL_DB_PATH}/include/

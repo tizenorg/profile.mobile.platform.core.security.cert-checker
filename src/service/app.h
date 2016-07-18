@@ -36,7 +36,7 @@ typedef std::list<std::string> chain_t;
 typedef std::list<chain_t> signatures_t;
 
 struct app_t {
-	enum class verified_t : int32_t {
+	enum class verified_t : int {
 		NO      = 0,
 		YES     = 1,
 		UNKNOWN = 2

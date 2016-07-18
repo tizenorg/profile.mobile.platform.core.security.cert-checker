@@ -22,13 +22,15 @@
 PKG_CHECK_MODULES(CERT_CHECKER_POPUP_DEP
     elementary
     libtzplatform-config
+    capi-appfw-application
     REQUIRED)
 
 set(CERT_CHECKER_POPUP_SRC_DIR ${PROJECT_SOURCE_DIR}/src/ui/popup-bin)
 
 set(CERT_CHECKER_POPUP_SOURCES
+    ${CERT_CHECKER_POPUP_SRC_DIR}/main.cpp
     ${CERT_CHECKER_POPUP_SRC_DIR}/popup.cpp
-    ${CERT_CHECKER_UI_PATH}/popup-runner.cpp
+    ${CERT_CHECKER_POPUP_SRC_DIR}/popup-service.cpp
     ${CERT_CHECKER_SERVICE_PATH}/app.cpp
     # dpl
     ${DPL_CORE_SRC_PATH}/assert.cpp

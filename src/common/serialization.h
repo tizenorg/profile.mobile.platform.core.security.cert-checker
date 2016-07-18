@@ -31,6 +31,7 @@
 #include <set>
 #include <memory>
 
+#include "service/app.h"
 #include "common/command-id.h"
 
 namespace CCHECKER {
@@ -142,6 +143,20 @@ struct Serialization {
 	static void Serialize(IStream &stream, const CommandId value)
 	{
 		Serialize(stream, static_cast<int>(value));
+	}
+
+	// app_t
+	static void Serialize(IStream &stream, const app_t app)
+	{
+		Serialize(stream, app.app_id);
+		Serialize(stream, app.pkg_id);
+		Serialize(stream, static_cast<uint32_t>(app.uid));
+		Serialize(stream, app.signatures);
+		Serialize(stream, static_cast<int>(app.verified));
+	}
+	static void Serialize(IStream &stream, const app_t *const p)
+	{
+		Serialize(stream, *p);
 	}
 
 	// std::string
@@ -392,6 +407,28 @@ struct Deserialization {
 		int val;
 		Deserialize(stream, val);
 		value = static_cast<CommandId>(val);
+	}
+
+	// app_t
+	static void Deserialize(IStream &stream, app_t &app)
+	{
+		Deserialize(stream, app.app_id);
+		Deserialize(stream, app.pkg_id);
+
+		uint32_t uid;
+		Deserialize(stream, uid);
+		app.uid = static_cast<uid_t>(uid);
+
+		Deserialize(stream, app.signatures);
+
+		int val;
+		Deserialize(stream, val);
+		app.verified = static_cast<app_t::verified_t>(val);
+	}
+	static void Deserialize(IStream &stream, app_t *&p)
+	{
+		p = new app_t();
+		Deserialize(stream, *p);
 	}
 
 	static void Deserialize(IStream &stream, bool *&value)
