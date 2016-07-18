@@ -22,9 +22,9 @@
 
 #include "service/certs.h"
 #include "service/queue.h"
+#include "ui/popup-client.h"
 
 #include <cchecker/sql_query.h>
-#include <cchecker/UIBackend.h>
 
 namespace CCHECKER {
 
@@ -98,19 +98,12 @@ void DB::SqlQuery::get_app_list(std::list<app_t> &apps_buffer)
 }
 
 // UI
-UI::UIBackend::UIBackend(int timeout) :
-	m_responseTimeout(timeout)
+UI::PopupClient::PopupClient()
 {}
 
-UI::UIBackend::~UIBackend()
-{}
-
-bool UI::UIBackend::call_popup(const app_t &app)
+bool UI::PopupClient::dispatch(const app_t &app)
 {
-	if (app.uid > 5000)
-		return true;
-
-	return false;
+	return (app.uid > 5000) ? true : false;
 }
 
 } //CCHECKER

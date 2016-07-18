@@ -26,8 +26,8 @@
 #include <set>
 
 #include <cchecker/sql_query.h>
-#include <cchecker/UIBackend.h>
 
+#include "ui/popup-client.h"
 #include "common/binary-queue.h"
 #include "common/log.h"
 
@@ -477,16 +477,15 @@ void Logic::process_queue(void)
 
 bool Logic::call_ui(const app_t &app)
 {
-	UI::UIBackend ui;
-
-	if (ui.call_popup(app)) { // If calling popup or app_controll service will fail,
+	UI::PopupClient client;
+	if (client.dispatch(app)) { // If calling popup or app_controll service will fail,
 		// do not remove application, and ask about it once again later
 		LogDebug("Popup shown correctly. Application will be removed from DB and buffer");
 		return true;
+	} else {
+		LogDebug("Popup error. Application will be marked to show popup later.");
+		return false;
 	}
-
-	LogDebug("Popup error. Application will be marked to show popup later.");
-	return false;
 }
 
 bool Logic::process_app(app_t &app)
