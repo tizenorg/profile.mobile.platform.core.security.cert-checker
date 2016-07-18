@@ -42,6 +42,11 @@ Check OCSP validation at app install/uninstall time.
 %global service_user     security_fw
 %global service_group    security_fw
 
+# popup macro
+%global popup_stream     /tmp/.%{service_name}-popup.socket
+%global popup_env        /run/tizen-system-env
+%global popup_unitdir    %{_unitdir_user}
+
 # common lib package
 %package -n lib%{name}-common
 Summary:    Common Library package for %{name}
@@ -108,15 +113,20 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
     -DTEST_APP_SIGNATURES_DIR="%{TZ_SYS_ROOT}/cert-checker-test" \
     -DSYSTEMD_UNIT_DIR=%{_unitdir} \
     -DBIN_DIR=%{TZ_SYS_BIN} \
-    -DDB_INSTALL_DIR=%{DB_INST_DIR}
+    -DDB_INSTALL_DIR=%{DB_INST_DIR} \
+    -DPOPUP_ENV_PATH=%{popup_env} \
+    -DPOPUP_STREAM=%{popup_stream} \
+    -DPOPUP_SYSTEMD_UNIT_DIR=%{popup_unitdir}
 
 make %{?jobs:-j%jobs}
 
 %install
 %make_install
 %find_lang %{name}
-%install_service sockets.target.wants %{name}.socket
 
+%install_service sockets.target.wants %{name}.socket
+mkdir -p %{buildroot}%{popup_unitdir}/sockets.target.wants
+ln -s ../%{name}-popup.socket %{buildroot}%{popup_unitdir}/sockets.target.wants/%{name}-popup.socket
 
 %clean
 rm -rf %{buildroot}
@@ -157,11 +167,14 @@ fi
 %license LICENSE
 %dir %attr(0700,%{service_user},%{service_group}) %{DB_INST_DIR}
 %config(noreplace) %attr(0600,%{service_user},%{service_group}) %{DB_INST_DIR}/.%{name}.db
+%{TZ_SYS_BIN}/%{name}
+%{TZ_SYS_BIN}/%{name}-popup
 %{_unitdir}/%{name}.service
 %{_unitdir}/%{name}.socket
 %{_unitdir}/sockets.target.wants/%{name}.socket
-%{TZ_SYS_BIN}/%{name}
-%{TZ_SYS_BIN}/%{name}-popup
+%{popup_unitdir}/%{name}-popup.service
+%{popup_unitdir}/%{name}-popup.socket
+%{popup_unitdir}/sockets.target.wants/%{name}-popup.socket
 
 %files -n lib%{name}-common
 %defattr(-,root,root,-)

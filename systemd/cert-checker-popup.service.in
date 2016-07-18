@@ -1,0 +1,8 @@
+[Unit]
+Description=Cert-checker popup service
+
+[Service]
+Type=simple
+EnvironmentFile=@POPUP_ENV_PATH@
+ExecStart=@BIN_DIR@/@SERVICE_NAME@-popup
+Sockets=@SERVICE_NAME@-popup.socket

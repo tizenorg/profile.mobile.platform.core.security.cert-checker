@@ -16,33 +16,33 @@
 /*
  * @file        popup_test.cpp
  * @author      Janusz Kozerski (j.kozerski@samsung.com)
+ * @author      Sangwan Kwon (sangwan.kwon@samsung.com)
  * @version     1.0
  * @brief       Cert-checker popup test
  */
 
-#include <cchecker/UIBackend.h>
-
+#include "service/app.h"
 #include "common/log.h"
+#include "ui/popup-client.h"
 
-using namespace CCHECKER;
-
-int main(int argc, char **argv)
+int main(int, char **)
 {
 	LogDebug("Cert-checker popup-test start!");
-	int timeout = 60;
-
-	if (argc > 1) {
-		timeout = atoi(argv[1]);
-	}
-
-	LogDebug("popup-test timeout: " << timeout);
 	setlocale(LC_ALL, "");
-	UI::UIBackend ui(timeout);
-	app_t app(std::string("test_APP_ID"),
-			  std::string("test PKG ID"),
-			  5005,
-			  {});
-	ui.call_popup(app);
+
+	CCHECKER::app_t app(
+			std::string("test_APP_ID"),
+			std::string("test_PKG_ID"),
+			5005,
+			{});
+
+	CCHECKER::UI::PopupClient client;
+	// TODO(sangwan.kwon) Add boost TC for output FAIL, SUCCESS
+	if (client.dispatch(app))
+		LogDebug("Success to launch popup.");
+	else
+		LogError("Failed to launch popup.");
+
 	LogDebug("Cert-checker popup-test exit!");
 	return 0;
 }
