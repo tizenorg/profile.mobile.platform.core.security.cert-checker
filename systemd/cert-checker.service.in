@@ -9,5 +9,6 @@ EnvironmentFile=-/etc/sysconfig/enlightenment
 # Makes popup bigger
 Environment="ELM_SCALE=4.0"
 Type=simple
+SmackProcessLabel=System
 ExecStart=@BIN_DIR@/cert-checker
 Sockets=@SERVICE_NAME@.socket
