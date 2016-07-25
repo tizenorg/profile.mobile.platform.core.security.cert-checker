@@ -21,7 +21,6 @@
 
 PKG_CHECK_MODULES(CERT_CHECKER_POPUP_DEP
     elementary
-    libtzplatform-config
     pkgmgr-info
     capi-appfw-application
     REQUIRED)
