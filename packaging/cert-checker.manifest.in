@@ -2,4 +2,7 @@
     <request>
         <domain name="_"/>
     </request>
+    <assign>
+        <filesystem path="@DB_INSTALL_DIR@/.@SERVICE_NAME@.db" label="System" />
+    </assign>
 </manifest>

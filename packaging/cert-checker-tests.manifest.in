@@ -1,0 +1,9 @@
+<manifest>
+	<request>
+		<domain name="_" />
+	</request>
+	<assign>
+		<filesystem path="@BIN_DIR@/@SERVICE_NAME@-test" exec_label="System" />
+		<filesystem path="@DB_INSTALL_DIR@/.@SERVICE_NAME@-test.db" label="System" />
+	</assign>
+</manifest>

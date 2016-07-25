@@ -107,6 +107,9 @@ CONFIGURE_FILE(
 CONFIGURE_FILE(
 	packaging/${SERVICE_NAME}-client.manifest.in
 	${SERVICE_NAME}-client.manifest @ONLY)
+CONFIGURE_FILE(
+	packaging/${SERVICE_NAME}-tests.manifest.in
+	${SERVICE_NAME}-tests.manifest @ONLY)
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(db)
