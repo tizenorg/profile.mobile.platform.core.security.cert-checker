@@ -24,6 +24,7 @@
 #include <memory>
 
 #include <app_control.h>
+#include <pkgmgr-info.h>
 
 #include "popup.h"
 #include "service/app.h"
@@ -41,9 +42,25 @@ struct AppControl {
 	app_control_h handle;
 };
 
+bool isValid(const std::string &pkgId)
+{
+	pkgmgrinfo_pkginfo_h h;
+	if(::pkgmgrinfo_pkginfo_get_pkginfo(pkgId.c_str(), &h) != PMINFO_R_OK)
+		return false;
+
+	::pkgmgrinfo_pkginfo_destroy_pkginfo(h);
+	return true;
+}
+
 bool launchSettingManager(const std::string &pkgId)
 {
 	LogDebug("Start to launch setting manager about pkg : " << pkgId);
+
+	if (!isValid(pkgId)) {
+		LogError("Failed to get package info. It may wrong pkg id.");
+		return false;
+	}
+
 	std::unique_ptr<AppControl> ac(new AppControl);
 	app_control_set_operation(ac->handle, APP_CONTROL_OPERATION_DEFAULT);
 	app_control_set_app_id(ac->handle, "setting-manage-applications-efl");
