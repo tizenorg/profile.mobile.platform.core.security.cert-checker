@@ -7,7 +7,7 @@ License:    Apache-2.0 and BSL-1.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires: cmake
 BuildRequires: zip
-BuildRequires: gettext-tools
+BuildRequires: gettext
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(dbus-1)
@@ -28,13 +28,11 @@ Requires: lib%{name}-common = %{version}-%{release}
 %description
 Check OCSP validation at app install/uninstall time.
 
-%global SBIN_DIR         /sbin
-%global TZ_SYS_DB        %{?TZ_SYS_DB:%TZ_SYS_DB}%{!?TZ_SYS_DB:/opt/dbspace}
-%global TZ_SYS_ROOT      %{?TZ_SYS_ROOT:%TZ_SYS_ROOT}%{!?TZ_SYS_ROOT:/root}
-%global TZ_SYS_RO_SHARE  %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:/usr/share}
-%global TZ_SYS_BIN       %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:/usr/bin}
-
-%global DB_INST_DIR      %{TZ_SYS_DB}/%{name}
+%global sbin_dir         %{_sbindir}
+%global bin_dir          %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
+%global root_dir         %{?TZ_SYS_ROOT:%TZ_SYS_ROOT}%{!?TZ_SYS_ROOT:/root}
+%global ro_data_dir      %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:%_datadir}
+%global db_dir           %{?TZ_SYS_DB:%TZ_SYS_DB/%name}%{!?TZ_SYS_DB:/opt/dbspace/%name}
 
 # service macro
 %global service_name     %{name}
@@ -47,28 +45,27 @@ Check OCSP validation at app install/uninstall time.
 %global popup_env        /run/tizen-system-env
 %global popup_unitdir    %{_unitdir_user}
 
-# common lib package
 %package -n lib%{name}-common
 Summary:    Common Library package for %{name}
 License:    Apache-2.0
 Group:      Security/Libraries
-Requires:   %{SBIN_DIR}/ldconfig
+Requires(post):   %{sbin_dir}/ldconfig
+Requires(postun): %{sbin_dir}/ldconfig
 
 %description -n lib%{name}-common
 cert-checker common library package.
 
-# client lib package
 %package -n lib%{name}-client
 Summary:    Client Library package for %{name}
 License:    Apache-2.0
 Group:      Security/Libraries
-Requires:   %{SBIN_DIR}/ldconfig
 Requires:   lib%{name}-common = %{version}-%{release}
+Requires(post):   %{sbin_dir}/ldconfig
+Requires(postun): %{sbin_dir}/ldconfig
 
 %description -n lib%{name}-client
 cert-checker client library package.
 
-# devel package
 %package devel
 Summary: Development files for %{name}
 License: Apache-2.0
@@ -79,7 +76,6 @@ Requires:      %{name} = %{version}-%{release}
 %description devel
 cert-checker development files.
 
-# test package
 %package -n %{name}-tests
 Summary:    Internal test for cert-checker
 License:    Apache-2.0 and BSL-1.0
@@ -110,15 +106,15 @@ export LDFLAGS+="-Wl,--rpath=%{_libdir} "
     -DSERVICE_USER=%{service_user} \
     -DSERVICE_GROUP=%{service_group} \
     -DINCLUDE_INSTALL_DIR:PATH=%{_includedir} \
-    -DTEST_APP_SIGNATURES_DIR="%{TZ_SYS_ROOT}/cert-checker-test" \
+    -DTEST_APP_SIGNATURES_DIR="%{root_dir}/cert-checker-test" \
     -DSYSTEMD_UNIT_DIR=%{_unitdir} \
-    -DBIN_DIR=%{TZ_SYS_BIN} \
-    -DDB_INSTALL_DIR=%{DB_INST_DIR} \
+    -DBIN_DIR=%{bin_dir} \
+    -DDB_INSTALL_DIR=%{db_dir} \
     -DPOPUP_ENV_PATH=%{popup_env} \
     -DPOPUP_STREAM=%{popup_stream} \
     -DPOPUP_SYSTEMD_UNIT_DIR=%{popup_unitdir}
 
-make %{?jobs:-j%jobs}
+make %{?_smp_mflags}
 
 %install
 %make_install
@@ -127,9 +123,6 @@ make %{?jobs:-j%jobs}
 %install_service sockets.target.wants %{name}.socket
 mkdir -p %{buildroot}%{popup_unitdir}/sockets.target.wants
 ln -s ../%{name}-popup.socket %{buildroot}%{popup_unitdir}/sockets.target.wants/%{name}-popup.socket
-
-%clean
-rm -rf %{buildroot}
 
 %post
 systemctl daemon-reload
@@ -144,8 +137,8 @@ if [ $1 = 2 ]; then
     systemctl restart %{name}.socket
 fi
 
-chsmack -a System %{DB_INST_DIR}
-chsmack -a System %{DB_INST_DIR}/.%{name}.db
+chsmack -a System %{db_dir}
+chsmack -a System %{db_dir}/.%{name}.db
 
 %preun
 # uninstall
@@ -159,16 +152,18 @@ if [ $1 = 0 ]; then
     systemctl daemon-reload
 fi
 
-%post -n lib%{name}-common -p %{SBIN_DIR}/ldconfig
-%postun -n lib%{name}-common -p %{SBIN_DIR}/ldconfig
+%post -n lib%{name}-common -p %{sbin_dir}/ldconfig
+%post -n lib%{name}-client -p %{sbin_dir}/ldconfig
+%postun -n lib%{name}-common -p %{sbin_dir}/ldconfig
+%postun -n lib%{name}-client -p %{sbin_dir}/ldconfig
 
 %files -f %{name}.lang
 %manifest %{name}.manifest
 %license LICENSE
-%dir %attr(0700,%{service_user},%{service_group}) %{DB_INST_DIR}
-%config(noreplace) %attr(0600,%{service_user},%{service_group}) %{DB_INST_DIR}/.%{name}.db
-%{TZ_SYS_BIN}/%{name}
-%{TZ_SYS_BIN}/%{name}-popup
+%dir %attr(0700,%{service_user},%{service_group}) %{db_dir}
+%config(noreplace) %attr(0600,%{service_user},%{service_group}) %{db_dir}/.%{name}.db
+%{bin_dir}/%{name}
+%{bin_dir}/%{name}-popup
 %{_unitdir}/%{name}.service
 %{_unitdir}/%{name}.socket
 %{_unitdir}/sockets.target.wants/%{name}.socket
@@ -177,19 +172,16 @@ fi
 %{popup_unitdir}/sockets.target.wants/%{name}-popup.socket
 
 %files -n lib%{name}-common
-%defattr(-,root,root,-)
 %manifest %{name}-common.manifest
 %license LICENSE
 %{_libdir}/lib%{name}-common.so.*
 
 %files -n lib%{name}-client
-%defattr(-,root,root,-)
 %manifest %{name}-client.manifest
 %license LICENSE
 %{_libdir}/lib%{name}-client.so.*
 
 %files devel
-%defattr(-,root,root,-)
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/lib%{name}-common.so
 %{_libdir}/lib%{name}-client.so
@@ -198,9 +190,9 @@ fi
 %files -n %{name}-tests
 %defattr(-,%{service_user},%{service_group},-)
 %license LICENSE LICENSE.BSL-1.0
-%{TZ_SYS_BIN}/%{name}-tests
-%{TZ_SYS_BIN}/%{name}-tests-logic
-%{TZ_SYS_BIN}/%{name}-tests-client
-%{TZ_SYS_BIN}/%{name}-popup-test
-%{DB_INST_DIR}/.%{name}-test.db
-%{TZ_SYS_ROOT}/%{name}-test/*/*.xml
+%{bin_dir}/%{name}-tests
+%{bin_dir}/%{name}-tests-logic
+%{bin_dir}/%{name}-tests-client
+%{bin_dir}/%{name}-popup-test
+%{db_dir}/.%{name}-test.db
+%{root_dir}/%{name}-test/*/*.xml
