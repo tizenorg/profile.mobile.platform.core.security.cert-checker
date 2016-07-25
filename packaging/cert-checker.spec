@@ -32,7 +32,7 @@ Check OCSP validation at app install/uninstall time.
 %global bin_dir          %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
 %global root_dir         %{?TZ_SYS_ROOT:%TZ_SYS_ROOT}%{!?TZ_SYS_ROOT:/root}
 %global ro_data_dir      %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:%_datadir}
-%global db_dir           %{?TZ_SYS_DB:%TZ_SYS_DB/%name}%{!?TZ_SYS_DB:/opt/dbspace/%name}
+%global db_dir           %{?TZ_SYS_DB:%TZ_SYS_DB}%{!?TZ_SYS_DB:/opt/dbspace}
 
 # service macro
 %global service_name     %{name}
@@ -137,9 +137,6 @@ if [ $1 = 2 ]; then
     systemctl restart %{name}.socket
 fi
 
-chsmack -a System %{db_dir}
-chsmack -a System %{db_dir}/.%{name}.db
-
 %preun
 # uninstall
 if [ $1 = 0 ]; then
@@ -160,8 +157,7 @@ fi
 %files -f %{name}.lang
 %manifest %{name}.manifest
 %license LICENSE
-%dir %attr(0700,%{service_user},%{service_group}) %{db_dir}
-%config(noreplace) %attr(0600,%{service_user},%{service_group}) %{db_dir}/.%{name}.db
+%attr(0600,%{service_user},%{service_group}) %{db_dir}/.%{name}.db
 %{bin_dir}/%{name}
 %{bin_dir}/%{name}-popup
 %{_unitdir}/%{name}.service
@@ -188,8 +184,9 @@ fi
 %{_includedir}/cchecker/ocsp.h
 
 %files -n %{name}-tests
-%defattr(-,%{service_user},%{service_group},-)
+%manifest %{name}-tests.manifest
 %license LICENSE LICENSE.BSL-1.0
+%defattr(-,%{service_user},%{service_group},-)
 %{bin_dir}/%{name}-tests
 %{bin_dir}/%{name}-tests-logic
 %{bin_dir}/%{name}-tests-client
