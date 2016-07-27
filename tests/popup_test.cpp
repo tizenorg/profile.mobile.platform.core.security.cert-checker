@@ -30,18 +30,27 @@ int main(int, char **)
 	LogDebug("Cert-checker popup-test start!");
 	setlocale(LC_ALL, "");
 
-	CCHECKER::app_t app(
-			std::string("test_APP_ID"),
-			std::string("test_PKG_ID"),
-			5005,
-			{});
+	try {
+		CCHECKER::app_t app(
+				std::string("test_APP_ID"),
+				std::string("test_PKG_ID"),
+				5005,
+				{});
 
-	CCHECKER::UI::PopupClient client;
-	// TODO(sangwan.kwon) Add boost TC for output FAIL, SUCCESS
-	if (client.dispatch(app))
-		LogDebug("Success to launch popup.");
-	else
-		LogError("Failed to launch popup.");
+		CCHECKER::UI::PopupClient client;
+		// TODO(sangwan.kwon) Add boost TC for output FAIL, SUCCESS
+		if (client.dispatch(app))
+			LogDebug("Success to launch popup.");
+		else
+			LogError("Failed to launch popup.");
+
+	} catch (const std::exception &e) {
+		LogError("Exception occured in cert-checker test : " << e.what());
+		return -1;
+	} catch (...) {
+		LogError("Unhandled exception occured in cert-checker test.");
+		return -1;
+	}
 
 	LogDebug("Cert-checker popup-test exit!");
 	return 0;
