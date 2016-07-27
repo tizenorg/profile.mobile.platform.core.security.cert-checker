@@ -28,7 +28,7 @@ Requires: lib%{name}-common = %{version}-%{release}
 %description
 Check OCSP validation at app install/uninstall time.
 
-%global sbin_dir         %{_sbindir}
+%global sbin_dir         /sbin
 %global bin_dir          %{?TZ_SYS_BIN:%TZ_SYS_BIN}%{!?TZ_SYS_BIN:%_bindir}
 %global root_dir         %{?TZ_SYS_ROOT:%TZ_SYS_ROOT}%{!?TZ_SYS_ROOT:/root}
 %global ro_data_dir      %{?TZ_SYS_RO_SHARE:%TZ_SYS_RO_SHARE}%{!?TZ_SYS_RO_SHARE:%_datadir}
